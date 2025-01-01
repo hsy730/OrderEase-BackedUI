@@ -11,6 +11,7 @@
       v-loading="loading"
       border
       stripe
+      size="small"
       :header-cell-style="{ background: '#f5f7fa' }"
     >
       <el-table-column label="订单金额" width="150" align="center">
@@ -20,7 +21,7 @@
       </el-table-column>
       <el-table-column prop="status" label="订单状态" width="120" align="center">
         <template #default="{ row }">
-          <el-tag :type="getStatusType(row.status)">
+          <el-tag :type="getStatusType(row.status)" size="small">
             {{ getStatusText(row.status) }}
           </el-tag>
         </template>
@@ -85,26 +86,30 @@ const dialogTitle = ref('')
 const formData = ref({})
 const formRef = ref(null)
 
-// 获取订单状态对应的类型
-const getStatusType = (status) => {
-  const statusMap = {
-    'pending': 'warning',
-    'processing': 'primary',
-    'completed': 'success',
-    'cancelled': 'info'
-  }
-  return statusMap[status] || 'info'
-}
-
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
   const statusMap = {
     'pending': '待处理',
-    'processing': '处理中',
+    'accepted': '已接单',
+    'shipped': '已发货',
     'completed': '已完成',
-    'cancelled': '已取消'
+    'rejected': '已拒绝',
+    'canceled': '已取消'
   }
   return statusMap[status] || '未知状态'
+}
+
+// 获取订单状态对应的类型
+const getStatusType = (status) => {
+  const statusMap = {
+    'pending': 'warning',
+    'accepted': 'primary',
+    'shipped': 'info',
+    'completed': 'success',
+    'rejected': 'danger',
+    'canceled': 'info'
+  }
+  return statusMap[status] || 'info'
 }
 
 // 获取订单列表
@@ -229,7 +234,9 @@ onMounted(() => {
   color: #f56c6c;
 }
 
-:deep(.el-tag) {
-  font-weight: normal;
+:deep(.el-tag--small) {
+  height: 22px;
+  padding: 0 8px;
+  font-size: 12px;
 }
 </style> 

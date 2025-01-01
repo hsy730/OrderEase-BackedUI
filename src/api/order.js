@@ -44,4 +44,12 @@ export function deleteOrder(id) {
         method: 'delete',
         params: { id }
     })
+}
+
+// 翻转订单状态
+export const toggleOrderStatus = (id) => {
+  return request({
+    url: `/order/toggle-status?id=${id}`,
+    method: 'put'
+  })
 } 

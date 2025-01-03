@@ -119,10 +119,13 @@ const removeItem = (index) => {
 // 获取商品列表
 const fetchProductList = async () => {
   try {
-    const data = await getProductList()
-    productList.value = data
+    const response = await getProductList({ page: 1, pageSize: 100 })
+    console.log('商品列表数据:', response)
+    productList.value = response.data || []
   } catch (error) {
     console.error('获取商品列表失败:', error)
+    ElMessage.error('获取商品列表失败')
+    productList.value = []
   }
 }
 

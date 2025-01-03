@@ -5,8 +5,19 @@
     :rules="rules"
     label-width="100px"
   >
-    <el-form-item label="客户名称" prop="customerName">
-      <el-input v-model="form.customerName" placeholder="请输入客户名称" />
+    <el-form-item label="选择用户" prop="user_id">
+      <el-select 
+        v-model="form.user_id" 
+        placeholder="请选择用户"
+        style="width: 100%"
+      >
+        <el-option
+          v-for="user in userList"
+          :key="user.id"
+          :label="user.name"
+          :value="user.id"
+        />
+      </el-select>
     </el-form-item>
     
     <el-form-item label="订单状态" prop="status">
@@ -78,6 +89,7 @@ import { ref, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createOrder, updateOrder } from '@/api/order'
 import { getProductList } from '@/api/product'
+import { getSimpleUserList } from '@/api/user'
 
 const props = defineProps({
   formData: {
@@ -90,8 +102,9 @@ const emit = defineEmits(['submit'])
 
 const formRef = ref(null)
 const productList = ref([])
+const userList = ref([])
 const form = ref({
-  customerName: '',
+  user_id: null,
   status: 'pending',
   items: [],
   remark: '',
@@ -150,11 +163,24 @@ const calculateTotalAmount = () => {
   }, 0).toFixed(2)
 }
 
+// 获取用户列表
+const fetchUserList = async () => {
+  try {
+    const response = await getSimpleUserList()
+    userList.value = response || []
+  } catch (error) {
+    console.error('获取用户列表失败:', error)
+    ElMessage.error('获取用户列表失败')
+    userList.value = []
+  }
+}
+
 // 监听表单数据变化
 watch(() => props.formData, (newVal) => {
   if (newVal && Object.keys(newVal).length > 0) {
     form.value = {
       ...newVal,
+      user_id: newVal.user_id || null,
       items: newVal.items?.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity || 1,
@@ -163,7 +189,7 @@ watch(() => props.formData, (newVal) => {
     }
   } else {
     form.value = {
-      customerName: '',
+      user_id: null,
       status: 'pending',
       items: [],
       remark: '',
@@ -195,6 +221,7 @@ defineExpose({
 
 onMounted(() => {
   fetchProductList()
+  fetchUserList()
 })
 </script>
 

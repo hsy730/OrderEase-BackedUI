@@ -114,15 +114,26 @@ const dialogTitle = ref('')
 const currentProductId = ref(null)
 const productList = ref([])
 const formRef = ref(null)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 // 获取商品列表
 const fetchProductList = async () => {
   loading.value = true
   try {
-    const data = await getProductList()
-    productList.value = data
+    const response = await getProductList({
+      page: currentPage.value,
+      pageSize: pageSize.value
+    })
+    productList.value = response.data || []
+    total.value = response.total || 0
+    currentPage.value = response.page || 1
+    pageSize.value = response.pageSize || 10
   } catch (error) {
     console.error('获取商品列表失败:', error)
+    ElMessage.error('获取商品列表失败')
+    productList.value = []
   } finally {
     loading.value = false
   }

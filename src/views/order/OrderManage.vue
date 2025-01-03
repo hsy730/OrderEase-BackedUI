@@ -85,6 +85,9 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formData = ref({})
 const formRef = ref(null)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
@@ -116,9 +119,18 @@ const getStatusType = (status) => {
 const fetchOrderList = async () => {
   loading.value = true
   try {
-    orderList.value = await getOrderList()
+    const response = await getOrderList({
+      page: currentPage.value,
+      pageSize: pageSize.value
+    })
+    orderList.value = response.data || []
+    total.value = response.total || 0
+    currentPage.value = response.page || 1
+    pageSize.value = response.pageSize || 10
   } catch (error) {
-    console.error(error)
+    console.error('获取订单列表失败:', error)
+    ElMessage.error('获取订单列表失败')
+    orderList.value = []
   } finally {
     loading.value = false
   }

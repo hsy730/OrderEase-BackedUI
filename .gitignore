@@ -4,7 +4,6 @@ dist
 dist-ssr
 
 # 本地环境文件
-.env
 .env.local
 .env.*.local
 

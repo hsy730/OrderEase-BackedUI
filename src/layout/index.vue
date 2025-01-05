@@ -19,7 +19,10 @@
           <el-icon><Goods /></el-icon>
           <span>商品管理</span>
         </el-menu-item>
-        <el-menu-item index="/migration">
+        <el-menu-item 
+          v-if="showMigration"
+          index="/migration"
+        >
           <el-icon><Upload /></el-icon>
           <span>数据迁移</span>
         </el-menu-item>
@@ -106,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Document, Goods, Fold, Upload } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -116,6 +119,7 @@ const route = useRoute()
 const router = useRouter()
 const isCollapse = ref(false)
 const sidebarWidth = ref(140) // 默认宽度
+const showMigration = ref(false)  // 确保在最外层定义
 
 // 切换侧边栏
 const toggleSidebar = () => {
@@ -229,6 +233,18 @@ const cancelChangePassword = () => {
   showPasswordDialog.value = false
   passwordFormRef.value?.resetFields()
 }
+
+// 检查是否显示数据迁移菜单
+onMounted(() => {
+  showMigration.value = localStorage.getItem('migration_switch') === '1'
+})
+
+// 添加监听 storage 事件，实时响应变化
+window.addEventListener('storage', (e) => {
+  if (e.key === 'migration_switch') {
+    showMigration.value = e.newValue === '1'
+  }
+})
 </script>
 
 <style scoped>

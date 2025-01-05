@@ -1,100 +1,90 @@
 <template>
   <div class="product-manage">
-    <div class="header">
-      <h2>商品管理</h2>
-      <el-button type="primary" @click="handleAdd">新增商品</el-button>
+    <div class="content-wrapper">
+      <div class="header">
+        <h2>商品管理</h2>
+        <el-button type="primary" @click="handleAdd">新增商品</el-button>
+      </div>
+
+      <el-table
+        v-loading="loading"
+        :data="productList"
+        border
+        style="width: 100%"
+      >
+        <el-table-column label="商品信息" min-width="260">
+          <template #default="{ row }">
+            <div class="product-info">
+              <el-image
+                v-if="row.image_url"
+                :src="getImageUrl(row.image_url)"
+                class="product-image"
+                :preview-src-list="[getImageUrl(row.image_url)]"
+              >
+                <template #error>
+                  <div class="image-placeholder">
+                    <el-icon><Picture /></el-icon>
+                  </div>
+                </template>
+              </el-image>
+              <div class="product-detail">
+                <div class="product-name">{{ row.name }}</div>
+                <div class="product-desc">{{ row.description || '暂无描述' }}</div>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="价格" width="100" align="center">
+          <template #default="{ row }">
+            <span class="price">¥{{ Number(row.price || 0).toFixed(2) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="stock" label="库存" width="80" align="center">
+          <template #default="{ row }">
+            <span :class="{ 'low-stock': row.stock < 10 }">{{ row.stock }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" width="150" align="center">
+          <template #default="{ row }">
+            {{ formatTime(row.created_at) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="更新时间" width="150" align="center">
+          <template #default="{ row }">
+            {{ formatTime(row.updated_at) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right" align="center">
+          <template #default="{ row }">
+            <div class="operation-buttons">
+              <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+              <el-divider direction="vertical" />
+              <el-button type="primary" link @click="handleView(row)">查看</el-button>
+              <el-divider direction="vertical" />
+              <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="pagination">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
     </div>
 
-    <el-table
-      :data="productList"
-      style="width: 100%"
-      v-loading="loading"
-      border
-      stripe
-      size="small"
-      :header-cell-style="{
-        background: '#f5f7fa',
-        height: '40px',
-        padding: '8px'
-      }"
-      :cell-style="{
-        padding: '4px 8px'
-      }"
-    >
-      <el-table-column label="商品信息" min-width="260">
-        <template #default="{ row }">
-          <div class="product-info">
-            <el-image
-              v-if="row.image_url"
-              :src="getImageUrl(row.image_url)"
-              class="product-image"
-              :preview-src-list="[getImageUrl(row.image_url)]"
-            >
-              <template #error>
-                <div class="image-placeholder">
-                  <el-icon><Picture /></el-icon>
-                </div>
-              </template>
-            </el-image>
-            <div class="product-detail">
-              <div class="product-name">{{ row.name }}</div>
-              <div class="product-desc">{{ row.description || '暂无描述' }}</div>
-            </div>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="价格" width="100" align="center">
-        <template #default="{ row }">
-          <span class="price">¥{{ Number(row.price || 0).toFixed(2) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="stock" label="库存" width="80" align="center">
-        <template #default="{ row }">
-          <span :class="{ 'low-stock': row.stock < 10 }">{{ row.stock }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" width="150" align="center">
-        <template #default="{ row }">
-          {{ formatTime(row.created_at) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="更新时间" width="150" align="center">
-        <template #default="{ row }">
-          {{ formatTime(row.updated_at) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right" align="center">
-        <template #default="{ row }">
-          <div class="operation-buttons">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-divider direction="vertical" />
-            <el-button type="primary" link @click="handleView(row)">查看</el-button>
-            <el-divider direction="vertical" />
-            <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
-          </div>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!-- 商品表单对话框 -->
-    <el-dialog
-      :title="dialogTitle"
-      v-model="dialogVisible"
-      width="500px"
-      @closed="handleDialogClosed"
-    >
-      <product-form
-        ref="formRef"
-        :product-id="currentProductId"
-        @submit="handleSubmit"
-      />
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
+    <ProductForm
+      v-if="showForm"
+      :form-data="currentProduct"
+      @submit="handleSubmit"
+    />
   </div>
 </template>
 
@@ -217,24 +207,32 @@ onMounted(() => {
 
 <style scoped>
 .product-manage {
-  padding: 16px;
+  height: 100%;
+}
+
+.content-wrapper {
+  padding: 20px;
   background: #fff;
-  border-radius: 8px;
-  margin: 16px;
-  min-height: calc(100vh - 32px);
+  border-radius: 4px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .header h2 {
   margin: 0;
   font-size: 18px;
-  font-weight: 500;
+  color: #303133;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .product-info {

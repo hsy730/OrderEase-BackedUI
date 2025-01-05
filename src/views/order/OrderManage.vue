@@ -1,73 +1,71 @@
 <template>
   <div class="order-manage">
-    <div class="header">
-      <h2>订单管理</h2>
-      <el-button type="primary" @click="handleAdd">新增订单</el-button>
+    <div class="content-wrapper">
+      <div class="header">
+        <h2>订单管理</h2>
+        <el-button type="primary" @click="handleAdd">新增订单</el-button>
+      </div>
+
+      <el-table
+        v-loading="loading"
+        :data="orderList"
+        border
+        style="width: 100%"
+      >
+        <el-table-column label="订单金额" width="150" align="center">
+          <template #default="{ row }">
+            <span class="price">¥{{ row.total_price.toFixed(2) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="订单状态" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getStatusType(row.status)" size="small">
+              {{ getStatusText(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="商品数量" width="120" align="center">
+          <template #default="{ row }">
+            <span class="quantity">{{ row.items.length }}件</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" min-width="180" align="center">
+          <template #default="{ row }">
+            {{ formatTime(row.created_at) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="更新时间" min-width="180" align="center">
+          <template #default="{ row }">
+            {{ formatTime(row.updated_at) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="180" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="primary" link @click="handleView(row)">查看</el-button>
+            <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="pagination">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
     </div>
 
-    <el-table
-      :data="orderList"
-      style="width: 100%"
-      v-loading="loading"
-      border
-      stripe
-      size="small"
-      :header-cell-style="{ background: '#f5f7fa' }"
-    >
-      <el-table-column label="订单金额" width="150" align="center">
-        <template #default="{ row }">
-          <span class="price">¥{{ row.total_price.toFixed(2) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="status" label="订单状态" width="120" align="center">
-        <template #default="{ row }">
-          <el-tag :type="getStatusType(row.status)" size="small">
-            {{ getStatusText(row.status) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="商品数量" width="120" align="center">
-        <template #default="{ row }">
-          <span class="quantity">{{ row.items.length }}件</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" min-width="180" align="center">
-        <template #default="{ row }">
-          {{ formatTime(row.created_at) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="更新时间" min-width="180" align="center">
-        <template #default="{ row }">
-          {{ formatTime(row.updated_at) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="180" fixed="right" align="center">
-        <template #default="{ row }">
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-button type="primary" link @click="handleView(row)">查看</el-button>
-          <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!-- 订单表单对话框 -->
-    <el-dialog
-      :title="dialogTitle"
-      v-model="dialogVisible"
-      width="800px"
-    >
-      <order-form
-        ref="formRef"
-        :form-data="formData"
-        @submit="handleSubmit"
-      />
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
+    <OrderForm
+      v-if="showForm"
+      :form-data="currentOrder"
+      @submit="handleSubmit"
+    />
   </div>
 </template>
 
@@ -202,53 +200,31 @@ onMounted(() => {
 
 <style scoped>
 .order-manage {
-  padding: 24px;
+  height: 100%;
+}
+
+.content-wrapper {
+  padding: 20px;
   background: #fff;
-  border-radius: 8px;
-  margin: 24px;
-  min-height: calc(100vh - 48px);
+  border-radius: 4px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .header h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 18px;
+  color: #303133;
 }
 
-.price {
-  font-size: 15px;
-  font-weight: 500;
-  color: #f56c6c;
-}
-
-.quantity {
-  font-size: 14px;
-  color: #606266;
-}
-
-:deep(.el-table) {
-  --el-table-border-color: #ebeef5;
-  --el-table-header-bg-color: #f5f7fa;
-}
-
-:deep(.el-button--primary.is-link) {
-  color: #409eff;
-}
-
-:deep(.el-button--danger.is-link) {
-  color: #f56c6c;
-}
-
-:deep(.el-tag--small) {
-  height: 22px;
-  padding: 0 8px;
-  font-size: 12px;
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style> 

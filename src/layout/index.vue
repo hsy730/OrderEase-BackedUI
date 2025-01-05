@@ -38,6 +38,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                <el-dropdown-item command="changePassword">修改密码</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -52,14 +53,60 @@
         </router-view>
       </div>
     </div>
+
+    <!-- 修改密码对话框 -->
+    <el-dialog
+      v-model="showPasswordDialog"
+      title="修改密码"
+      width="400px"
+    >
+      <el-form
+        ref="passwordFormRef"
+        :model="passwordForm"
+        :rules="passwordRules"
+        label-width="100px"
+      >
+        <el-form-item label="当前密码" prop="old_password">
+          <el-input
+            v-model="passwordForm.old_password"
+            type="password"
+            show-password
+            placeholder="请输入当前密码"
+          />
+        </el-form-item>
+        <el-form-item label="新密码" prop="new_password">
+          <el-input
+            v-model="passwordForm.new_password"
+            type="password"
+            show-password
+            placeholder="请输入新密码"
+          />
+        </el-form-item>
+        <el-form-item label="确认新密码" prop="confirm_password">
+          <el-input
+            v-model="passwordForm.confirm_password"
+            type="password"
+            show-password
+            placeholder="请再次输入新密码"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="cancelChangePassword">取消</el-button>
+        <el-button type="primary" @click="handleChangePassword" :loading="changing">
+          确认
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Document, Goods, Fold } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { changePassword } from '@/api/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -72,12 +119,111 @@ const toggleSidebar = () => {
   sidebarWidth.value = isCollapse.value ? 50 : 140
 }
 
+// 修改密码相关的状态
+const showPasswordDialog = ref(false)
+const changing = ref(false)
+const passwordFormRef = ref(null)
+
+const passwordForm = reactive({
+  old_password: '',
+  new_password: '',
+  confirm_password: ''
+})
+
+// 密码验证规则
+const passwordRules = {
+  old_password: [
+    { required: true, message: '请输入当前密码', trigger: 'blur' }
+  ],
+  new_password: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 8, message: '密码长度至少8位', trigger: 'blur' },
+    { 
+      pattern: /(?=.*[0-9])/, // 必须包含数字
+      message: '密码必须包含数字',
+      trigger: 'blur'
+    },
+    {
+      pattern: /(?=.*[A-Z])/, // 必须包含大写字母
+      message: '密码必须包含大写字母',
+      trigger: 'blur'
+    },
+    {
+      pattern: /(?=.*[a-z])/, // 必须包含小写字母
+      message: '密码必须包含小写字母',
+      trigger: 'blur'
+    },
+    {
+      pattern: /(?=.*[@#$%^&*])/, // 必须包含特殊字符
+      message: '密码必须包含特殊字符（如：@#$%^&*等）',
+      trigger: 'blur'
+    }
+  ],
+  confirm_password: [
+    { required: true, message: '请确认新密码', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== passwordForm.new_password) {
+          callback(new Error('两次输入的密码不一致'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
+  ]
+}
+
+// 处理下拉菜单命令
 const handleCommand = (command) => {
   if (command === 'logout') {
     localStorage.removeItem('admin')
     router.push('/login')
     ElMessage.success('退出成功')
+  } else if (command === 'changePassword') {
+    showPasswordDialog.value = true
   }
+}
+
+// 处理修改密码
+const handleChangePassword = async () => {
+  if (!passwordFormRef.value) return
+  
+  try {
+    // 先进行表单验证
+    await passwordFormRef.value.validate()
+    changing.value = true
+    
+    // 验证两次密码是否一致
+    if (passwordForm.new_password !== passwordForm.confirm_password) {
+      ElMessage.error('两次输入的密码不一致')
+      changing.value = false
+      return // 直接返回，不关闭对话框
+    }
+    
+    // 调用修改密码接口
+    await changePassword({
+      old_password: passwordForm.old_password,
+      new_password: passwordForm.new_password
+    })
+    
+    ElMessage.success('密码修改成功，请重新登录')
+    localStorage.removeItem('admin')
+    showPasswordDialog.value = false // 只有在成功时才关闭对话框
+    router.push('/login')
+  } catch (error) {
+    console.error('修改密码失败:', error)
+    ElMessage.error(error.response?.data?.error || '修改密码失败')
+    // 失败时不关闭对话框
+  } finally {
+    changing.value = false
+  }
+}
+
+// 取消修改密码
+const cancelChangePassword = () => {
+  showPasswordDialog.value = false
+  passwordFormRef.value?.resetFields()
 }
 </script>
 
@@ -215,4 +361,13 @@ const handleCommand = (command) => {
   2. !important 用于提高样式优先级，覆盖 element-plus 的默认样式
   3. 这些样式会影响所有菜单项的间距和对齐方式
 */
+
+/* 添加一些对话框相关的样式 */
+:deep(.el-dialog__body) {
+  padding: 20px 40px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+}
 </style> 

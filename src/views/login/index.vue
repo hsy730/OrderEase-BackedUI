@@ -72,9 +72,9 @@ const loginRules = {
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 12, message: '密码长度至少12位', trigger: 'blur' },
+    { min: 8, message: '密码长度至少8位', trigger: 'blur' },
     { 
-      pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/,
+      pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
       message: '密码必须包含大小写字母、数字和特殊字符',
       trigger: 'blur'
     }

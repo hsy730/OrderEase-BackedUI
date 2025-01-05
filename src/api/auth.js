@@ -13,7 +13,7 @@ export const login = (data) => {
 export const changePassword = (data) => {
   return request({
     url: '/change-password',
-    method: 'put',
+    method: 'post',
     data
   })
 } 

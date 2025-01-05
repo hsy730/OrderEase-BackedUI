@@ -80,11 +80,23 @@
       </div>
     </div>
 
-    <ProductForm
-      v-if="showForm"
-      :form-data="currentProduct"
-      @submit="handleSubmit"
-    />
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="500px"
+    >
+      <product-form
+        ref="productFormRef"
+        :product-id="currentProductId"
+        @submit="handleSubmitSuccess"
+      />
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSubmit">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -198,6 +210,11 @@ const handleSubmit = () => {
 const handleDialogClosed = () => {
   currentProductId.value = null
   formRef.value?.reset()
+}
+
+const handleSubmitSuccess = () => {
+  dialogVisible.value = false
+  // 可以在这里刷新商品列表
 }
 
 onMounted(() => {

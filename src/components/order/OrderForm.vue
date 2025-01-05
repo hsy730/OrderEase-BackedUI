@@ -5,7 +5,7 @@
     :rules="rules"
     label-width="100px"
   >
-    <el-form-item label="选择用户" prop="user_id">
+    <el-form-item label="用户" prop="user_id">
       <el-select 
         v-model="form.user_id" 
         placeholder="请选择用户"

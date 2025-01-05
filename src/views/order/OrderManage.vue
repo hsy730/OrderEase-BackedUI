@@ -61,11 +61,24 @@
       </div>
     </div>
 
-    <OrderForm
-      v-if="showForm"
-      :form-data="currentOrder"
-      @submit="handleSubmit"
-    />
+    <!-- 新增/编辑订单对话框 -->
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="800px"
+    >
+      <order-form
+        ref="orderFormRef"
+        :form-data="formData"
+        @submit="handleSubmit"
+      />
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitForm">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

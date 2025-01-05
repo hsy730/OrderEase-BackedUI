@@ -23,6 +23,12 @@ const routes = [
                 name: 'Product',
                 component: () => import('@/views/product/ProductManage.vue'),
                 meta: { title: '商品管理' }
+            },
+            {
+                path: 'migration',
+                name: 'Migration',
+                component: () => import('@/views/migration/index.vue'),
+                meta: { title: '数据迁移' }
             }
         ]
     },

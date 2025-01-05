@@ -19,6 +19,10 @@
           <el-icon><Goods /></el-icon>
           <span>商品管理</span>
         </el-menu-item>
+        <el-menu-item index="/migration">
+          <el-icon><Upload /></el-icon>
+          <span>数据迁移</span>
+        </el-menu-item>
       </el-menu>
     </div>
 
@@ -104,7 +108,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Document, Goods, Fold } from '@element-plus/icons-vue'
+import { Document, Goods, Fold, Upload } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { changePassword } from '@/api/auth'
 

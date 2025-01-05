@@ -9,6 +9,14 @@ export const login = (data) => {
   })
 }
 
+// 退出登录
+export const logout = () => {
+  return request({
+    url: '/logout',
+    method: 'post'
+  })
+}
+
 // 修改密码
 export const changePassword = (data) => {
   return request({

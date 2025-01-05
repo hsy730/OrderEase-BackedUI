@@ -112,8 +112,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Document, Goods, Fold, Upload } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import { changePassword } from '@/api/auth'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { changePassword, logout } from '@/api/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -183,11 +183,24 @@ const passwordRules = {
 }
 
 // 处理下拉菜单命令
-const handleCommand = (command) => {
+const handleCommand = async (command) => {
   if (command === 'logout') {
-    localStorage.removeItem('admin')
-    router.push('/login')
-    ElMessage.success('退出成功')
+    try {
+      await ElMessageBox.confirm('确认退出登录？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      
+      await logout()
+      localStorage.removeItem('admin')
+      router.push('/login')
+      ElMessage.success('退出成功')
+    } catch (error) {
+      if (error === 'cancel') return
+      console.error('退出失败:', error)
+      ElMessage.error('退出失败')
+    }
   } else if (command === 'changePassword') {
     showPasswordDialog.value = true
   }

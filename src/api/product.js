@@ -59,4 +59,13 @@ export function uploadProductImage(id, file) {
             'Content-Type': 'multipart/form-data'
         }
     })
+}
+
+// 更新商品状态
+export const updateProductStatus = (id, status) => {
+  return request({
+    url: '/product/toggle-status',
+    method: 'put',
+    data: { id, status }
+  })
 } 

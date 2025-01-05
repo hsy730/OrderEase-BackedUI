@@ -61,7 +61,24 @@
               <el-divider direction="vertical" />
               <el-button type="primary" link @click="handleView(row)">查看</el-button>
               <el-divider direction="vertical" />
-              <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+              <el-button 
+                v-if="row.status === 'pending' || row.status === ''"
+                type="success" 
+                link 
+                @click="handleStatusChange(row, 'online')"
+              >
+                上架
+              </el-button>
+              <el-button 
+                v-if="row.status === 'online'"
+                type="warning" 
+                link 
+                @click="handleStatusChange(row, 'offline')"
+              >
+                下架
+              </el-button>
+              <el-divider direction="vertical" />
+              <!-- <el-button type="danger" link @click="handleDelete(row)">删除</el-button> -->
             </div>
           </template>
         </el-table-column>
@@ -106,7 +123,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import ProductForm from '@/components/product/ProductForm.vue'
-import { getProductList, deleteProduct } from '@/api/product'
+import { getProductList, deleteProduct, updateProductStatus } from '@/api/product'
 import { API_BASE_URL, API_PREFIX } from '@/config'
 
 const router = useRouter()
@@ -221,6 +238,20 @@ const handleDialogClosed = () => {
 const handleSubmitSuccess = () => {
   dialogVisible.value = false
   // 可以在这里刷新商品列表
+}
+
+// 处理状态变更
+const handleStatusChange = async (row, newStatus) => {
+  try {
+    await updateProductStatus(row.id, newStatus)
+    row.status = newStatus // 更新本地状态
+    ElMessage.success(newStatus === 'online' ? '商品已上架' : '商品已下架')
+  } catch (error) {
+    console.error('状态更新失败:', error)
+    ElMessage.error('状态更新失败')
+    // 恢复原状态
+    fetchProductList()
+  }
 }
 
 onMounted(() => {

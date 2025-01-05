@@ -12,7 +12,7 @@
         border
         style="width: 100%"
       >
-        <el-table-column label="商品信息" min-width="260">
+        <el-table-column label="商品信息" min-width="260" align="center">
           <template #default="{ row }">
             <div class="product-info">
               <el-image
@@ -119,6 +119,7 @@ const formRef = ref(null)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+const productFormRef = ref(null)
 
 // 获取商品列表
 const fetchProductList = async () => {
@@ -177,7 +178,7 @@ const handleEdit = (row) => {
 
 // 查看商品
 const handleView = (row) => {
-  router.push(`/products/${row.id}`)
+  router.push(`/product/${row.id}`)
 }
 
 // 删除商品
@@ -196,14 +197,19 @@ const handleDelete = (row) => {
 }
 
 // 提交表单
-const submitForm = () => {
-  formRef.value?.submit()
-}
-
-// 表单提交成功
-const handleSubmit = () => {
-  dialogVisible.value = false
-  fetchProductList()
+const handleSubmit = async () => {
+  if (!productFormRef.value) return
+  
+  try {
+    await productFormRef.value.submit()
+    dialogVisible.value = false
+    ElMessage.success(currentProductId.value ? '更新成功' : '添加成功')
+    // 刷新商品列表
+    fetchProductList()
+  } catch (error) {
+    console.error('保存失败:', error)
+    ElMessage.error(error.response?.data?.error || '保存失败')
+  }
 }
 
 // 对话框关闭时重置表单

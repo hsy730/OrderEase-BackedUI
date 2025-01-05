@@ -99,6 +99,7 @@ const formRef = ref(null)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+const orderFormRef = ref(null)
 
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
@@ -163,7 +164,7 @@ const handleEdit = (row) => {
 
 // 查看订单详情
 const handleView = (row) => {
-  router.push(`/orders/${row.id}`)
+  router.push(`/order/${row.id}`)
 }
 
 // 删除订单
@@ -182,8 +183,19 @@ const handleDelete = (row) => {
 }
 
 // 提交表单
-const submitForm = () => {
-  formRef.value?.submit()
+const submitForm = async () => {
+  if (!orderFormRef.value) return
+  
+  try {
+    await orderFormRef.value.submit()
+    dialogVisible.value = false
+    ElMessage.success('保存成功')
+    // 刷新订单列表
+    fetchOrderList()
+  } catch (error) {
+    console.error('保存失败:', error)
+    ElMessage.error(error.response?.data?.error || '保存失败')
+  }
 }
 
 // 表单提交成功

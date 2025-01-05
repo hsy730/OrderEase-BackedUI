@@ -29,7 +29,7 @@
       </el-select>
     </el-form-item>
 
-    <el-form-item label="订单商品">
+    <el-form-item label="订单商品" prop="items">
       <div class="order-items">
         <div v-for="(item, index) in form.items" :key="index" class="order-item">
           <el-select
@@ -223,6 +223,35 @@ onMounted(() => {
   fetchProductList()
   fetchUserList()
 })
+
+const rules = {
+  user_id: [
+    { required: true, message: '请选择用户', trigger: 'change' }
+  ],
+  items: [
+    { 
+      required: true, 
+      message: '请至少添加一个商品', 
+      trigger: 'change',
+      validator: (rule, value, callback) => {
+        if (!value || value.length === 0) {
+          callback(new Error('请至少添加一个商品'))
+        } else {
+          // 检查每个商品是否都选择了商品和数量
+          const invalidItem = value.find(item => !item.product_id || !item.quantity)
+          if (invalidItem) {
+            callback(new Error('请完善商品信息'))
+          } else {
+            callback()
+          }
+        }
+      }
+    }
+  ],
+  status: [
+    { required: true, message: '请选择订单状态', trigger: 'change' }
+  ]
+}
 </script>
 
 <style scoped>

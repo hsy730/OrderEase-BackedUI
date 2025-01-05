@@ -19,10 +19,22 @@ const routes = [
                 meta: { title: '订单管理' }
             },
             {
+                path: 'order/:id',
+                name: 'OrderDetail',
+                component: () => import('@/views/order/OrderDetail.vue'),
+                meta: { title: '订单详情' }
+            },
+            {
                 path: 'product',
                 name: 'Product',
                 component: () => import('@/views/product/ProductManage.vue'),
                 meta: { title: '商品管理' }
+            },
+            {
+                path: 'product/:id',
+                name: 'ProductDetail',
+                component: () => import('@/views/product/ProductDetail.vue'),
+                meta: { title: '商品详情' }
             },
             {
                 path: 'migration',

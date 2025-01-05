@@ -374,4 +374,9 @@ const cancelChangePassword = () => {
 :deep(.el-form-item__label) {
   font-weight: 500;
 }
+
+:deep(.el-menu-item.is-active) {
+  font-weight: normal;
+  border: none;
+}
 </style> 

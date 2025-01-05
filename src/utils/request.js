@@ -2,29 +2,47 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 import { API_PREFIX } from '@/config'
+import { needRefreshToken } from '@/utils/auth'
+import { refreshToken } from '@/api/auth'
 
 const request = axios.create({
   baseURL: `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_API_PREFIX}`,
   timeout: 5000
 })
 
+// 是否正在刷新token
+let isRefreshing = false
+// 等待刷新token的请求队列
+let requests = []
+
 // 请求拦截器
 request.interceptors.request.use(
-  config => {
+  async (config) => {
+    // 如果是登录请求，直接放行
+    if (config.url.includes('/login')) {
+      return config
+    }
+
     const adminInfo = localStorage.getItem('admin')
-    if (adminInfo) {
-      const { token } = JSON.parse(adminInfo)
-      config.headers['Authorization'] = `Bearer ${token}`
+    if (!adminInfo) return config
+
+    const { token } = JSON.parse(adminInfo)
+    
+    // 如果不是刷新token的请求，且正在刷新token，则将请求加入队列
+    if (!config.url.includes('/refresh-token') && isRefreshing) {
+      return new Promise((resolve) => {
+        requests.push((newToken) => {
+          config.headers.Authorization = `Bearer ${newToken}`
+          resolve(config)
+        })
+      })
     }
 
-    if (config.url) {
-      config.url = encodeURI(config.url)
-    }
-
+    // 设置token
+    config.headers.Authorization = `Bearer ${token}`
     return config
   },
-  error => {
-    console.error('请求错误:', error)
+  (error) => {
     return Promise.reject(error)
   }
 )

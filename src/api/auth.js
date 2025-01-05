@@ -24,4 +24,12 @@ export const changePassword = (data) => {
     method: 'post',
     data
   })
+}
+
+// 刷新Token
+export const refreshToken = () => {
+  return request({
+    url: '/refresh-token',
+    method: 'post'
+  })
 } 

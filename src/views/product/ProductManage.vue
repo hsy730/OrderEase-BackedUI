@@ -78,7 +78,7 @@
                 下架
               </el-button>
               <el-divider direction="vertical" />
-              <!-- <el-button type="danger" link @click="handleDelete(row)">删除</el-button> -->
+              <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
             </div>
           </template>
         </el-table-column>
@@ -199,18 +199,22 @@ const handleView = (row) => {
 }
 
 // 删除商品
-const handleDelete = (row) => {
-  ElMessageBox.confirm('确认删除该商品吗？', '提示', {
-    type: 'warning'
-  }).then(async () => {
-    try {
-      await deleteProduct(row.id)
-      ElMessage.success('删除成功')
-      fetchProductList()
-    } catch (error) {
-      console.error('删除商品失败:', error)
-    }
-  })
+const handleDelete = async (row) => {
+  try {
+    await ElMessageBox.confirm('商品删除后不可恢复，确认删除商品？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    await deleteProduct(row.id)
+    ElMessage.success('删除成功')
+    fetchProductList()
+  } catch (error) {
+    if (error === 'cancel') return
+    console.error('删除商品失败:', error)
+    ElMessage.error('删除失败')
+  }
 }
 
 // 提交表单

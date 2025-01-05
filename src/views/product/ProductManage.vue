@@ -242,11 +242,22 @@ const handleSubmitSuccess = () => {
 
 // 处理状态变更
 const handleStatusChange = async (row, newStatus) => {
+  const confirmMessage = newStatus === 'online' 
+    ? '商品上架后，才能购买，确认上架？'
+    : '商品下架后，不能购买，确认下架？'
+
   try {
+    await ElMessageBox.confirm(confirmMessage, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
     await updateProductStatus(row.id, newStatus)
     row.status = newStatus // 更新本地状态
     ElMessage.success(newStatus === 'online' ? '商品已上架' : '商品已下架')
   } catch (error) {
+    if (error === 'cancel') return
     console.error('状态更新失败:', error)
     ElMessage.error('状态更新失败')
     // 恢复原状态

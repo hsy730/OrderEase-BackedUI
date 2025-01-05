@@ -33,6 +33,7 @@
     </el-form-item>
     <el-form-item label="商品图片">
       <el-upload
+        v-if="form.id"
         class="product-image-upload"
         :action="null"
         :http-request="handleUpload"
@@ -42,6 +43,7 @@
         <img v-if="form.image_url" :src="getImageUrl(form.image_url)" class="preview-image">
         <el-icon v-else class="upload-icon"><Plus /></el-icon>
       </el-upload>
+      <div v-else class="upload-tip">请先保存商品信息后再上传图片</div>
     </el-form-item>
   </el-form>
 </template>
@@ -192,5 +194,10 @@ defineExpose({
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.upload-tip {
+  color: #909399;
+  font-size: 14px;
 }
 </style> 

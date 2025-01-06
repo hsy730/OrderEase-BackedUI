@@ -23,6 +23,19 @@
       </el-table-column>
     </el-table>
 
+    <!-- 添加分页器 -->
+    <div class="pagination-container">
+      <el-pagination
+        v-model:current-page="page"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
+
     <!-- 标签表单对话框 -->
     <el-dialog
       v-model="showDialog"
@@ -84,18 +97,40 @@ const rules = {
   ]
 }
 
+// 分页相关
+const page = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+
 // 获取标签列表
 const fetchTagList = async () => {
   loading.value = true
   try {
-    const res = await getTagList()
-    tagList.value = res.data
+    const res = await getTagList({
+      page: page.value,
+      pageSize: pageSize.value
+    })
+    tagList.value = res.tags
+    total.value = res.total
   } catch (error) {
     console.error('获取标签列表失败:', error)
     ElMessage.error('获取标签列表失败')
   } finally {
     loading.value = false
   }
+}
+
+// 处理每页数量变化
+const handleSizeChange = (val) => {
+  pageSize.value = val
+  page.value = 1
+  fetchTagList()
+}
+
+// 处理页码变化
+const handleCurrentChange = (val) => {
+  page.value = val
+  fetchTagList()
 }
 
 // 新增标签
@@ -187,5 +222,11 @@ onMounted(() => {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style> 

@@ -19,6 +19,10 @@
           <el-icon><Goods /></el-icon>
           <span>商品管理</span>
         </el-menu-item>
+        <el-menu-item index="/tag">
+          <el-icon><Collection /></el-icon>
+          <span>标签管理</span>
+        </el-menu-item>
         <el-menu-item 
           v-if="showMigration"
           index="/migration"
@@ -111,7 +115,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Document, Goods, Fold, Upload } from '@element-plus/icons-vue'
+import { Document, Goods, Fold, Upload, Collection } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { changePassword, logout } from '@/api/auth'
 

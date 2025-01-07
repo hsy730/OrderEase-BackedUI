@@ -6,6 +6,7 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/order-ease-adminiui/',
   plugins: [
     vue(),
   ],
@@ -14,7 +15,7 @@ export default defineConfig({
     port: "3000",
     proxy: {
       '/api': {
-        target: 'http://localhost:后端端口',  // 替换为实际的后端接口地址
+        target: 'http://localhost:8080',  // 替换为实际的后端接口地址
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }

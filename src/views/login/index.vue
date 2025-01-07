@@ -27,6 +27,24 @@
           />
         </el-form-item>
 
+        <el-form-item prop="captcha">
+          <div class="captcha-container">
+            <el-input
+              v-model="loginForm.captcha"
+              placeholder="请输入验证码"
+              prefix-icon="Picture"
+              style="flex: 1; margin-right: 10px;"
+            />
+            <canvas
+              ref="canvas"
+              width="120"
+              height="40"
+              class="captcha-canvas"
+              @click="refreshCaptcha"
+            ></canvas>
+          </div>
+        </el-form-item>
+
         <el-form-item>
           <el-button
             :loading="loading"
@@ -50,19 +68,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, Picture } from '@element-plus/icons-vue'
 import { login } from '@/api/auth'
 
 const router = useRouter()
 const loading = ref(false)
 const loginFormRef = ref(null)
 
+const captchaText = ref('') // 存储正确的验证码文本
+const canvas = ref(null)
+
 const loginForm = ref({
   username: '',
-  password: ''
+  password: '',
+  captcha: '' // 添加验证码字段
 })
 
 // 表单验证规则
@@ -78,11 +100,80 @@ const loginRules = {
       message: '密码必须包含大小写字母、数字和特殊字符',
       trigger: 'blur'
     }
+  ],
+  captcha: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { min: 4, max: 4, message: '验证码长度为4位', trigger: 'blur' }
   ]
+}
+
+// 生成随机验证码文本
+const generateCaptchaText = () => {
+  const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let result = ''
+  for (let i = 0; i < 4; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)]
+  }
+  return result
+}
+
+// 绘制验证码
+const drawCaptcha = () => {
+  const ctx = canvas.value.getContext('2d')
+  const width = canvas.value.width
+  const height = canvas.value.height
+  
+  // 清空画布
+  ctx.fillStyle = '#f0f0f0'
+  ctx.fillRect(0, 0, width, height)
+  
+  // 生成新的验证码文本
+  captchaText.value = generateCaptchaText()
+  
+  // 绘制文本
+  ctx.font = '24px Arial'
+  ctx.fillStyle = '#333'
+  ctx.textBaseline = 'middle'
+  
+  // 随机偏移每个字符
+  for (let i = 0; i < captchaText.value.length; i++) {
+    const x = (width / 5) * (i + 1)
+    const y = height / 2 + Math.random() * 8 - 4
+    const rotate = (Math.random() - 0.5) * 0.3
+    
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.rotate(rotate)
+    ctx.fillText(captchaText.value[i], -8, 0)
+    ctx.restore()
+  }
+  
+  // 添加干扰线
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath()
+    ctx.strokeStyle = `rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255},0.5)`
+    ctx.moveTo(Math.random() * width, Math.random() * height)
+    ctx.lineTo(Math.random() * width, Math.random() * height)
+    ctx.stroke()
+  }
+}
+
+// 刷新验证码
+const refreshCaptcha = () => {
+  if (canvas.value) {
+    drawCaptcha()
+  }
 }
 
 const handleLogin = async () => {
   if (!loginFormRef.value) return
+  
+  // 验证码校验
+  if (loginForm.value.captcha.toLowerCase() !== captchaText.value.toLowerCase()) {
+    ElMessage.error('验证码错误')
+    refreshCaptcha()
+    return
+  }
   
   try {
     await loginFormRef.value.validate()
@@ -92,7 +183,7 @@ const handleLogin = async () => {
     // 存储管理员信息和 token
     const adminInfo = {
       ...response.admin,
-      token: response.token // 确保后端返回的数据中包含 token
+      token: response.token
     }
     localStorage.setItem('admin', JSON.stringify(adminInfo))
     
@@ -106,10 +197,15 @@ const handleLogin = async () => {
   } catch (error) {
     console.error('登录失败:', error)
     ElMessage.error(error.response?.data?.error || '登录失败')
+    refreshCaptcha()
   } finally {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  refreshCaptcha()
+})
 </script>
 
 <style scoped>
@@ -151,5 +247,16 @@ const handleLogin = async () => {
 
 :deep(.el-input__wrapper) {
   background: #f5f7f9;
+}
+
+.captcha-canvas {
+  cursor: pointer;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.captcha-container {
+  display: flex;
+  align-items: center;
 }
 </style> 

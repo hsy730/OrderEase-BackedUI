@@ -18,6 +18,8 @@
         <template #default="{ row }">
           <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-divider direction="vertical" />
+          <el-button type="success" link @click="handleAddProducts(row)">添加商品</el-button>
+          <el-divider direction="vertical" />
           <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -67,13 +69,43 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 商品选择对话框 -->
+    <el-dialog
+      v-model="showProductDialog"
+      title="选择商品"
+      width="600px"
+    >
+      <el-select
+        v-model="selectedProducts"
+        multiple
+        filterable
+        remote
+        reserve-keyword
+        placeholder="请输入商品名称"
+        :remote-method="fetchProducts"
+        :loading="productLoading"
+        style="width: 100%"
+      >
+        <el-option
+          v-for="item in productOptions"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id"
+        />
+      </el-select>
+      <template #footer>
+        <el-button @click="showProductDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleBatchTag">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getTagList, createTag, updateTag, deleteTag } from '@/api/tag'
+import { getTagList, createTag, updateTag, deleteTag, batchTag, getTagProducts } from '@/api/tag'
 
 const loading = ref(false)
 const tagList = ref([])
@@ -86,6 +118,68 @@ const form = reactive({
   name: '',
   description: ''
 })
+
+// 批量打标签相关
+const showProductDialog = ref(false)
+const selectedTag = ref(null)
+const selectedProducts = ref([])
+const productOptions = ref([])
+const productLoading = ref(false)
+
+// 获取商品列表
+const fetchProducts = async (query = '') => {
+  productLoading.value = true
+  try {
+    const res = await getTagProducts({
+      keyword: query,
+      // page: 1,
+      // pageSize: 10,
+      tag_id: selectedTag.value?.id
+    })
+    productOptions.value = res.products.map(p => ({
+      id: p.id,
+      name: p.name
+    }))
+    // 设置已选商品
+    selectedProducts.value = res.products
+      .filter(p => p.has_tag)
+      .map(p => p.id)
+  } catch (error) {
+    console.error('获取商品列表失败:', error)
+    ElMessage.error('获取商品列表失败')
+  } finally {
+    productLoading.value = false
+  }
+}
+
+// 添加商品
+const handleAddProducts = async (row) => {
+  selectedTag.value = row
+  selectedProducts.value = []
+  await fetchProducts()
+  showProductDialog.value = true
+}
+
+// 提交批量打标签
+const handleBatchTag = async () => {
+  if (!selectedProducts.value.length) {
+    ElMessage.warning('请选择至少一个商品')
+    return
+  }
+
+  try {
+    await batchTag({
+      tag_id: selectedTag.value.id,
+      product_ids: selectedProducts.value
+    })
+    ElMessage.success('批量打标签成功')
+    showProductDialog.value = false
+    fetchTagList()
+  } catch (error) {
+    console.error('批量打标签失败:', error)
+    ElMessage.error('批量打标签失败')
+  }
+}
 
 const rules = {
   name: [
@@ -229,4 +323,4 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
 }
-</style> 
+</style>

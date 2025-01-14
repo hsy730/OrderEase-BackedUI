@@ -43,4 +43,22 @@ export const deleteTag = (id) => {
     method: 'delete',
     params: { id }
   })
-} 
+}
+
+// 批量打标签
+export const batchTag = (data) => {
+  return request({
+    url: '/tag/batch-tag',
+    method: 'post',
+    data
+  })
+}
+
+// 获取标签关联的已上架商品列表
+export const getTagProducts = (params) => {
+  return request({
+    url: '/tag/online-products',
+    method: 'get',
+    params
+  })
+}

@@ -45,13 +45,35 @@ export const deleteTag = (id) => {
   })
 }
 
-// 批量打标签
-export const batchTag = (data) => {
-  return request({
-    url: '/tag/batch-tag',
-    method: 'post',
-    data
-  })
+// 批量处理标签
+export const batchUpdateTags = (productId, tagsToAdd = [], tagsToRemove = []) => {
+  const requests = []
+  
+  if (tagsToAdd.length > 0) {
+    requests.push(request({
+      url: '/tag/batch-tag',
+      method: 'post',
+      data: {
+        productId,
+        tagIds: tagsToAdd,
+        action: 'add'
+      }
+    }))
+  }
+  
+  if (tagsToRemove.length > 0) {
+    requests.push(request({
+      url: '/tag/batch-tag',
+      method: 'post',
+      data: {
+        productId,
+        tagIds: tagsToRemove,
+        action: 'remove'
+      }
+    }))
+  }
+  
+  return Promise.all(requests)
 }
 
 // 获取标签关联的已上架商品列表

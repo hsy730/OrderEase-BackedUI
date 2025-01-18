@@ -5,60 +5,22 @@
     width="800px"
     destroy-on-close
   >
-    <div class="tag-manage-container">
-      <!-- 未绑定标签 -->
-      <div class="tag-column">
-        <div class="column-header">
-          <span>未绑定标签</span>
-          <el-button
-            type="primary"
-            size="small"
-            :disabled="selectedAvailableTags.length === 0"
-            @click="handleAddTags"
-          >
-            添加
-          </el-button>
-        </div>
-        <div class="tag-cloud">
-          <el-tag
-            v-for="tag in availableTags"
-            :key="tag.id"
-            :class="{'selected-tag': selectedAvailableTags.includes(tag.id)}"
-            @click="toggleAvailableTag(tag.id)"
-          >
-            {{ tag.name }}
-          </el-tag>
-        </div>
-      </div>
-
-      <!-- 已绑定标签 -->
-      <div class="tag-column">
-        <div class="column-header">
-          <span>已绑定标签</span>
-          <el-button
-            type="danger"
-            size="small"
-            :disabled="selectedProductTags.length === 0"
-            @click="handleRemoveTags"
-          >
-            移除
-          </el-button>
-        </div>
-        <div class="tag-cloud">
-          <el-tag
-            v-for="tag in productTags"
-            :key="tag.id"
-            :class="{'selected-tag': selectedProductTags.includes(tag.id)}"
-            @click="toggleProductTag(tag.id)"
-          >
-            {{ tag.name }}
-          </el-tag>
-        </div>
+    <div class="tag-cloud-container">
+      <div class="tag-cloud">
+        <el-tag
+          v-for="tag in allTags"
+          :key="tag.id"
+          :class="{'selected-tag': selectedTags.includes(tag.id)}"
+          @click="toggleTag(tag.id)"
+        >
+          {{ tag.name }}
+        </el-tag>
       </div>
     </div>
 
     <template #footer>
-      <el-button @click="visible = false">关闭</el-button>
+      <el-button @click="visible = false">取消</el-button>
+      <el-button type="primary" @click="handleSave">保存</el-button>
     </template>
   </el-dialog>
 </template>
@@ -69,16 +31,14 @@ import { ElMessage } from 'element-plus'
 import { 
   getProductTags,
   getAvailableTags,
-  batchTag
+  batchUpdateTags
 } from '@/api/tag'
 
 const visible = ref(false)
 const productId = ref(null)
 const productName = ref('')
-const productTags = ref([]) // 已绑定标签
-const availableTags = ref([]) // 未绑定标签
-const selectedProductTags = ref([]) // 选中的已绑定标签
-const selectedAvailableTags = ref([]) // 选中的未绑定标签
+const allTags = ref([]) // 所有标签
+const selectedTags = ref([]) // 选中的标签
 
 // 打开弹窗
 const open = async (params) => {
@@ -103,45 +63,52 @@ const fetchTags = async () => {
       console.error('获取标签失败:', err)
       return []
     })
-    productTags.value = productTagsRes.tags || []
-    availableTags.value = availableTagsRes.tags || []
+    
+    // 合并所有标签并标记选中状态
+    const productTags = productTagsRes.tags || []
+    const availableTags = availableTagsRes.tags || []
+    
+    allTags.value = [...productTags, ...availableTags]
+    selectedTags.value = productTags.map(tag => tag.id)
   } catch (error) {
     console.error('获取标签失败:', error)
     ElMessage.error('获取标签失败')
   }
 }
 
-// 添加标签
-const handleAddTags = async () => {
-  try {
-    await batchTag({
-      productId: productId.value,
-      tagIds: selectedAvailableTags.value,
-      action: 'add'
-    })
-    ElMessage.success('添加标签成功')
-    await fetchTags()
-    selectedAvailableTags.value = []
-  } catch (error) {
-    console.error('添加标签失败:', error)
-    ElMessage.error('添加标签失败')
+// 切换标签选中状态
+const toggleTag = (tagId) => {
+  const index = selectedTags.value.indexOf(tagId)
+  if (index === -1) {
+    selectedTags.value.push(tagId)
+  } else {
+    selectedTags.value.splice(index, 1)
   }
 }
 
-// 移除标签
-const handleRemoveTags = async () => {
+// 保存标签
+const handleSave = async () => {
   try {
-    await batchTag({
-      productId: productId.value,
-      tagIds: selectedProductTags.value,
-      action: 'remove'
-    })
-    ElMessage.success('移除标签成功')
-    await fetchTags()
-    selectedProductTags.value = []
+    // 获取需要添加和移除的标签
+    const currentTags = allTags.value
+      .filter(tag => selectedTags.value.includes(tag.id))
+      .map(tag => tag.id)
+      
+    const originalTags = allTags.value
+      .filter(tag => tag.isProductTag)
+      .map(tag => tag.id)
+      
+    const tagsToAdd = currentTags.filter(id => !originalTags.includes(id))
+    const tagsToRemove = originalTags.filter(id => !currentTags.includes(id))
+    
+    // 批量处理标签
+    await batchUpdateTags(productId.value, tagsToAdd, tagsToRemove)
+    
+    ElMessage.success('标签更新成功')
+    visible.value = false
   } catch (error) {
-    console.error('移除标签失败:', error)
-    ElMessage.error('移除标签失败')
+    console.error('保存标签失败:', error)
+    ElMessage.error('保存标签失败')
   }
 }
 
@@ -151,36 +118,22 @@ defineExpose({
 </script>
 
 <style scoped>
-.tag-manage-container {
-  display: flex;
-  gap: 20px;
-}
-
-.tag-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.column-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.tag-cloud-container {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px;
 }
 
 .tag-cloud {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  max-height: 300px;
-  overflow-y: auto;
-  padding: 8px;
 }
 
 .el-tag {
   cursor: pointer;
   transition: all 0.2s;
+  margin: 4px;
 }
 
 .el-tag:hover {
@@ -190,5 +143,6 @@ defineExpose({
 .selected-tag {
   background-color: var(--el-color-primary);
   color: white;
+  border-color: var(--el-color-primary);
 }
 </style>

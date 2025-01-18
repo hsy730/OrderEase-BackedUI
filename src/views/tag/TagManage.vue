@@ -105,7 +105,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getTagList, createTag, updateTag, deleteTag, batchTag, getTagProducts } from '@/api/tag'
+import { getTagList, createTag, updateTag, deleteTag, batchUpdateTags, getTagProducts } from '@/api/tag'
 
 const loading = ref(false)
 const tagList = ref([])
@@ -168,7 +168,7 @@ const handleBatchTag = async () => {
   }
 
   try {
-    await batchTag({
+    await batchUpdateTags({
       tag_id: selectedTag.value.id,
       product_ids: selectedProducts.value
     })

@@ -57,8 +57,6 @@
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <div class="operation-buttons">
-              <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-              <el-divider direction="vertical" />
               <el-button type="primary" link @click="handleView(row)">查看</el-button>
               <el-divider direction="vertical" />
               <el-button 
@@ -78,7 +76,18 @@
                 下架
               </el-button>
               <el-divider direction="vertical" />
-              <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+              <el-dropdown>
+                <el-button type="primary" link>
+                  更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item @click="handleEdit(row)">编辑</el-dropdown-item>
+                    <el-dropdown-item @click="handleManageTags(row)">管理标签</el-dropdown-item>
+                    <el-dropdown-item @click="handleDelete(row)" style="color: #f56c6c;">删除</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </div>
           </template>
         </el-table-column>
@@ -114,6 +123,8 @@
         </span>
       </template>
     </el-dialog>
+
+    <tag-manage-dialog ref="tagManageDialogRef" />
   </div>
 </template>
 
@@ -121,8 +132,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Picture } from '@element-plus/icons-vue'
+import { Picture, ArrowDown } from '@element-plus/icons-vue'
 import ProductForm from '@/components/product/ProductForm.vue'
+import TagManageDialog from '@/components/product/TagManageDialog.vue'
 import { getProductList, deleteProduct, updateProductStatus } from '@/api/product'
 import { API_BASE_URL, API_PREFIX } from '@/config'
 
@@ -137,6 +149,7 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 const productFormRef = ref(null)
+const tagManageDialogRef = ref(null)
 
 // 获取商品列表
 const fetchProductList = async () => {
@@ -196,6 +209,14 @@ const handleEdit = (row) => {
 // 查看商品
 const handleView = (row) => {
   router.push(`/product/${row.id}`)
+}
+
+// 管理标签
+const handleManageTags = (row) => {
+  tagManageDialogRef.value?.open({
+    productId: row.id,
+    productName: row.name
+  })
 }
 
 // 删除商品
@@ -431,4 +452,4 @@ onMounted(() => {
   height: 1em;
   margin: 0 4px;
 }
-</style> 
+</style>

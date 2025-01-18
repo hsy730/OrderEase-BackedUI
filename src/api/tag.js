@@ -62,3 +62,21 @@ export const getTagProducts = (params) => {
     params
   })
 }
+
+// 获取商品已绑定标签
+export const getProductTags = (productId) => {
+  return request({
+    url: '/tag/bound-tags',
+    method: 'get',
+    params: { product_id: productId }
+  })
+}
+
+// 获取商品未绑定标签
+export const getAvailableTags = (productId) => {
+  return request({
+    url: '/tag/unbound-tags',
+    method: 'get',
+    params: { product_id: productId }
+  })
+}

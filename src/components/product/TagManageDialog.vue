@@ -89,20 +89,13 @@ const toggleTag = (tagId) => {
 // 保存标签
 const handleSave = async () => {
   try {
-    // 获取需要添加和移除的标签
+    // 获取当前选中的标签ID
     const currentTags = allTags.value
       .filter(tag => selectedTags.value.includes(tag.id))
       .map(tag => tag.id)
-      
-    const originalTags = allTags.value
-      .filter(tag => tag.isProductTag)
-      .map(tag => tag.id)
-      
-    const tagsToAdd = currentTags.filter(id => !originalTags.includes(id))
-    const tagsToRemove = originalTags.filter(id => !currentTags.includes(id))
     
-    // 批量处理标签
-    await batchUpdateTags(productId.value, tagsToAdd, tagsToRemove)
+    // 批量更新标签
+    await batchUpdateTags(productId.value, currentTags)
     
     ElMessage.success('标签更新成功')
     visible.value = false

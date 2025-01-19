@@ -17,9 +17,31 @@
       <div class="product-list">
         <div class="list-header">
           <h3>关联商品</h3>
-          <el-button type="primary" @click="bindDialogVisible = true">绑定商品</el-button>
+          <div class="action-buttons">
+            <el-button
+              type="primary"
+              @click="bindDialogVisible = true"
+            >
+              绑定商品
+            </el-button>
+            <el-button
+              type="danger"
+              :disabled="selectedProducts.length === 0"
+              @click="handleBatchUnbind"
+            >
+              批量解绑
+            </el-button>
+          </div>
         </div>
-        <el-table :key="tableKey" :data="products" border style="width: 100%">
+        <el-table
+          ref="productTable"
+          :key="tableKey"
+          :data="products"
+          border
+          style="width: 100%"
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column type="selection" width="55" />
           <el-table-column prop="name" label="商品名称" />
           <el-table-column prop="price" label="价格" width="120" align="center">
             <template #default="{ row }">
@@ -58,6 +80,45 @@ const tag = ref({})
 const products = ref([])
 const tableKey = ref(0)
 const bindDialogVisible = ref(false)
+const selectedProducts = ref([])
+const productTable = ref(null)
+
+// 处理表格选择变化
+const handleSelectionChange = (selection) => {
+  selectedProducts.value = selection
+}
+
+// 批量解绑商品
+const handleBatchUnbind = async () => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要解绑选中的 ${selectedProducts.value.length} 个商品吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    loading.value = true
+    const productIds = selectedProducts.value.map(p => p.id)
+    await unbindProductTag(route.params.id, productIds)
+    ElMessage.success('批量解绑成功，正在刷新商品列表...')
+    await fetchTagDetail() // 刷新数据
+    tableKey.value++ // 强制刷新表格
+    selectedProducts.value = [] // 清空选择
+    productTable.value.clearSelection() // 清除表格选择状态
+    ElMessage.success('商品列表已更新')
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('批量解绑失败')
+      console.error('批量解绑失败:', error)
+    }
+  } finally {
+    loading.value = false
+  }
+}
 
 // 绑定商品
 const handleBind = async (productIds) => {
@@ -183,5 +244,10 @@ onMounted(() => {
 .product-list h3 {
   margin: 20px 0 10px;
   font-size: 16px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
 }
 </style>

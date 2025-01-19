@@ -46,6 +46,18 @@
             <el-descriptions-item label="商品描述">
               {{ product.description || '暂无描述' }}
             </el-descriptions-item>
+            <el-descriptions-item label="商品标签">
+              <div class="tags-container">
+                <el-tag
+                  v-for="tag in product.tags"
+                  :key="tag.id"
+                  class="product-tag"
+                >
+                  {{ tag.name }}
+                </el-tag>
+                <span v-if="product.tags.length === 0">暂无标签</span>
+              </div>
+            </el-descriptions-item>
           </el-descriptions>
         </el-col>
       </el-row>
@@ -58,24 +70,36 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
 import { getProductDetail } from '@/api/product'
+import { getProductTags } from '@/api/tag'
 import { API_BASE_URL, API_PREFIX } from '@/config'
 
 const route = useRoute()
 const loading = ref(false)
-const product = ref({})
+const product = ref({
+  tags: []
+})
 
 // 获取商品详情
 const fetchProductDetail = async () => {
   loading.value = true
   try {
-    const data = await getProductDetail(route.params.id)
-    console.log('商品详情数据:', data) // 用于调试
-    product.value = data
-  } catch (error) {
-    console.error('获取商品详情失败:', error)
-  } finally {
-    loading.value = false
-  }
+    const [productData, tagsData] = await Promise.all([
+      getProductDetail(route.params.id),
+      getProductTags(route.params.id).then(res => res.tags? res.tags : [])
+    ])
+    
+    console.log('商品详情数据:', productData)
+    console.log('商品标签数据:', tagsData)
+    
+    product.value = {
+      ...productData,
+      tags: tagsData
+    }
+    } catch (tagsError) {
+      console.error('获取商品标签失败:', tagsError)
+      product.value.tags = []
+    }
+  loading.value = false
 }
 
 // 获取图片URL
@@ -184,6 +208,22 @@ onMounted(() => {
 
 .image-hint .el-icon {
   font-size: 14px;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.product-tag {
+  cursor: default;
+  transition: all 0.2s;
+}
+
+.product-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 :deep(.el-descriptions) {

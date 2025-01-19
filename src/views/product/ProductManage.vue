@@ -19,7 +19,8 @@
                 v-if="row.image_url"
                 :src="getImageUrl(row.image_url)"
                 class="product-image"
-                :preview-src-list="[getImageUrl(row.image_url)]"
+                :preview-teleported="false"
+                :preview-disabled="true"
               >
                 <template #error>
                   <div class="image-placeholder">

@@ -96,7 +96,7 @@ const fetchUnboundProducts = async () => {
       pageSize: queryParams.value.limit,
       keyword: queryParams.value.keyword
     })
-    products.value = res.items
+    products.value = res.data
     total.value = res.total
   } catch (error) {
     console.error('获取未绑定商品失败:', error)

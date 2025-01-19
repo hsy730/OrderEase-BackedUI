@@ -20,8 +20,8 @@
           <el-divider direction="vertical" />
           <el-button type="info" link @click="handleViewDetails(row)">详情</el-button>
           <el-divider direction="vertical" />
-          <el-button type="success" link @click="handleAddProducts(row)">添加商品</el-button>
-          <el-divider direction="vertical" />
+          <!--<el-button type="success" link @click="handleAddProducts(row)">添加商品</el-button>
+          <el-divider direction="vertical" />-->
           <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>

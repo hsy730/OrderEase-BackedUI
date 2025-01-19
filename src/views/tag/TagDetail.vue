@@ -16,7 +16,7 @@
 
       <div class="product-list">
         <h3>关联商品</h3>
-        <el-table :data="products" border style="width: 100%">
+        <el-table :key="tableKey" :data="products" border style="width: 100%">
           <el-table-column prop="name" label="商品名称" />
           <el-table-column prop="price" label="价格" width="120" align="center">
             <template #default="{ row }">
@@ -46,6 +46,7 @@ const router = useRouter()
 const loading = ref(false)
 const tag = ref({})
 const products = ref([])
+const tableKey = ref(0)
 
 // 获取标签详情
 const fetchTagDetail = async () => {
@@ -97,8 +98,11 @@ const handleUnbind = async (product) => {
     
     loading.value = true
     await unbindProductTag(route.params.id, product.id)
-    ElMessage.success('解绑成功')
+    ElMessage.success('解绑成功，正在刷新商品列表...')
+    loading.value = true
     await fetchTagDetail() // 刷新数据
+    tableKey.value++ // 强制刷新表格
+    ElMessage.success('商品列表已更新')
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error('解绑失败')

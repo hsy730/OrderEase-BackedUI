@@ -83,3 +83,15 @@ export const getAvailableTags = (productId) => {
     params: { product_id: productId }
   })
 }
+
+// 批量解绑商品标签
+export const unbindProductTag = (tagId, productId) => {
+  return request({
+    url: '/tag/batch-untag',
+    method: 'delete',
+    data: {
+      tag_id: Number(tagId),
+      product_ids: [Number(productId)]
+    }
+  })
+}

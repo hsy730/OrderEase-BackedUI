@@ -26,6 +26,7 @@
           <el-table-column label="操作" width="120" align="center">
             <template #default="{ row }">
               <el-button type="primary" link @click="viewProduct(row)">查看</el-button>
+              <el-button type="danger" link @click="handleUnbind(row)">解绑</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -37,7 +38,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getTagDetail } from '@/api/tag'
+import { getTagDetail, unbindProductTag } from '@/api/tag'
+import { ElMessageBox, ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -78,6 +80,33 @@ const viewProduct = (product) => {
     name: 'ProductDetail',
     params: { id: product.id }
   })
+}
+
+// 解绑商品标签
+const handleUnbind = async (product) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要解绑商品 "${product.name}" 吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    loading.value = true
+    await unbindProductTag(route.params.id, product.id)
+    ElMessage.success('解绑成功')
+    await fetchTagDetail() // 刷新数据
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('解绑失败')
+      console.error('解绑失败:', error)
+    }
+  } finally {
+    loading.value = false
+  }
 }
 
 // 格式化时间

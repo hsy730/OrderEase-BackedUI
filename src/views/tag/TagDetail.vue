@@ -15,7 +15,10 @@
       </el-descriptions>
 
       <div class="product-list">
-        <h3>关联商品</h3>
+        <div class="list-header">
+          <h3>关联商品</h3>
+          <el-button type="primary" @click="bindDialogVisible = true">绑定商品</el-button>
+        </div>
         <el-table :key="tableKey" :data="products" border style="width: 100%">
           <el-table-column prop="name" label="商品名称" />
           <el-table-column prop="price" label="价格" width="120" align="center">
@@ -33,13 +36,20 @@
       </div>
     </div>
   </div>
+
+  <BindProductDialog
+    v-model:modelValue="bindDialogVisible"
+    :tag-id="tag.id"
+    @bind="handleBind"
+  />
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getTagDetail, unbindProductTag } from '@/api/tag'
+import { getTagDetail, unbindProductTag, bindProductTag } from '@/api/tag'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import BindProductDialog from '@/components/product/BindProductDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -47,6 +57,24 @@ const loading = ref(false)
 const tag = ref({})
 const products = ref([])
 const tableKey = ref(0)
+const bindDialogVisible = ref(false)
+
+// 绑定商品
+const handleBind = async (productIds) => {
+  try {
+    loading.value = true
+    await bindProductTag(tag.value.id, productIds)
+    ElMessage.success('绑定成功，正在刷新商品列表...')
+    await fetchTagDetail() // 刷新数据
+    tableKey.value++ // 强制刷新表格
+    ElMessage.success('商品列表已更新')
+  } catch (error) {
+    ElMessage.error('绑定失败')
+    console.error('绑定失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
 // 获取标签详情
 const fetchTagDetail = async () => {

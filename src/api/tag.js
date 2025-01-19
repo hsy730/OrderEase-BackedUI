@@ -95,3 +95,28 @@ export const unbindProductTag = (tagId, productId) => {
     }
   })
 }
+
+// 批量绑定商品标签
+export const bindProductTag = (tagId, productIds) => {
+  return request({
+    url: '/tag/batch-tag',
+    method: 'post',
+    data: {
+      tag_id: Number(tagId),
+      product_ids: productIds.map(id => Number(id))
+    }
+  })
+}
+
+// 获取标签未绑定的商品列表
+export const getUnboundProducts = (tagId, params) => {
+  return request({
+    url: '/tag/unbound-products',
+    method: 'get',
+    params: {
+      tag_id: tagId,
+      page: params.page,
+      pageSize: params.limit
+    }
+  })
+}

@@ -37,10 +37,16 @@ const routes = [
                 meta: { title: '商品详情' }
             },
             {
-                path: '',
+                path: 'tag',
                 name: 'TagManage',
                 component: () => import('@/views/tag/TagManage.vue'),
                 meta: { title: '标签管理' }
+            },
+            {
+                path: 'tag/:id',
+                name: 'TagDetail',
+                component: () => import('@/views/tag/TagDetail.vue'),
+                meta: { title: '标签详情' }
             },
             {
                 path: 'migration',

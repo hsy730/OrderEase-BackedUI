@@ -18,6 +18,8 @@
         <template #default="{ row }">
           <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-divider direction="vertical" />
+          <el-button type="info" link @click="handleViewDetails(row)">详情</el-button>
+          <el-divider direction="vertical" />
           <el-button type="success" link @click="handleAddProducts(row)">添加商品</el-button>
           <el-divider direction="vertical" />
           <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
@@ -106,8 +108,20 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTagList, createTag, updateTag, deleteTag, batchUpdateTags, getTagProducts } from '@/api/tag'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const loading = ref(false)
+
+// 查看详情
+const handleViewDetails = (row) => {
+  router.push({
+    name: 'TagDetail',
+    params: {
+      id: row.id
+    }
+  })
+}
 const tagList = ref([])
 const showDialog = ref(false)
 const dialogType = ref('add')

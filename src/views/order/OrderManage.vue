@@ -133,7 +133,8 @@ const fetchOrderList = async () => {
   try {
     const response = await getOrderList({
       page: currentPage.value,
-      pageSize: pageSize.value
+      pageSize: pageSize.value,
+      tag_id: router.currentRoute.value.query.tag_id
     })
     orderList.value = response.data || []
     total.value = response.total || 0

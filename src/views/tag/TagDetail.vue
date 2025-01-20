@@ -1,78 +1,80 @@
 <template>
-  <div class="tag-detail">
-    <div class="header">
-      <h2>标签详情</h2>
-      <el-button @click="$router.back()">返回</el-button>
-    </div>
-
-    <div class="content" v-loading="loading">
-      <el-descriptions :column="1" border>
-        <el-descriptions-item label="标签ID">{{ tag.id }}</el-descriptions-item>
-        <el-descriptions-item label="标签名称">{{ tag.name }}</el-descriptions-item>
-        <el-descriptions-item label="描述">{{ tag.description || '暂无描述' }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ formatTime(tag.created_at) }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ formatTime(tag.updated_at) }}</el-descriptions-item>
-      </el-descriptions>
-
-      <div class="product-list">
-        <div class="list-header">
-          <h3>关联商品</h3>
-          <div class="action-buttons">
-            <el-button
-              type="primary"
-              @click="bindDialogVisible = true"
-            >
-              绑定商品
-            </el-button>
-            <el-button
-              type="danger"
-              :disabled="selectedProducts.length === 0"
-              @click="handleBatchUnbind"
-            >
-              批量解绑
-            </el-button>
-          </div>
-        </div>
-        <el-table
-          ref="productTable"
-          :key="tableKey"
-          :data="products"
-          border
-          style="width: 100%"
-          @selection-change="handleSelectionChange"
-        >
-          <el-table-column type="selection" width="55" />
-          <el-table-column prop="name" label="商品名称" />
-          <el-table-column prop="price" label="价格" width="120" align="center">
-            <template #default="{ row }">
-              ¥{{ row.price.toFixed(2) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="120" align="center">
-            <template #default="{ row }">
-              <el-button type="primary" link @click="viewProduct(row)">查看</el-button>
-              <el-button type="danger" link @click="handleUnbind(row)">解绑</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <el-pagination
-          v-model:current-page="pagination.page"
-          v-model:page-size="pagination.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          :total="pagination.total"
-          layout="total, sizes, prev, pager, next, jumper"
-          @current-change="fetchTagDetail"
-          @size-change="fetchTagDetail"
-        />
+  <div class="tag-detail-container">
+    <div class="tag-detail">
+      <div class="header">
+        <h2>标签详情</h2>
+        <el-button @click="$router.back()">返回</el-button>
       </div>
+
+      <div class="content" v-loading="loading">
+        <el-descriptions :column="1" border>
+          <el-descriptions-item label="标签ID">{{ tag.id }}</el-descriptions-item>
+          <el-descriptions-item label="标签名称">{{ tag.name }}</el-descriptions-item>
+          <el-descriptions-item label="描述">{{ tag.description || '暂无描述' }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ formatTime(tag.created_at) }}</el-descriptions-item>
+          <el-descriptions-item label="更新时间">{{ formatTime(tag.updated_at) }}</el-descriptions-item>
+        </el-descriptions>
+
+        <div class="product-list">
+          <div class="list-header">
+            <h3>关联商品</h3>
+            <div class="action-buttons">
+              <el-button
+                type="primary"
+                @click="bindDialogVisible = true"
+              >
+                绑定商品
+              </el-button>
+              <el-button
+                type="danger"
+                :disabled="selectedProducts.length === 0"
+                @click="handleBatchUnbind"
+              >
+                批量解绑
+              </el-button>
+            </div>
+          </div>
+          <el-table
+            ref="productTable"
+            :key="tableKey"
+            :data="products"
+            border
+            style="width: 100%"
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column type="selection" width="55" />
+            <el-table-column prop="name" label="商品名称" />
+            <el-table-column prop="price" label="价格" width="120" align="center">
+              <template #default="{ row }">
+                ¥{{ row.price.toFixed(2) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="120" align="center">
+              <template #default="{ row }">
+                <el-button type="primary" link @click="viewProduct(row)">查看</el-button>
+                <el-button type="danger" link @click="handleUnbind(row)">解绑</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination
+            v-model:current-page="pagination.page"
+            v-model:page-size="pagination.pageSize"
+            :page-sizes="[10, 20, 50, 100]"
+            :total="pagination.total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @current-change="fetchTagDetail"
+            @size-change="fetchTagDetail"
+          />
+        </div>
+      </div>
+
+      <BindProductDialog
+        v-model:modelValue="bindDialogVisible"
+        :tag-id="tag.id"
+        @bind="handleBind"
+      />
     </div>
   </div>
-
-  <BindProductDialog
-    v-model:modelValue="bindDialogVisible"
-    :tag-id="tag.id"
-    @bind="handleBind"
-  />
 </template>
 
 <script setup>
@@ -240,56 +242,60 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.tag-detail {
-  padding: 20px;
-}
+.tag-detail-container {
+  height: 100%;
+  
+  .tag-detail {
+    padding: 20px;
+  }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
 
-.header h2 {
-  margin: 0;
-  font-size: 18px;
-}
+  .header h2 {
+    margin: 0;
+    font-size: 18px;
+  }
 
-.product-list {
-  margin-top: 20px;
-}
+  .product-list {
+    margin-top: 20px;
+  }
 
-.product-list h3 {
-  margin: 20px 0 10px;
-  font-size: 16px;
-}
+  .product-list h3 {
+    margin: 20px 0 10px;
+    font-size: 16px;
+  }
 
-.action-buttons {
-  display: flex;
-  gap: 10px;
-}
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
 
-.el-pagination {
-  margin-top: 20px;
-  padding: 10px 0;
-  display: flex;
-  justify-content: flex-end;
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-}
+  .el-pagination {
+    margin-top: 20px;
+    padding: 10px 0;
+    display: flex;
+    justify-content: flex-end;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+  }
 
-.el-pagination.is-background .btn-next,
-.el-pagination.is-background .btn-prev,
-.el-pagination.is-background .el-pager li {
-  background-color: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-}
+  .el-pagination.is-background .btn-next,
+  .el-pagination.is-background .btn-prev,
+  .el-pagination.is-background .el-pager li {
+    background-color: #fff;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+  }
 
-.el-pagination.is-background .el-pager li:not(.disabled).active {
-  background-color: #409eff;
-  color: #fff;
+  .el-pagination.is-background .el-pager li:not(.disabled).active {
+    background-color: #409eff;
+    color: #fff;
+  }
 }
 </style>

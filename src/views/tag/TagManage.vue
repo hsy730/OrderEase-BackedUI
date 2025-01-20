@@ -115,12 +115,7 @@ const loading = ref(false)
 
 // 查看详情
 const handleViewDetails = (row) => {
-  router.push({
-    name: 'TagDetail',
-    params: {
-      id: row.id
-    }
-  })
+  router.push(`/tag/${row.id}`)
 }
 const tagList = ref([])
 const showDialog = ref(false)

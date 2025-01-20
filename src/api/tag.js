@@ -10,11 +10,14 @@ export const getTagList = (params) => {
 }
 
 // 获取标签详情
-export const getTagDetail = (id) => {
+export const getTagDetail = (id, params) => {
   return request({
     url: '/tag/detail',
     method: 'get',
-    params: { id }
+    params: {
+      id,
+      ...params
+    }
   })
 }
 

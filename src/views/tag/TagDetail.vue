@@ -55,6 +55,15 @@
             </template>
           </el-table-column>
         </el-table>
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @current-change="fetchTagDetail"
+          @size-change="fetchTagDetail"
+        />
       </div>
     </div>
   </div>
@@ -138,10 +147,20 @@ const handleBind = async (productIds) => {
 }
 
 // 获取标签详情
+const pagination = ref({
+  page: 1,
+  pageSize: 10,
+  total: 0
+})
+
 const fetchTagDetail = async () => {
   loading.value = true
   try {
-    const res = await getTagDetail(route.params.id)
+    const res = await getTagDetail(route.params.id, {
+      page: pagination.value.page,
+      pageSize: pagination.value.pageSize
+    })
+    pagination.value.total = res.total
     tag.value = {
       id: res.id,
       name: res.name,
@@ -249,5 +268,28 @@ onMounted(() => {
 .action-buttons {
   display: flex;
   gap: 10px;
+}
+
+.el-pagination {
+  margin-top: 20px;
+  padding: 10px 0;
+  display: flex;
+  justify-content: flex-end;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+}
+
+.el-pagination.is-background .btn-next,
+.el-pagination.is-background .btn-prev,
+.el-pagination.is-background .el-pager li {
+  background-color: #fff;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.el-pagination.is-background .el-pager li:not(.disabled).active {
+  background-color: #409eff;
+  color: #fff;
 }
 </style>

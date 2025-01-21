@@ -3,6 +3,15 @@
     <div class="content-wrapper">
       <div class="header">
         <h2>商品管理</h2>
+        <div class="search-box">
+          <el-input
+            v-model="searchText"
+            placeholder="搜索商品名称"
+            clearable
+            @input="handleSearchInput"
+            style="width: 200px; margin-right: 10px;"
+          />
+        </div>
         <el-button type="primary" @click="handleAdd">新增商品</el-button>
       </div>
 
@@ -151,6 +160,17 @@ const pageSize = ref(10)
 const total = ref(0)
 const productFormRef = ref(null)
 const tagManageDialogRef = ref(null)
+const searchText = ref('')
+let searchTimeout = null
+
+// 处理搜索输入
+const handleSearchInput = () => {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    fetchProductList()
+  }, 500)
+}
 
 // 获取商品列表
 const fetchProductList = async () => {
@@ -158,7 +178,8 @@ const fetchProductList = async () => {
   try {
     const response = await getProductList({
       page: currentPage.value,
-      pageSize: pageSize.value
+      pageSize: pageSize.value,
+      search: searchText.value
     })
     productList.value = response.data || []
     total.value = response.total || 0

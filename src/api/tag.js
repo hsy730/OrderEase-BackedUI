@@ -10,13 +10,23 @@ export const getTagList = (params) => {
 }
 
 // 获取标签详情
-export const getTagDetail = (id, params) => {
+export const getTagDetail = (id) => {
   return request({
     url: '/tag/detail',
     method: 'get',
+    params: { id }
+  })
+}
+
+// 获取标签已绑定的商品列表
+export const getTagBoundProducts = (tagId, params) => {
+  return request({
+    url: '/tag/bound-products',
+    method: 'get',
     params: {
-      id,
-      ...params
+      tag_id: tagId,
+      page: params?.page || 1,
+      pageSize: params?.pageSize || 10
     }
   })
 }

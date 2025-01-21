@@ -80,7 +80,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getTagDetail, unbindProductTag, bindProductTag } from '@/api/tag'
+import { getTagDetail, getTagBoundProducts, unbindProductTag, bindProductTag } from '@/api/tag'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import BindProductDialog from '@/components/product/BindProductDialog.vue'
 
@@ -158,25 +158,29 @@ const pagination = ref({
 const fetchTagDetail = async () => {
   loading.value = true
   try {
-    const res = await getTagDetail(route.params.id, {
-      page: pagination.value.page,
-      pageSize: pagination.value.pageSize
-    })
-    pagination.value.total = res.total
+    const [tagRes, productsRes] = await Promise.all([
+      getTagDetail(route.params.id),
+      getTagBoundProducts(route.params.id, {
+        page: pagination.value.page,
+        pageSize: pagination.value.pageSize
+      })
+    ])
+    
+    pagination.value.total = productsRes.total
     tag.value = {
-      id: res.id,
-      name: res.name,
-      description: res.description,
-      created_at: res.created_at,
-      updated_at: res.updated_at
+      id: tagRes.id,
+      name: tagRes.name,
+      description: tagRes.description,
+      created_at: tagRes.created_at,
+      updated_at: tagRes.updated_at
     }
-    products.value = res.products.map(p => ({
+    products.value = productsRes.data.map(p => ({
       id: p.id,
       name: p.name,
       price: p.price,
       status: p.status,
-      created_at: p.created_at,
-      updated_at: p.updated_at
+      image_url: p.image_url,
+      stock: p.stock
     }))
   } catch (error) {
     console.error('获取标签详情失败:', error)

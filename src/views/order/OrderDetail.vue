@@ -38,6 +38,12 @@
           <el-descriptions-item label="订单备注" :span="2">
             {{ order.remark || '暂无备注' }}
           </el-descriptions-item>
+          <el-descriptions-item label="用户姓名">{{ order.user?.name || '未知' }}</el-descriptions-item>
+          <el-descriptions-item label="用户电话">{{ order.user?.phone || '未知' }}</el-descriptions-item>
+          <el-descriptions-item label="用户地址">{{ order.user?.address || '未知' }}</el-descriptions-item>
+          <el-descriptions-item label="配送方式">
+            {{ order.user?.type === 'delivery' ? '邮寄' : '自取' }}
+          </el-descriptions-item>
         </el-descriptions>
       </el-card>
 

@@ -18,6 +18,15 @@
         <div class="product-list">
           <div class="list-header">
             <h3>关联商品</h3>
+            <div class="search-box">
+              <el-input
+                v-model="searchText"
+                placeholder="搜索商品名称"
+                clearable
+                @change="fetchTagDetail"
+                style="width: 200px; margin-right: 10px;"
+              />
+            </div>
             <div class="action-buttons">
               <el-button
                 type="primary"
@@ -93,6 +102,7 @@ const tableKey = ref(0)
 const bindDialogVisible = ref(false)
 const selectedProducts = ref([])
 const productTable = ref(null)
+const searchText = ref('')
 
 // 处理表格选择变化
 const handleSelectionChange = (selection) => {
@@ -162,7 +172,8 @@ const fetchTagDetail = async () => {
       getTagDetail(route.params.id),
       getTagBoundProducts(route.params.id, {
         page: pagination.value.page,
-        pageSize: pagination.value.pageSize
+        pageSize: pagination.value.pageSize,
+        search: searchText.value
       })
     ])
     

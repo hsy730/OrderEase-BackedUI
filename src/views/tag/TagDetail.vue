@@ -18,7 +18,7 @@
         <div class="product-list">
           <div class="list-header">
             <h3>关联商品</h3>
-            <div class="search-box">
+            <!-- <div class="search-box">
               <el-input
                 v-model="searchText"
                 placeholder="搜索商品名称"
@@ -26,7 +26,7 @@
                 @change="fetchTagDetail"
                 style="width: 200px; margin-right: 10px;"
               />
-            </div>
+            </div> -->
             <div class="action-buttons">
               <el-button
                 type="primary"
@@ -291,21 +291,21 @@ onMounted(() => {
   }
 
   .el-pagination {
-    margin-top: 20px;
-    padding: 10px 0;
+    margin-top: 10px;
+    padding: 0;
     display: flex;
     justify-content: flex-end;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .el-pagination.is-background .btn-next,
   .el-pagination.is-background .btn-prev,
   .el-pagination.is-background .el-pager li {
-    background-color: #fff;
-    border: 1px solid #dcdfe6;
-    border-radius: 4px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
   }
 
   .el-pagination.is-background .el-pager li:not(.disabled).active {

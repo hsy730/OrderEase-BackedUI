@@ -60,9 +60,9 @@
             </el-table-column>
             <el-table-column label="操作" width="120" align="center">
               <template #default="{ row }">
-                <el-button type="primary" link @click="viewProduct(row)">查看</el-button>
-                <el-button type="danger" link @click="handleUnbind(row)">解绑</el-button>
-              </template>
+                                  <el-button type="primary" link @click="viewProduct(row)">查看</el-button>
+                                    <el-button type="danger" link @click="handleUnbind(row)">解绑</el-button>
+                              </template>
             </el-table-column>
           </el-table>
           <el-pagination
@@ -311,6 +311,28 @@ onMounted(() => {
   .el-pagination.is-background .el-pager li:not(.disabled).active {
     background-color: #409eff;
     color: #fff;
+  }
+
+  .operation-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    gap: 4px;
+  }
+
+  :deep(.el-button--primary.is-link),
+  :deep(.el-button--danger.is-link) {
+    padding: 4px 8px;
+    height: auto;
+    font-size: 13px;
+    margin: 0;
+    min-width: auto;
+  }
+
+  :deep(.el-divider--vertical) {
+    height: 1em;
+    margin: 0;
   }
 }
 </style>

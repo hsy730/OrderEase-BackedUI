@@ -14,14 +14,11 @@
       <el-table-column prop="name" label="标签名称" min-width="120" />
       <el-table-column prop="description" label="描述" min-width="200" />
       <el-table-column prop="product_count" label="商品数量" width="100" align="center" />
-      <el-table-column label="操作" width="150" align="center">
+      <el-table-column label="操作" width="180" align="center">
         <template #default="{ row }">
           <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-          <el-divider direction="vertical" />
-          <el-button type="info" link @click="handleViewDetails(row)">详情</el-button>
-          <el-divider direction="vertical" />
-          <!--<el-button type="success" link @click="handleAddProducts(row)">添加商品</el-button>
-          <el-divider direction="vertical" />-->
+          <el-button type="info" link @click="handleViewDetails(row)">查看</el-button>
+          <!--<el-button type="success" link @click="handleAddProducts(row)">添加商品</el-button>-->
           <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -331,5 +328,28 @@ onMounted(() => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+.operation-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  gap: 4px;
+}
+
+:deep(.el-button--primary.is-link),
+:deep(.el-button--info.is-link),
+:deep(.el-button--danger.is-link) {
+  padding: 4px 8px;
+  height: auto;
+  font-size: 13px;
+  margin: 0;
+  min-width: auto;
+}
+
+:deep(.el-divider--vertical) {
+  height: 1em;
+  margin: 0;
 }
 </style>

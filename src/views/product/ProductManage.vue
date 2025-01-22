@@ -67,7 +67,7 @@
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <div class="operation-buttons">
-              <el-button type="primary" link @click="handleView(row)">查看</el-button>
+              <el-button type="info" link @click="handleView(row)">查看</el-button>
               <el-divider direction="vertical" />
               <el-button 
                 v-if="row.status === 'pending' || row.status === ''"
@@ -460,6 +460,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   white-space: nowrap;
+  gap: 4px;
 }
 
 :deep(.el-button--primary.is-link),
@@ -468,10 +469,11 @@ onMounted(() => {
   height: auto;
   font-size: 13px;
   margin: 0;
+  min-width: auto;
 }
 
 :deep(.el-divider--vertical) {
   height: 1em;
-  margin: 0 4px;
+  margin: 0;
 }
 </style>

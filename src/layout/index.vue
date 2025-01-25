@@ -43,7 +43,7 @@
         <div class="right-menu">
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="avatar-wrapper">
-              <el-avatar :size="30" icon="UserFilled" />
+              <img src="@/assets/money.jpeg" alt="JPEG Image" width="30" height="30">
               <span class="username">管理员</span>
             </span>
             <template #dropdown>
@@ -346,6 +346,18 @@ window.addEventListener('storage', (e) => {
   align-items: center;
   cursor: pointer;
   padding: 0 8px;
+}
+
+:deep(.el-avatar) {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  overflow: hidden;
+}
+
+:deep(.el-avatar img) {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
 }
 
 .username {

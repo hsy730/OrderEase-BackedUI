@@ -182,8 +182,9 @@ const handleLogin = async () => {
     const response = await login(loginForm.value)
     // 存储管理员信息和 token
     const adminInfo = {
-      ...response.admin,
-      token: response.token
+      ...response.user_info,
+      token: response.token,
+      role: response.role
     }
     localStorage.setItem('admin', JSON.stringify(adminInfo))
     

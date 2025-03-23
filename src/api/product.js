@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 获取商品列表
 export function getProductList(params) {
     return request({
-        url: '/product/list',
+        url: `${isAdminRole() ? '/admin' : '/shop'}/product/list`,
         method: 'get',
         params
     })
@@ -12,7 +12,7 @@ export function getProductList(params) {
 // 获取商品详情
 export function getProductDetail(id) {
     return request({
-        url: '/product/detail',
+        url: `${isAdminRole() ? '/admin' : '/shop'}/product/detail`,
         method: 'get',
         params: { id }
     })
@@ -21,7 +21,7 @@ export function getProductDetail(id) {
 // 创建商品
 export function createProduct(data) {
     return request({
-        url: '/product/create',
+        url: `${isAdminRole() ? '/admin' : '/shop'}/product/create`,
         method: 'post',
         data
     })
@@ -30,7 +30,7 @@ export function createProduct(data) {
 // 更新商品
 export function updateProduct(id, data) {
     return request({
-        url: '/product/update',
+        url: `${isAdminRole() ? '/admin' : '/shop'}/product/update`,
         method: 'put',
         params: { id },
         data
@@ -40,7 +40,7 @@ export function updateProduct(id, data) {
 // 删除商品
 export function deleteProduct(id) {
     return request({
-        url: '/product/delete',
+        url: `${isAdminRole() ? '/admin' : '/shop'}/product/delete`,
         method: 'delete',
         params: { id }
     })
@@ -51,7 +51,7 @@ export function uploadProductImage(id, file) {
     const formData = new FormData()
     formData.append('image', file)
     return request({
-        url: '/product/upload-image',
+        url: `${isAdminRole() ? '/admin' : '/shop'}/product/upload-image`,
         method: 'post',
         params: { id },
         data: formData,
@@ -64,7 +64,7 @@ export function uploadProductImage(id, file) {
 // 更新商品状态
 export const updateProductStatus = (id, status) => {
   return request({
-    url: '/product/toggle-status',
+    url: `${isAdminRole() ? '/admin' : '/shop'}/product/toggle-status`,
     method: 'put',
     data: { id, status }
   })

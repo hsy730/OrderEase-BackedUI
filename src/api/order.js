@@ -4,7 +4,7 @@ import { isAdminRole } from '@/utils/auth';
 // 获取订单列表
 export function getOrderList(params) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shop'}/admin/order/list`,
+        url: `${isAdminRole() ? '/admin' : '/shop'}/order/list`,
         method: 'get',
         params
     })

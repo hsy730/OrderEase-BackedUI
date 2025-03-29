@@ -12,7 +12,7 @@ export const login = (data) => {
 // 退出登录
 export const logout = () => {
   return request({
-    url: '/logout',
+    url: `${isAdminRole() ? '/admin' : '/shop'}/logout`,
     method: 'post'
   })
 }
@@ -20,7 +20,7 @@ export const logout = () => {
 // 修改密码
 export const changePassword = (data) => {
   return request({
-    url: '/change-password',
+    url: `${isAdminRole() ? '/admin' : '/shop'}/change-password`,
     method: 'post',
     data
   })

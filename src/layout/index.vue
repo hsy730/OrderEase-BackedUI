@@ -41,6 +41,19 @@
           <el-icon :class="{ 'is-active': !isCollapse }"><Fold /></el-icon>
         </div>
         <div class="right-menu">
+          <el-select 
+            v-model="shopId"
+            placeholder="切换店铺"
+            style="width: 120px; margin-right: 15px"
+            @change="switchShop"
+          >
+            <el-option
+              v-for="shop in shopList"
+              :key="shop.id"
+              :label="shop.name"
+              :value="shop.id"
+            />
+          </el-select>
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="avatar-wrapper">
               <img src="@/assets/money.jpeg" alt="JPEG Image" width="30" height="30">
@@ -120,6 +133,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Document, Goods, Fold, Upload, Collection } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { changePassword, logout } from '@/api/auth'
+// import { getShopList, switchShop } from '@/api/shop'
 
 const route = useRoute()
 const router = useRouter()

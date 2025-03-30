@@ -19,10 +19,17 @@
           <el-icon><Goods /></el-icon>
           <span>商品管理</span>
         </el-menu-item>
+      
         <el-menu-item index="/tag">
           <el-icon><Collection /></el-icon>
           <span>标签管理</span>
         </el-menu-item>
+
+        <el-menu-item index="/shop">
+          <el-icon><Shop /></el-icon>
+          <span>店铺管理</span>
+        </el-menu-item>
+
         <el-menu-item 
           v-if="showMigration"
           index="/migration"

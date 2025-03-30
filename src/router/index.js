@@ -31,6 +31,12 @@ const routes = [
                 meta: { title: '商品管理' }
             },
             {
+                path: 'shop',
+                name: 'Shop',
+                component: () => import('@/views/shop/ShopManage.vue'),
+                meta: { title: '店铺管理' }
+            },
+            {
                 path: 'product/:id',
                 name: 'ProductDetail',
                 component: () => import('@/views/product/ProductDetail.vue'),
@@ -89,4 +95,4 @@ router.beforeEach((to, from, next) => {
     }
 })
 
-export default router 
+export default router

@@ -12,3 +12,15 @@ export function getShopList(params) {
         }
     })
 }
+
+export function deleteShop(params) {
+    return request({
+        url: `${isAdminRole() ? '/admin' : '/shop'}/shop/list`,
+        method: 'get',
+        params: {
+            page: params.page,
+            page_size: params.page_size
+        }
+    })
+}
+

@@ -59,10 +59,17 @@
   </div>
 </template>
 
+// 在 script 部分添加引入
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getShopList, deleteShop } from '@/api/shop'
+import { 
+    getShopList, 
+    deleteShop,
+    createShop,  // 新增
+    updateShop   // 新增
+} from '@/api/shop'
+import ShopForm from '@/components/shop/ShopForm.vue' // 新增引入表单组件
 
 const loading = ref(false)
 const searchText = ref('')

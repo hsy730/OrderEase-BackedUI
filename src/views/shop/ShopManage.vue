@@ -44,6 +44,18 @@
         />
       </div>
     </div>
+
+    <!-- 对话框 -->
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="600px"
+    >
+      <shop-form
+        :form-data="formData"
+        @submit="handleSubmit"
+      />
+    </el-dialog>
   </div>
 </template>
 
@@ -115,6 +127,40 @@ const handleDelete = async (row) => {
 onMounted(() => {
   fetchData()
 })
+
+// 新增/编辑处理
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const formData = ref({})
+
+const handleAdd = () => {
+  dialogTitle.value = '新增店铺'
+  formData.value = { name: '', address: '', contact: '' }
+  dialogVisible.value = true
+}
+
+const handleEdit = (row) => {
+  dialogTitle.value = '编辑店铺'
+  formData.value = { ...row }
+  dialogVisible.value = true
+}
+
+// 提交表单
+const handleSubmit = async (formData) => {
+  try {
+    if (dialogTitle.value === '新增店铺') {
+      await createShop(formData)
+      ElMessage.success('新增成功')
+    } else {
+      await updateShop(formData)
+      ElMessage.success('修改成功')
+    }
+    dialogVisible.value = false
+    fetchData()
+  } catch (error) {
+    ElMessage.error('操作失败')
+  }
+}
 </script>
 
 <style scoped>

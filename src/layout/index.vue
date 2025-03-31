@@ -11,6 +11,11 @@
         text-color="#bfcbd9"
         active-text-color="#409EFF"
       >
+        <el-menu-item index="/shop">
+          <el-icon><User /></el-icon>
+          <span>店铺管理</span>
+        </el-menu-item>
+
         <el-menu-item index="/order">
           <el-icon><Document /></el-icon>
           <span>订单管理</span>
@@ -23,11 +28,6 @@
         <el-menu-item index="/tag">
           <el-icon><Collection /></el-icon>
           <span>标签管理</span>
-        </el-menu-item>
-
-        <el-menu-item index="/shop">
-          <el-icon><User /></el-icon>
-          <span>店铺管理</span>
         </el-menu-item>
 
         <el-menu-item 

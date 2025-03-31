@@ -10,7 +10,12 @@ const routes = [
     {
         path: '/',
         component: () => import('@/layout/index.vue'),
-        redirect: '/order',
+        redirect: (to) => {
+            // 从本地存储获取用户信息
+            const userInfo = JSON.parse(localStorage.getItem('admin') || '{}')
+            // 根据角色返回不同路径
+            return userInfo.role === 'admin' ? '/shop' : '/order'
+        },
         children: [
             {
                 path: 'order',
@@ -82,7 +87,9 @@ router.beforeEach((to, from, next) => {
 
     if (to.path === '/login') {
         if (adminInfo) {
-            next('/order')
+            const user = JSON.parse(adminInfo)
+            const defaultPath = user.role === 'admin' ? '/shop' : '/order'
+            next(defaultPath)
         } else {
             next()
         }

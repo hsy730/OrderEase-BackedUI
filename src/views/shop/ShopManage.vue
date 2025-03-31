@@ -142,7 +142,17 @@ const formData = ref({})
 
 const handleAdd = () => {
   dialogTitle.value = '新增店铺'
-  formData.value = { name: '', address: '', contact: '' }
+  formData.value = {
+    owner_username: '',
+    owner_password: '',
+    name: '',
+    contact_phone: '',
+    contact_email: '',
+    description: '',
+    valid_until: new Date().toISOString(), // 默认当前时间
+    address: '',
+    settings: ''
+  }
   dialogVisible.value = true
 }
 

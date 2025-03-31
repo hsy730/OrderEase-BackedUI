@@ -23,7 +23,6 @@
       >
         <el-table-column prop="name" label="店铺名称" width="200" align="center" />
         <el-table-column prop="address" label="店铺地址" min-width="250" />
-        <el-table-column prop="contact" label="联系方式" width="180" align="center" />
         <el-table-column label="操作" width="180" fixed="right" align="center">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
@@ -52,9 +51,16 @@
       width="600px"
     >
       <shop-form
+        ref="shopFormRef"
         :form-data="formData"
         @submit="handleSubmit"
       />
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="shopFormRef.submit()">确定</el-button>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -149,7 +155,7 @@ const handleAdd = () => {
     contact_phone: '',
     contact_email: '',
     description: '',
-    valid_until: new Date().toISOString(), // 默认当前时间
+    valid_until: new Date().toISOString(),
     address: '',
     settings: ''
   }
@@ -165,17 +171,16 @@ const handleEdit = (row) => {
 // 提交表单
 const handleSubmit = async (formData) => {
   try {
-    if (dialogTitle.value === '新增店铺') {
-      await createShop(formData)
-      ElMessage.success('新增成功')
-    } else {
+    if (formData.id) {
       await updateShop(formData)
-      ElMessage.success('修改成功')
+    } else {
+      await createShop(formData)
     }
+    ElMessage.success('操作成功')
     dialogVisible.value = false
     fetchData()
   } catch (error) {
-    ElMessage.error('操作失败')
+    ElMessage.error(error.response?.data?.message || '操作失败')
   }
 }
 </script>

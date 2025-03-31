@@ -34,7 +34,11 @@
         type="datetime"
         value-format="YYYY-MM-DDTHH:mm:ssZ"
         placeholder="选择有效期"
-      />
+    >
+      <template #default>
+        <div></div>
+      </template>
+    </el-date-picker>
     </el-form-item>
 
     <el-form-item label="店铺描述" prop="description">
@@ -44,14 +48,11 @@
     <el-form-item label="店铺设置" prop="settings">
       <el-input v-model="formData.settings" type="textarea" :rows="3" />
     </el-form-item>
-
-    <el-form-item>
-      <el-button type="primary" @click="submit">提交</el-button>
-    </el-form-item>
   </el-form>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 defineProps({
   formData: {
     type: Object,
@@ -61,7 +62,29 @@ defineProps({
 
 const emit = defineEmits(['submit'])
 
+const formRef = ref()
+
+const rules = {
+  owner_username: [{ required: true, message: '请输入店主账号', trigger: 'blur' }],
+  owner_password: [{ required: true, message: '请输入店主密码', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入店铺名称', trigger: 'blur' }],
+  contact_phone: [
+    { required: true, message: '请输入联系电话', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
+  ],
+  contact_email: [
+    { required: true, message: '请输入联系邮箱', trigger: 'blur' },
+    { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
+  ]
+}
+
 const submit = () => {
-  emit('submit', formData.value)
+  formRef.value.validate(valid => {
+    if (valid) {
+      emit('submit', formData.value)
+    } else {
+      return false
+    }
+  })
 }
 </script>

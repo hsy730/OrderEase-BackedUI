@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { isAdminRole } from '@/utils/auth';
 
 // 获取商品列表
 export function getProductList(params) {

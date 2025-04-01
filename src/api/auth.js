@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { isAdminRole } from '@/utils/auth';
 
 // 管理员登录
 export const login = (data) => {

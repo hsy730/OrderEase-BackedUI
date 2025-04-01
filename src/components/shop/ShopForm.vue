@@ -61,30 +61,18 @@ defineProps({
 })
 
 const emit = defineEmits(['submit'])
-
-const formRef = ref()
-
-const rules = {
-  owner_username: [{ required: true, message: '请输入店主账号', trigger: 'blur' }],
-  owner_password: [{ required: true, message: '请输入店主密码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入店铺名称', trigger: 'blur' }],
-  contact_phone: [
-    { required: true, message: '请输入联系电话', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
-  ],
-  contact_email: [
-    { required: true, message: '请输入联系邮箱', trigger: 'blur' },
-    { type: 'email', message: '邮箱格式不正确', trigger: 'blur' }
-  ]
-}
+const formRef = ref(null) // 添加表单引用
 
 const submit = () => {
   formRef.value.validate(valid => {
     if (valid) {
-      emit('submit', formData.value)
-    } else {
-      return false
+      emit('submit', formData) // 传递验证后的数据
     }
   })
 }
+
+// 暴露submit方法给父组件
+defineExpose({
+  submit
+})
 </script>

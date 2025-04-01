@@ -53,13 +53,10 @@
       <shop-form
         ref="shopFormRef"
         :form-data="formData"
-        @submit="handleSubmit"
       />
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="shopFormRef.submit()">确定</el-button>
-        </span>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
   </div>

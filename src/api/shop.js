@@ -15,7 +15,7 @@ export function getShopList(params) {
 
 export function createShop(shopData) {
     return request({
-        url: '/shop/create',
+        url: `${isAdminRole() ? '/admin' : '/shop'}/shop/create`,
         method: 'post',
         data: { // 改为使用 data 传递 JSON 数据
             owner_username: shopData.owner_username,

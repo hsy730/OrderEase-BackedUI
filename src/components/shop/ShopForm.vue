@@ -15,11 +15,11 @@
     </el-form-item>
 
     <!-- 新增联系字段 -->
-    <el-form-item label="联系电话" prop="contact_phone" required>
+    <el-form-item label="联系电话" prop="contact_phone" >
       <el-input v-model="formData.contact_phone" />
     </el-form-item>
     
-    <el-form-item label="联系邮箱" prop="contact_email" required>
+    <el-form-item label="联系邮箱" prop="contact_email" >
       <el-input v-model="formData.contact_email" type="email" />
     </el-form-item>
 
@@ -52,22 +52,108 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-defineProps({
-  formData: {
-    type: Object,
-    required: true
+import { ref, watch, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { createShop, updateShop, getShopDetail } from '@/api/shop'  // 新增API引用
+
+const props = defineProps({
+  shopId: {  // 修正拼写错误
+    type: [Number, String],
+    default: null
   }
 })
 
+// 新增表单验证规则
+const rules = {
+  name: [{ required: true, message: '请输入店铺名称', trigger: 'blur' }],
+  owner_username: [{ required: true, message: '请输入店主账号', trigger: 'blur' }],
+  contact_phone: [{ 
+    required: true,
+    pattern: /^1[3-9]\d{9}$/,
+    message: '请输入有效的手机号码',
+    trigger: 'blur'
+  }]
+}
+
+// 新增店铺详情获取逻辑
+const fetchShopDetail = async () => {
+  if (!props.shopId) return
+  
+  try {
+    const data = await getShopDetail(props.shopId)
+    formData.value = {
+      ...data,
+      valid_until: data.valid_until || new Date().toISOString()
+    }
+  } catch (error) {
+    console.error('获取店铺详情失败:', error)
+  }
+}
+
+// 新增监听shopId变化
+watch(() => props.shopId, (newVal) => {
+  if (newVal) {
+    fetchShopDetail()
+  } else {
+    formData.value = {
+      owner_username: '',
+      owner_password: '',
+      name: '',
+      contact_phone: '',
+      contact_email: '',
+      description: '',
+      valid_until: new Date().toISOString(),
+      address: '',
+      settings: ''
+    }
+  }
+})
+
+// 新增挂载时获取详情
+onMounted(() => {
+  if (props.shopId) {
+    fetchShopDetail()
+  }
+})
 const emit = defineEmits(['submit'])
 const formRef = ref(null) // 添加表单引用
+const formData = ref({
+  owner_username: '',
+      owner_password: '',
+      name: '',
+      contact_phone: '',
+      contact_email: '',
+      description: '',
+      valid_until: new Date().toISOString(),
+      address: '',
+      settings: ''
+})
 
 const submit = () => {
-  formRef.value.validate(valid => {
-    if (valid) {
-      emit('submit', formData) // 传递验证后的数据
-    }
+  return new Promise((resolve, reject) => {
+    formRef.value.validate(async (valid) => {
+      if (!valid) {
+        reject(new Error('表单验证失败'))
+        return
+      }
+
+      try {
+        const formValues = { ...formData.value }
+        if (formValues.id) {
+          await updateShop(formValues)
+          ElMessage.success('店铺更新成功')
+        } else {
+          await createShop(formValues)
+          ElMessage.success('店铺创建成功')
+        }
+        emit('submit')
+        resolve(true)
+      } catch (error) {
+        console.error('操作失败:', error)
+        ElMessage.error(error.response?.data?.message || '操作失败')
+        reject(error)
+      }
+    })
   })
 }
 

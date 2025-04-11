@@ -52,3 +52,6 @@ export function deleteShop(params) {
     })
 }
 
+export function getShopDetail(params) {
+}
+

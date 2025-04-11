@@ -79,6 +79,7 @@ const searchText = ref('')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+const shopFormRef = ref(null)
 const shopList = ref([])
 
 // 获取店铺列表
@@ -168,13 +169,9 @@ const handleEdit = (row) => {
 // 提交表单
 const handleSubmit = async (formData) => {
   try {
-    if (formData.id) {
-      await updateShop(formData)
-    } else {
-      await createShop(formData)
-    }
-    ElMessage.success('操作成功')
+    await shopFormRef.value.submit()
     dialogVisible.value = false
+    ElMessage.success(currentProductId.value ? '更新成功' : '添加成功')
     fetchData()
   } catch (error) {
     ElMessage.error(error.response?.data?.message || '操作失败')

@@ -194,7 +194,7 @@ const handleLogin = async () => {
       ElMessage.warning('您正在使用初始密码，请及时修改！')
     }
     
-    router.push('/order')
+    router.push('/')
   } catch (error) {
     console.error('登录失败:', error)
     ElMessage.error(error.response?.data?.error || '登录失败')
@@ -260,4 +260,4 @@ onMounted(() => {
   display: flex;
   align-items: center;
 }
-</style> 
+</style>

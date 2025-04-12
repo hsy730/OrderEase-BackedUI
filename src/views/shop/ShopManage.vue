@@ -167,13 +167,14 @@ const handleEdit = (row) => {
 }
 
 // 提交表单
-const handleSubmit = async (formData) => {
+const handleSubmit = async () => {
   try {
     await shopFormRef.value.submit()
     dialogVisible.value = false
-    ElMessage.success(currentProductId.value ? '更新成功' : '添加成功')
+    ElMessage.success(formData.value.id ? '更新成功' : '添加成功')  // 改为使用 formData 的 id 判断
     fetchData()
   } catch (error) {
+    console.log('handleSubmit error', error)
     ElMessage.error(error.response?.data?.message || '操作失败')
   }
 }

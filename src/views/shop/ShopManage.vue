@@ -182,7 +182,7 @@ const handleSubmit = async () => {
 
 <style scoped>
 .shop-manage {
-  padding: 20px;
+  height: 100%;
 }
 
 .content-wrapper {
@@ -198,6 +198,9 @@ const handleSubmit = async () => {
 }
 
 .header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #303133;
   margin-right: 20px;
 }
 

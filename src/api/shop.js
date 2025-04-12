@@ -2,7 +2,8 @@ import request from '@/utils/request'
 import { isAdminRole } from '@/utils/auth';
 
 export function getCurrentShopId() {
-    return localStorage.getItem('currentShopId');
+    const shopId = localStorage.getItem('currentShopId');
+    return shopId ? Number(shopId) : 0;
 }
 
 // 获取店铺列表

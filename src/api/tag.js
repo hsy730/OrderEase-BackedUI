@@ -30,7 +30,7 @@ export const getTagBoundProducts = (tagId, params) => {
       tag_id: tagId,
       page: params?.page || 1,
       pageSize: params?.pageSize || 10,
-      shop_id: this.getCurrentShopId()
+      shop_id: getCurrentShopId()
     }
   })
 }
@@ -70,7 +70,7 @@ export const batchUpdateTags = (productId, tags) => {
     data: {
       product_id: productId,
       tag_Ids: tags,
-      shop_id: this.getCurrentShopId()
+      shop_id: getCurrentShopId()
     }
   })
 }
@@ -110,7 +110,7 @@ export const unbindProductTag = (tagId, productId) => {
     data: {
       tag_id: Number(tagId),
       product_ids: [Number(productId)],
-      shop_id: this.getCurrentShopId()
+      shop_id: getCurrentShopId()
     }
   })
 }
@@ -123,7 +123,7 @@ export const bindProductTag = (tagId, productIds) => {
     data: {
       tag_id: Number(tagId),
       product_ids: productIds.map(id => Number(id)),
-      shop_id: this.getCurrentShopId()
+      shop_id: getCurrentShopId()
     }
   })
 }
@@ -137,7 +137,7 @@ export const getUnboundProducts = (tagId, params) => {
       tag_id: tagId,
       page: params.page,
       pageSize: params.limit,
-      shop_id: this.getCurrentShopId()
+      shop_id: getCurrentShopId()
     }
   })
 }

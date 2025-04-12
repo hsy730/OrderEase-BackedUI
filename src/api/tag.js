@@ -1,12 +1,14 @@
 import request from '@/utils/request'
 import { isAdminRole } from '@/utils/auth';
+import { getCurrentShopId} from '@/api/shop';
+
 
 // 获取标签列表
 export const getTagList = (params) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shop'}/tag/list`,
     method: 'get',
-    params: { ...params, shop_id: this.getShopId() }
+    params: { ...params, shop_id: getCurrentShopId()}
   })
 }
 
@@ -15,7 +17,7 @@ export const getTagDetail = (id) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shop'}/tag/detail`,
     method: 'get',
-    params: { id, shop_id: this.getShopId() }
+    params: { id, shop_id: getCurrentShopId()}
   })
 }
 
@@ -28,7 +30,7 @@ export const getTagBoundProducts = (tagId, params) => {
       tag_id: tagId,
       page: params?.page || 1,
       pageSize: params?.pageSize || 10,
-      shop_id: this.getShopId()
+      shop_id: this.getCurrentShopId()
     }
   })
 }
@@ -38,7 +40,7 @@ export const createTag = (data) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shop'}/tag/create`,
     method: 'post',
-    data: { ...data, shop_id: this.getShopId() }
+    data: { ...data, shop_id: getCurrentShopId()}
   })
 }
 
@@ -47,7 +49,7 @@ export const updateTag = (data) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shop'}/tag/update`,
     method: 'put',
-    data: {...data, shop_id: this.getShopId() }
+    data: {...data, shop_id: getCurrentShopId()}
   })
 }
 
@@ -56,7 +58,7 @@ export const deleteTag = (id) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shop'}/tag/delete`,
     method: 'delete',
-    params: { id, shop_id: this.getShopId() }
+    params: { id, shop_id: getCurrentShopId()}
   })
 }
 
@@ -68,7 +70,7 @@ export const batchUpdateTags = (productId, tags) => {
     data: {
       product_id: productId,
       tag_Ids: tags,
-      shop_id: this.getShopId()
+      shop_id: this.getCurrentShopId()
     }
   })
 }
@@ -78,7 +80,7 @@ export const getTagProducts = (params) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shop'}/tag/online-products`,
     method: 'get',
-    params: { ...params, shop_id: this.getShopId() }
+    params: { ...params, shop_id: getCurrentShopId()}
   })
 }
 
@@ -87,7 +89,7 @@ export const getProductTags = (productId) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shop'}/tag/bound-tags`,
     method: 'get',
-    params: { product_id: productId, shop_id: this.getShopId() }
+    params: { product_id: productId, shop_id: getCurrentShopId()}
   })
 }
 
@@ -96,7 +98,7 @@ export const getAvailableTags = (productId) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shop'}/tag/unbound-tags`,
     method: 'get',
-    params: { product_id: productId, shop_id: this.getShopId() }
+    params: { product_id: productId, shop_id: getCurrentShopId()}
   })
 }
 
@@ -108,7 +110,7 @@ export const unbindProductTag = (tagId, productId) => {
     data: {
       tag_id: Number(tagId),
       product_ids: [Number(productId)],
-      shop_id: this.getShopId()
+      shop_id: this.getCurrentShopId()
     }
   })
 }
@@ -121,7 +123,7 @@ export const bindProductTag = (tagId, productIds) => {
     data: {
       tag_id: Number(tagId),
       product_ids: productIds.map(id => Number(id)),
-      shop_id: this.getShopId()
+      shop_id: this.getCurrentShopId()
     }
   })
 }
@@ -135,7 +137,7 @@ export const getUnboundProducts = (tagId, params) => {
       tag_id: tagId,
       page: params.page,
       pageSize: params.limit,
-      shop_id: this.getShopId()
+      shop_id: this.getCurrentShopId()
     }
   })
 }

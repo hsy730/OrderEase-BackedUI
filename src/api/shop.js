@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 import { isAdminRole } from '@/utils/auth';
 
-function getCurrentShopId() {
+export function getCurrentShopId() {
     return localStorage.getItem('currentShopId');
 }
 

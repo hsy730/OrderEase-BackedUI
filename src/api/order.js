@@ -1,12 +1,13 @@
 import request from '@/utils/request'
 import { isAdminRole } from '@/utils/auth';
+import { getCurrentShopId} from '@/api/shop';
 
 // 获取订单列表
 export function getOrderList(params) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/list`,
         method: 'get',
-        params: { ...params, shop_id: this.getShopId() }
+        params: { ...params, shop_id: getCurrentShopId() }
     })
 }
 
@@ -15,7 +16,7 @@ export function getOrderDetail(id) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/detail`,
         method: 'get',
-        params: { id, shop_id: this.getShopId() }
+        params: { id, shop_id: getCurrentShopId()}
     })
 }
 
@@ -24,7 +25,7 @@ export function createOrder(data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/create`,
         method: 'post',
-        data: {...data, shop_id: this.getShopId() }
+        data: {...data, shop_id: getCurrentShopId()}
     })
 }
 
@@ -33,7 +34,7 @@ export function updateOrder(id, data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/update`,
         method: 'put',
-        params: { id, shop_id: this.getShopId() },
+        params: { id, shop_id: getCurrentShopId()},
         data
     })
 }
@@ -43,7 +44,7 @@ export function deleteOrder(id) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/delete`,
         method: 'delete',
-        params: { id, shop_id: this.getShopId() }
+        params: { id, shop_id: getCurrentShopId()}
     })
 }
 

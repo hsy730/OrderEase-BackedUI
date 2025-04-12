@@ -66,8 +66,10 @@
             v-model="shopId"
             placeholder="切换店铺"
             filterable
+            remote
+            :remote-method="handleShopSearch"
+            :loading="searchLoading"
             style="width: 120px; margin-right: 15px"
-            @change="handleShopChange"
           >
             <el-option
               v-for="shop in shopList"
@@ -145,6 +147,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { changePassword, logout } from '@/api/auth'
 import { getShopList } from '@/api/shop'
 
+import { debounce } from 'lodash-es'
+
 const route = useRoute()
 const router = useRouter()
 const isCollapse = ref(false)
@@ -152,6 +156,25 @@ const sidebarWidth = ref(140) // 默认宽度
 const showMigration = ref(false)
 const shopList = ref([])
 const shopId = ref(null)
+const searchLoading = ref(false)
+
+// 添加搜索处理方法
+const handleShopSearch = debounce(async (query) => {
+  try {
+    searchLoading.value = true
+    const { data } = await getShopList({ 
+      page: 1, 
+      page_size: 50,
+      search: query
+    })
+    shopList.value = data
+  } catch (error) {
+    console.error('搜索店铺失败:', error)
+    ElMessage.error('店铺搜索失败')
+  } finally {
+    searchLoading.value = false
+  }
+}, 500)
 
 // 获取店铺列表
 onMounted(async () => {

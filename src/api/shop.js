@@ -12,7 +12,8 @@ export function getShopList(params) {
         method: 'get',
         params: {
             page: params.page,
-            page_size: params.page_size
+            page_size: params.page_size,
+            search: params.search,
         }
     })
 }
@@ -56,6 +57,13 @@ export function deleteShop(params) {
     })
 }
 
-export function getShopDetail(params) {
+export function getShopDetail(shopId) {
+  return request({
+    url: `/shop/${shopId}`,
+    method: 'get',
+    params: {
+      include: 'users,products'
+    }
+  })
 }
 

@@ -86,13 +86,13 @@ const shopList = ref([])
 const fetchData = async () => {
   try {
     loading.value = true
-    const { data } = await getShopList({ 
+    const response = await getShopList({ 
       page: currentPage.value,
       page_size: pageSize.value,
       search: searchText.value
     })
-    shopList.value = data.items
-    total.value = data.total
+    shopList.value = response.data || []
+    total.value = response.total || 1
   } catch (error) {
     ElMessage.error('获取店铺列表失败')
   } finally {

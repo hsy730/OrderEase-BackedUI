@@ -159,6 +159,7 @@ onMounted(async () => {
     const { data } = await getShopList( { page : 1, page_size : 50 })
     shopList.value = data
     shopId.value = data[0]?.id || null
+    localStorage.setItem('currentShopId', shopId.value)
   } catch (error) {
     console.error('获取店铺列表失败:', error)
     ElMessage.error('店铺列表加载失败')
@@ -305,7 +306,7 @@ window.addEventListener('storage', (e) => {
 })
 // 切换店铺
 const switchShopLoading = ref(false)
-const handleSwitchShop = async (shopId) => {
+const handleShopChange = async (shopId) => {
   localStorage.setItem('currentShopId', shopId)
   ElMessage.success('店铺切换成功')
 }

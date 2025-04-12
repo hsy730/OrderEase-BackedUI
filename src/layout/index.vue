@@ -63,13 +63,14 @@
           </el-dropdown>
 
           <el-select 
-            v-model="shopId"
+            v-model.number="shopId"
             placeholder="切换店铺"
             filterable
             remote
             :remote-method="handleShopSearch"
             :loading="searchLoading"
             style="width: 120px; margin-right: 15px"
+            @change="handleShopChange"
           >
             <el-option
               v-for="shop in shopList"
@@ -335,8 +336,15 @@ window.addEventListener('storage', (e) => {
 // 切换店铺
 const switchShopLoading = ref(false)
 const handleShopChange = async (shopId) => {
+  let refresh = false;
+  if (localStorage.getItem('currentShopId')) {
+    refresh = true;
+  }
   localStorage.setItem('currentShopId', shopId)
   ElMessage.success('店铺切换成功')
+  if (refresh) {
+    router.go(0) // 添加页面刷新
+  }
 }
 </script>
 

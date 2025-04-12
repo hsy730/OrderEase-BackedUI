@@ -6,7 +6,7 @@ export function getProductList(params) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/product/list`,
         method: 'get',
-        params
+        params: { ...params, shop_id: this.getShopId() }
     })
 }
 
@@ -15,7 +15,7 @@ export function getProductDetail(id) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/product/detail`,
         method: 'get',
-        params: { id }
+        params: { id, shop_id: this.getShopId() }
     })
 }
 
@@ -24,7 +24,7 @@ export function createProduct(data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/product/create`,
         method: 'post',
-        data
+        data: { ...data, shop_id: this.getShopId() }
     })
 }
 
@@ -33,7 +33,7 @@ export function updateProduct(id, data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/product/update`,
         method: 'put',
-        params: { id },
+        params: { id, shop_id: this.getShopId() },
         data
     })
 }
@@ -43,7 +43,7 @@ export function deleteProduct(id) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/product/delete`,
         method: 'delete',
-        params: { id }
+        params: { id, shop_id: this.getShopId() }
     })
 }
 
@@ -54,7 +54,7 @@ export function uploadProductImage(id, file) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/product/upload-image`,
         method: 'post',
-        params: { id },
+        params: { id, shop_id: this.getShopId() },
         data: formData,
         headers: {
             'Content-Type': 'multipart/form-data'
@@ -67,6 +67,6 @@ export const updateProductStatus = (id, status) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shop'}/product/toggle-status`,
     method: 'put',
-    data: { id, status }
+    data: { id, status, shop_id: this.getShopId() }
   })
-} 
+}

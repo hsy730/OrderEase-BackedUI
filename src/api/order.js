@@ -6,16 +6,16 @@ export function getOrderList(params) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/list`,
         method: 'get',
-        params
+        params: { ...params, shop_id: this.getShopId() }
     })
 }
 
-// 获取订单详情
+// 获取订单详情 
 export function getOrderDetail(id) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/detail`,
         method: 'get',
-        params: { id }
+        params: { id, shop_id: this.getShopId() }
     })
 }
 
@@ -24,7 +24,7 @@ export function createOrder(data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/create`,
         method: 'post',
-        data
+        data: {...data, shop_id: this.getShopId() }
     })
 }
 
@@ -33,7 +33,7 @@ export function updateOrder(id, data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/update`,
         method: 'put',
-        params: { id },
+        params: { id, shop_id: this.getShopId() },
         data
     })
 }
@@ -43,7 +43,7 @@ export function deleteOrder(id) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shop'}/order/delete`,
         method: 'delete',
-        params: { id }
+        params: { id, shop_id: this.getShopId() }
     })
 }
 
@@ -53,4 +53,4 @@ export const toggleOrderStatus = (id) => {
     url: `${isAdminRole() ? '/admin' : '/shop'}/order/toggle-status`,
     method: 'put'
   })
-} 
+}

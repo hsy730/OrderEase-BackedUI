@@ -1,6 +1,10 @@
 import request from '@/utils/request'
 import { isAdminRole } from '@/utils/auth';
 
+function getCurrentShopId() {
+    return localStorage.getItem('currentShopId');
+}
+
 // 获取店铺列表
 export function getShopList(params) {
     return request({

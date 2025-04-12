@@ -3,7 +3,7 @@ import { isAdminRole } from '@/utils/auth';
 
 export function getCurrentShopId() {
     const shopId = localStorage.getItem('currentShopId');
-    return shopId ? Number(shopId) : 0;
+    return shopId ? Number(shopId) : -1;
 }
 
 // 获取店铺列表

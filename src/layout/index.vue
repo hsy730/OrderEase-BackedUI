@@ -145,7 +145,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Document, Goods, Fold, Upload, Collection, User } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { changePassword, logout } from '@/api/auth'
-import { getShopList } from '@/api/shop'
+import { getShopList, getCurrentShopId } from '@/api/shop'
 
 import { debounce } from 'lodash-es'
 
@@ -181,8 +181,13 @@ onMounted(async () => {
   try {
     const { data } = await getShopList( { page : 1, page_size : 50 })
     shopList.value = data
-    shopId.value = data[0]?.id || null
-    localStorage.setItem('currentShopId', shopId.value)
+    const curShopId = getCurrentShopId()
+    if (curShopId > 0) { // 如果有当前店铺ID，直接使用该ID
+      shopId.value = curShopId
+    } else {
+      shopId.value = data[0]?.id || null
+      localStorage.setItem('currentShopId', shopId.value)
+    }
   } catch (error) {
     console.error('获取店铺列表失败:', error)
     ElMessage.error('店铺列表加载失败')

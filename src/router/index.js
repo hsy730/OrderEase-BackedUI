@@ -73,9 +73,10 @@ const routes = [
     }
 ]
 
+// 在路由配置文件中添加base路径
 const router = createRouter({
-    history: createWebHistory(),
-    routes
+  history: createWebHistory('/order-ease-adminiui/'),
+  routes
 })
 
 // 路由守卫

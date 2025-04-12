@@ -65,6 +65,7 @@
           <el-select 
             v-model="shopId"
             placeholder="切换店铺"
+            filterable
             style="width: 120px; margin-right: 15px"
             @change="handleShopChange"
           >

@@ -22,9 +22,10 @@
         style="width: 100%"
       >
         <el-table-column prop="name" label="店铺名称" width="200" align="center" />
-        <el-table-column prop="address" label="店铺地址" min-width="250" />
-        <el-table-column label="操作" width="180" fixed="right" align="center">
+        <el-table-column prop="valid_until" label="到期时间" min-width="250" />
+        <el-table-column label="操作" width="220" fixed="right" align="center">
           <template #default="{ row }">
+            <el-button type="primary" link @click="handleView(row)">查看</el-button>
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
@@ -73,6 +74,7 @@ import {
     updateShop   // 新增
 } from '@/api/shop'
 import ShopForm from '@/components/shop/ShopForm.vue' // 新增引入表单组件
+import { useRouter } from 'vue-router'
 
 const loading = ref(false)
 const searchText = ref('')
@@ -177,6 +179,13 @@ const handleSubmit = async () => {
     console.log('handleSubmit error', error)
     ElMessage.error(error.response?.data?.message || '操作失败')
   }
+}
+
+// 在script setup中添加查看方法
+const router = useRouter()
+
+const handleView = (row) => {
+  router.push(`/shop/detail/${row.id}`)
 }
 </script>
 

@@ -47,20 +47,20 @@ export function updateShop(params) {
     })
 }
 
-export function deleteShop(params) {
+export function deleteShop(shopId) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shop'}/shop/list`,
-        method: 'get',
+        url: `${isAdminRole() ? '/admin' : '/shop'}/shop/delete`,
+        method: 'delete',
         params: {
-            page: params.page,
-            page_size: params.page_size
+            shop_id: shopId,
         }
     })
 }
 
+// 修改获取店铺详情接口
 export function getShopDetail(shopId) {
   return request({
-    url: `/shop/${shopId}`,
+    url: `${isAdminRole() ? '/admin' : '/shop'}/shop/${shopId}`, // 添加权限前缀
     method: 'get',
     params: {
       include: 'users,products'

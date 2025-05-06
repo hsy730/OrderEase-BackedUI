@@ -60,10 +60,10 @@ export function deleteShop(shopId) {
 // 修改获取店铺详情接口
 export function getShopDetail(shopId) {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/shop/${shopId}`, // 添加权限前缀
+    url: `/admin/shop/detail`,
     method: 'get',
     params: {
-      include: 'users,products'
+      shop_id: shopId
     }
   })
 }

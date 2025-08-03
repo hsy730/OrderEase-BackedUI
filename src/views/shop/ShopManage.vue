@@ -70,8 +70,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
     getShopList, 
     deleteShop,
-    createShop,  // 新增
-    updateShop   // 新增
+    createShop,
+    updateShop,
+    getShopDetail  // 新增详情接口
 } from '@/api/shop'
 import ShopForm from '@/components/shop/ShopForm.vue' // 新增引入表单组件
 import { useRouter } from 'vue-router'
@@ -144,6 +145,7 @@ onMounted(() => {
 // 新增/编辑处理
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
+const currentShopId = ref(null)
 const formData = ref({})
 
 const handleAdd = () => {
@@ -162,10 +164,23 @@ const handleAdd = () => {
   dialogVisible.value = true
 }
 
-const handleEdit = (row) => {
-  dialogTitle.value = '编辑店铺'
-  formData.value = { ...row }
-  dialogVisible.value = true
+// 编辑店铺
+const handleEdit = async (row) => {
+  try {
+    loading.value = true
+    const response = await getShopDetail(row.id)
+    formData.value = {
+      ...response,
+      valid_until: new Date(response.valid_until).toISOString()
+    }
+    dialogTitle.value = '编辑店铺'
+    currentShopId.value = row.id
+    dialogVisible.value = true
+  } catch (error) {
+    ElMessage.error('获取店铺详情失败')
+  } finally {
+    loading.value = false
+  }
 }
 
 // 提交表单

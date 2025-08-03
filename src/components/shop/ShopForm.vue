@@ -56,37 +56,25 @@ import { ref, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createShop, updateShop, getShopDetail } from '@/api/shop'  // 新增API引用
 
+// 修改props接收方式
 const props = defineProps({
-  shopId: {  // 修正拼写错误
+  shopId: {
     type: [Number, String],
     default: null
   }
 })
 
-// 新增表单验证规则
-const rules = {
-  name: [{ required: true, message: '请输入店铺名称', trigger: 'blur' }],
-  owner_username: [{ required: true, message: '请输入店主账号', trigger: 'blur' }],
-  contact_phone: [{ 
-    required: true,
-    pattern: /^1[3-9]\d{9}$/,
-    message: '请输入有效的手机号码',
-    trigger: 'blur'
-  }]
-}
-
-// 新增店铺详情获取逻辑
+// 完善数据获取逻辑
 const fetchShopDetail = async () => {
   if (!props.shopId) return
-  
   try {
-    const data = await getShopDetail(props.shopId)
-    formData.value = {
+    const { data } = await getShopDetail(props.shopId)
+    formData.value = { 
       ...data,
       valid_until: data.valid_until || new Date().toISOString()
     }
   } catch (error) {
-    console.error('获取店铺详情失败:', error)
+    ElMessage.error('获取店铺详情失败')
   }
 }
 

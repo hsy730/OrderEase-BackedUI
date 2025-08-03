@@ -48,10 +48,28 @@
           <el-icon :class="{ 'is-active': !isCollapse }"><Fold /></el-icon>
         </div>
         <div class="right-menu">
-          
+          <!-- 切换店铺 -->
+          <el-select 
+            v-model.number="shopId"
+            placeholder="切换店铺"
+            filterable
+            remote
+            :remote-method="handleShopSearch"
+            :loading="searchLoading"
+            style="width: 120px; margin-right: 0"
+            @change="handleShopChange"
+          >
+            <el-option
+              v-for="shop in shopList"
+              :key="shop.id"
+              :label="shop.name"
+              :value="shop.id"
+            />
+          </el-select>
+
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="avatar-wrapper">
-              <img src="@/assets/money.jpeg" alt="JPEG Image" width="30" height="30">
+              <img src="@/assets/settings.png" alt="JPEG Image" width="30" height="30">
               <!-- <span class="username">管理员</span> -->
             </span>
             <template #dropdown>
@@ -62,23 +80,6 @@
             </template>
           </el-dropdown>
 
-          <el-select 
-            v-model.number="shopId"
-            placeholder="切换店铺"
-            filterable
-            remote
-            :remote-method="handleShopSearch"
-            :loading="searchLoading"
-            style="width: 120px; margin-right: 15px"
-            @change="handleShopChange"
-          >
-            <el-option
-              v-for="shop in shopList"
-              :key="shop.id"
-              :label="shop.name"
-              :value="shop.id"
-            />
-          </el-select>
         </div>
       </div>
 

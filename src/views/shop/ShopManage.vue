@@ -50,10 +50,11 @@
       v-model="dialogVisible"
       :title="dialogTitle"
       width="600px"
+      @close="handleDialogClose"
     >
       <shop-form
         ref="shopFormRef"
-        :form-data="formData"
+        :shop-id="currentShopId"
       />
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -146,21 +147,10 @@ onMounted(() => {
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const currentShopId = ref(null)
-const formData = ref({})
 
 const handleAdd = () => {
   dialogTitle.value = '新增店铺'
-  formData.value = {
-    owner_username: '',
-    owner_password: '',
-    name: '',
-    contact_phone: '',
-    contact_email: '',
-    description: '',
-    valid_until: new Date().toISOString(),
-    address: '',
-    settings: ''
-  }
+  currentShopId.value = null
   dialogVisible.value = true
 }
 
@@ -168,18 +158,21 @@ const handleAdd = () => {
 const handleEdit = async (row) => {
   try {
     loading.value = true
-    const response = await getShopDetail(row.id)
-    formData.value = {
-      ...response,
-      valid_until: new Date(response.valid_until).toISOString()
-    }
     dialogTitle.value = '编辑店铺'
     currentShopId.value = row.id
     dialogVisible.value = true
   } catch (error) {
     ElMessage.error('获取店铺详情失败')
+    console.error('编辑店铺错误:', error)
   } finally {
     loading.value = false
+  }
+}
+
+// 对话框关闭时重置表单
+const handleDialogClose = () => {
+  if (shopFormRef.value) {
+    // shopFormRef.value.resetForm()
   }
 }
 
@@ -188,7 +181,7 @@ const handleSubmit = async () => {
   try {
     await shopFormRef.value.submit()
     dialogVisible.value = false
-    ElMessage.success(formData.value.id ? '更新成功' : '添加成功')  // 改为使用 formData 的 id 判断
+    ElMessage.success(currentShopId.value ? '更新成功' : '添加成功')
     fetchData()
   } catch (error) {
     console.log('handleSubmit error', error)

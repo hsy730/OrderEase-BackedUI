@@ -4,9 +4,13 @@
     <el-form-item label="店主账号" prop="owner_username" required>
       <el-input v-model="formData.owner_username" />
     </el-form-item>
-    
-    <el-form-item label="店主密码" prop="owner_password" required>
+    <!-- 条件显示密码框 -->
+    <el-form-item v-if="!props.shopId" label="店主密码" prop="owner_password" required>
       <el-input v-model="formData.owner_password" type="password" show-password />
+    </el-form-item>
+    <el-form-item v-else label="店主密码" prop="owner_password">
+      <el-input v-model="formData.owner_password" type="password" show-password />
+      <div class="el-form-item__help">不填写则保持原密码不变</div>
     </el-form-item>
 
     <!-- 原有字段 -->
@@ -68,13 +72,24 @@ const props = defineProps({
 const fetchShopDetail = async () => {
   if (!props.shopId) return
   try {
-    const { data } = await getShopDetail(props.shopId)
+    const data = await getShopDetail(props.shopId)
+    // 处理所有字段，确保空值和null被正确转换
     formData.value = { 
       ...data,
+      id: data.id || null,
+      owner_username: data.owner_username || '',
+      name: data.name || '',
+      contact_phone: data.contact_phone || '',
+      contact_email: data.contact_email || '',
+      address: data.address || '',
+      description: data.description || '',
+      settings: data.settings || '',
       valid_until: data.valid_until || new Date().toISOString()
     }
+    console.log('店铺详情数据:', formData.value)
   } catch (error) {
     ElMessage.error('获取店铺详情失败')
+    console.error('获取店铺详情错误:', error)
   }
 }
 
@@ -127,6 +142,10 @@ const submit = () => {
 
       try {
         const formValues = { ...formData.value }
+        // 编辑店铺时，如果密码未填写则删除该字段，使用服务端旧密码
+        if (formValues.id && !formValues.owner_password) {
+          delete formValues.owner_password
+        }
         if (formValues.id) {
           await updateShop(formValues)
           ElMessage.success('店铺更新成功')

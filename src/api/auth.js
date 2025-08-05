@@ -28,9 +28,12 @@ export const changePassword = (data) => {
 }
 
 // 刷新Token
-export const refreshToken = () => {
+export const refreshToken = (refreshToken) => {
   return request({
-    url: '/refresh-token',
-    method: 'post'
+    url: `${isAdminRole() ? '/admin' : '/shop'}/refresh-token`,
+    method: 'post',
+    data: {
+      refreshToken
+    }
   })
-} 
+}

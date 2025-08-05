@@ -34,6 +34,34 @@ export function getAdminInfo() {
     }
 }
 
+/**
+ * 从localStorage获取token
+ * @returns {string|null} token字符串，如果不存在则返回null
+ */
+export function getToken() {
+    return getAdminInfo().token || null;
+}
+
+/**
+ * 从localStorage获取refreshToken
+ * @returns {string|null} refreshToken字符串，如果不存在则返回null
+ */
+export function getRefreshToken() {
+    return getAdminInfo().refreshToken || null;
+}
+
+/**
+ * 保存管理员信息到localStorage
+ * @param {Object} adminInfo - 管理员信息对象
+ */
+export function saveAdminInfo(adminInfo) {
+    try {
+        localStorage.setItem('admin', JSON.stringify(adminInfo));
+    } catch (e) {
+        console.error('保存管理员信息失败:', e);
+    }
+}
+
 export function isAdminRole() {
   return getAdminInfo().role === 'admin'
 }

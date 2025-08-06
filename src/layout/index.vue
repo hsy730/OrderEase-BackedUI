@@ -11,7 +11,7 @@
         text-color="#bfcbd9"
         active-text-color="#409EFF"
       >
-        <el-menu-item index="/shop">
+        <el-menu-item index="/shop" v-if="isAdmin">
           <el-icon><User /></el-icon>
           <span>店铺管理</span>
         </el-menu-item>
@@ -31,7 +31,7 @@
         </el-menu-item>
 
         <el-menu-item 
-          v-if="showMigration"
+          v-if="isAdmin"
           index="/migration"
         >
           <el-icon><Upload /></el-icon>
@@ -50,6 +50,7 @@
         <div class="right-menu">
           <!-- 切换店铺 -->
           <el-select 
+            v-if="isAdmin"
             v-model.number="shopId"
             placeholder="切换店铺"
             filterable
@@ -156,6 +157,7 @@ const router = useRouter()
 const isCollapse = ref(false)
 const sidebarWidth = ref(140) // 默认宽度
 const showMigration = ref(false)
+const isAdmin = ref(JSON.parse(localStorage.getItem('admin') || '{}').role === 'admin')
 const shopList = ref([])
 const shopId = ref(null)
 const searchLoading = ref(false)

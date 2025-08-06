@@ -3,13 +3,13 @@ import { isAdminRole } from '@/utils/auth';
 
 export function getCurrentShopId() {
     const shopId = localStorage.getItem('currentShopId');
-    return shopId ? Number(shopId) : -1;
+    return shopId ? Number(shopId) : 0;
 }
 
 // 获取店铺列表
 export function getShopList(params) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shop'}/shop/list`,
+        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/list`,
         method: 'get',
         params: {
             page: params.page,
@@ -21,7 +21,7 @@ export function getShopList(params) {
 
 export function createShop(shopData) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shop'}/shop/create`,
+        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/create`,
         method: 'post',
         data: shopData,
     })
@@ -30,7 +30,7 @@ export function createShop(shopData) {
 // 确保整个文件只声明一次 deleteShop
 export function updateShop(shopData) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shop'}/shop/update`,
+        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/update`,
         method: 'put',
         data: shopData,
     })
@@ -38,7 +38,7 @@ export function updateShop(shopData) {
 
 export function deleteShop(shopId) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shop'}/shop/delete`,
+        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/delete`,
         method: 'delete',
         params: {
             shop_id: shopId,

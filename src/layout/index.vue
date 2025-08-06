@@ -182,6 +182,9 @@ const handleShopSearch = debounce(async (query) => {
 
 // 获取店铺列表
 onMounted(async () => {
+  if (!isAdmin.value) {
+    return;
+  }
   try {
     const { data } = await getShopList( { page : 1, page_size : 50 })
     shopList.value = data

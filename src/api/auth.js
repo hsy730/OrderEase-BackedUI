@@ -13,7 +13,7 @@ export const login = (data) => {
 // 退出登录
 export const logout = () => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/logout`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/logout`,
     method: 'post'
   })
 }
@@ -21,7 +21,7 @@ export const logout = () => {
 // 修改密码
 export const changePassword = (data) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/change-password`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/change-password`,
     method: 'post',
     data
   })
@@ -30,7 +30,7 @@ export const changePassword = (data) => {
 // 刷新Token
 export const refreshToken = (refreshToken) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/refresh-token`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/refresh-token`,
     method: 'post',
     data: {
       refreshToken

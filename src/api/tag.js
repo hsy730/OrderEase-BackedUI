@@ -6,7 +6,7 @@ import { getCurrentShopId} from '@/api/shop';
 // 获取标签列表
 export const getTagList = (params) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/list`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/list`,
     method: 'get',
     params: { ...params, shop_id: getCurrentShopId()}
   })
@@ -15,7 +15,7 @@ export const getTagList = (params) => {
 // 获取标签详情
 export const getTagDetail = (id) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/detail`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/detail`,
     method: 'get',
     params: { id, shop_id: getCurrentShopId()}
   })
@@ -24,7 +24,7 @@ export const getTagDetail = (id) => {
 // 获取标签已绑定的商品列表
 export const getTagBoundProducts = (tagId, params) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/bound-products`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/bound-products`,
     method: 'get',
     params: {
       tag_id: tagId,
@@ -38,7 +38,7 @@ export const getTagBoundProducts = (tagId, params) => {
 // 创建标签
 export const createTag = (data) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/create`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/create`,
     method: 'post',
     data: { ...data, shop_id: getCurrentShopId()}
   })
@@ -47,7 +47,7 @@ export const createTag = (data) => {
 // 更新标签
 export const updateTag = (data) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/update`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/update`,
     method: 'put',
     data: {...data, shop_id: getCurrentShopId()}
   })
@@ -56,7 +56,7 @@ export const updateTag = (data) => {
 // 删除标签
 export const deleteTag = (id) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/delete`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/delete`,
     method: 'delete',
     params: { id, shop_id: getCurrentShopId()}
   })
@@ -65,7 +65,7 @@ export const deleteTag = (id) => {
 // 批量更新标签
 export const batchUpdateTags = (productId, tags) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/batch-tag-product`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/batch-tag-product`,
     method: 'post',
     data: {
       product_id: productId,
@@ -78,7 +78,7 @@ export const batchUpdateTags = (productId, tags) => {
 // 获取标签关联的已上架商品列表
 export const getTagProducts = (params) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/online-products`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/online-products`,
     method: 'get',
     params: { ...params, shop_id: getCurrentShopId()}
   })
@@ -87,7 +87,7 @@ export const getTagProducts = (params) => {
 // 获取商品已绑定标签
 export const getProductTags = (productId) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/bound-tags`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/bound-tags`,
     method: 'get',
     params: { product_id: productId, shop_id: getCurrentShopId()}
   })
@@ -96,7 +96,7 @@ export const getProductTags = (productId) => {
 // 获取商品未绑定标签
 export const getAvailableTags = (productId) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/unbound-tags`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/unbound-tags`,
     method: 'get',
     params: { product_id: productId, shop_id: getCurrentShopId()}
   })
@@ -105,7 +105,7 @@ export const getAvailableTags = (productId) => {
 // 批量解绑商品标签
 export const unbindProductTag = (tagId, productId) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/batch-untag`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/batch-untag`,
     method: 'delete',
     data: {
       tag_id: Number(tagId),
@@ -118,7 +118,7 @@ export const unbindProductTag = (tagId, productId) => {
 // 批量绑定商品标签
 export const bindProductTag = (tagId, productIds) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/batch-tag`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/batch-tag`,
     method: 'post',
     data: {
       tag_id: Number(tagId),
@@ -131,7 +131,7 @@ export const bindProductTag = (tagId, productIds) => {
 // 获取标签未绑定的商品列表
 export const getUnboundProducts = (tagId, params) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shop'}/tag/unbound-products`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/unbound-products`,
     method: 'get',
     params: {
       tag_id: tagId,

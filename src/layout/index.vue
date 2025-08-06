@@ -215,31 +215,54 @@ const passwordForm = reactive({
 })
 
 // 密码验证规则
+// 自定义密码验证函数
+const validateNewPassword = (rule, value, callback) => {
+  const errors = []
+  
+  // 检查必填性
+  if (!value) {
+    errors.push('请输入新密码')
+  }
+  
+  // 检查长度
+  if (value && value.length < 8) {
+    errors.push('密码长度至少8位')
+  }
+  
+  // 检查是否包含数字
+  if (value && !/(?=.*[0-9])/.test(value)) {
+    errors.push('密码必须包含数字')
+  }
+  
+  // 检查是否包含大写字母
+  if (value && !/(?=.*[A-Z])/.test(value)) {
+    errors.push('密码必须包含大写字母')
+  }
+  
+  // 检查是否包含小写字母
+  if (value && !/(?=.*[a-z])/.test(value)) {
+    errors.push('密码必须包含小写字母')
+  }
+  
+  // 检查是否包含特殊字符
+  if (value && !/(?=.*[@#$%^&*])/.test(value)) {
+    errors.push('密码必须包含特殊字符（如：@#$%^&*等）')
+  }
+  
+  if (errors.length > 0) {
+    callback(new Error(errors.join('，')))
+  } else {
+    callback()
+  }
+}
+
 const passwordRules = {
   old_password: [
     { required: true, message: '请输入当前密码', trigger: 'blur' }
   ],
   new_password: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 8, message: '密码长度至少8位', trigger: 'blur' },
     { 
-      pattern: /(?=.*[0-9])/, // 必须包含数字
-      message: '密码必须包含数字',
-      trigger: 'blur'
-    },
-    {
-      pattern: /(?=.*[A-Z])/, // 必须包含大写字母
-      message: '密码必须包含大写字母',
-      trigger: 'blur'
-    },
-    {
-      pattern: /(?=.*[a-z])/, // 必须包含小写字母
-      message: '密码必须包含小写字母',
-      trigger: 'blur'
-    },
-    {
-      pattern: /(?=.*[@#$%^&*])/, // 必须包含特殊字符
-      message: '密码必须包含特殊字符（如：@#$%^&*等）',
+      validator: validateNewPassword,
       trigger: 'blur'
     }
   ],

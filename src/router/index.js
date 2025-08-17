@@ -2,6 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
     {
+        path: '/user',
+        name: 'User',
+        component: () => import('@/views/user/UserList.vue'),
+        meta: { title: '用户管理' }
+    },
+    {
         path: '/login',
         name: 'Login',
         component: () => import('@/views/login/index.vue'),
@@ -17,6 +23,12 @@ const routes = [
             return userInfo.role === 'admin' ? '/shop' : '/order'
         },
         children: [
+            {
+                path: 'user',
+                name: 'User',
+                component: () => import('@/views/user/UserList.vue'),
+                meta: { title: '用户管理' }
+            },
             {
                 path: 'order',
                 name: 'Order',

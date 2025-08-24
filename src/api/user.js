@@ -26,3 +26,19 @@ export const getUserList = (params) => {
     params: {...params, shop_id: getCurrentShopId()}
   })
 }
+
+export const deleteUser = (params) => {
+  return request({
+    url: '/admin/user/delete',
+    method: 'delete',
+    params: {...params, shop_id: getCurrentShopId()}
+  })
+}
+
+export const updateUser = (params) => {
+  return request({
+    url: '/admin/user/update',
+    method: 'put',
+    params: {...params, shop_id: getCurrentShopId()}
+  })
+}

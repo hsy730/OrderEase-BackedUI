@@ -7,12 +7,12 @@
       </div>
 
       <div class="content" v-loading="loading">
-        <el-descriptions :column="1" border>
+        <el-descriptions :column="2" border>
           <el-descriptions-item label="标签ID">{{ tag.id }}</el-descriptions-item>
           <el-descriptions-item label="标签名称">{{ tag.name }}</el-descriptions-item>
-          <el-descriptions-item label="描述">{{ tag.description || '暂无描述' }}</el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ formatTime(tag.created_at) }}</el-descriptions-item>
           <el-descriptions-item label="更新时间">{{ formatTime(tag.updated_at) }}</el-descriptions-item>
+          <el-descriptions-item label="描述" :span="2">{{ tag.description || '暂无描述' }}</el-descriptions-item>
         </el-descriptions>
 
         <div class="product-list">

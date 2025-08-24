@@ -16,8 +16,8 @@
       <!-- <el-table-column prop="product_count" label="商品数量" width="100" align="center" /> -->
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-button type="info" link @click="handleViewDetails(row)">查看</el-button>
+          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
           <!--<el-button type="success" link @click="handleAddProducts(row)">添加商品</el-button>-->
           <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>

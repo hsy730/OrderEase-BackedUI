@@ -15,6 +15,34 @@ let isRefreshing = false
 // 等待刷新token的请求队列
 let requests = []
 
+// 刷新token的函数
+async function handleRefreshToken(storedRefreshToken, adminInfo) {
+  try {
+    const res = await refreshToken(storedRefreshToken)
+    if (res.code !== 200) {
+      throw new Error('刷新token失败')
+    }
+    const newToken = res.data.token
+    const newRefreshToken = res.data.refreshToken
+
+    // 更新本地存储
+    const adminData = JSON.parse(adminInfo)
+    adminData.token = newToken
+    adminData.refreshToken = newRefreshToken
+    localStorage.setItem('admin', JSON.stringify(adminData))
+
+    return newToken
+  } catch (error) {
+    // 刷新失败，清除本地存储并跳转登录
+    localStorage.removeItem('admin')
+    ElMessage.error('登录已过期，请重新登录')
+    router.push('/login')
+    throw error
+  } finally {
+    isRefreshing = false
+  }
+}
+
 // 请求拦截器
 request.interceptors.request.use(
   async (config) => {
@@ -44,16 +72,7 @@ request.interceptors.request.use(
       if (!isRefreshing) {
         isRefreshing = true
         try {
-          // 调用刷新token接口
-          const res = await refreshToken(storedRefreshToken)
-          const newToken = res.data.token
-          const newRefreshToken = res.data.refreshToken
-
-          // 更新本地存储
-          const adminData = JSON.parse(adminInfo)
-          adminData.token = newToken
-          adminData.refreshToken = newRefreshToken
-          localStorage.setItem('admin', JSON.stringify(adminData))
+          const newToken = await handleRefreshToken(storedRefreshToken, adminInfo)
 
           // 处理队列中的请求
           requests.forEach((callback) => callback(newToken))
@@ -103,28 +122,19 @@ request.interceptors.response.use(
             if (storedRefreshToken && !isRefreshing) {
               isRefreshing = true
               try {
-                // 调用刷新token接口
-                const res = await refreshToken(storedRefreshToken)
-                const newToken = res.data.token
-                const newRefreshToken = res.data.refreshToken
-
-                // 更新本地存储
-                const adminData = JSON.parse(adminInfo)
-                adminData.token = newToken
-                adminData.refreshToken = newRefreshToken
-                localStorage.setItem('admin', JSON.stringify(adminData))
+                const newToken = await handleRefreshToken(storedRefreshToken, adminInfo)
 
                 // 重试当前请求
                 const originalRequest = error.config
                 originalRequest.headers.Authorization = `Bearer ${newToken}`
                 return request(originalRequest)
               } catch (refreshError) {
-                // 刷新失败，清除本地存储并跳转登录
-                localStorage.removeItem('admin')
-                ElMessage.error('登录已过期，请重新登录')
-                router.push('/login')
-              } finally {
-                isRefreshing = false
+                  // 刷新失败，清除本地存储并跳转登录
+                  localStorage.removeItem('admin')
+                  ElMessage.error('登录已过期，请重新登录')
+                  router.push('/login')
+                } finally {
+                  isRefreshing = false
               }
             } else {
               // 没有刷新token或正在刷新，清除本地存储并跳转登录

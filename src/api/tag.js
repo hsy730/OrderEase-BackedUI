@@ -122,7 +122,7 @@ export const bindProductTag = (tagId, productIds) => {
     method: 'post',
     data: {
       tag_id: Number(tagId),
-      product_ids: productIds.map(id => Number(id)),
+      product_ids: productIds,
       shop_id: getCurrentShopId()
     }
   })

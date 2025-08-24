@@ -68,7 +68,7 @@
           <template #default="{ row }">
             <div class="operation-buttons">
               <el-button type="info" link @click="handleView(row)">查看</el-button>
-              <el-divider direction="vertical" />
+              <!-- <el-divider direction="vertical" /> -->
               <el-button 
                 v-if="row.status === 'pending' || row.status === ''"
                 type="success" 
@@ -85,7 +85,7 @@
               >
                 下架
               </el-button>
-              <el-divider direction="vertical" />
+              <!-- <el-divider direction="vertical" /> -->
               <el-dropdown>
                 <el-button type="primary" link>
                   更多<el-icon class="el-icon--right"><arrow-down /></el-icon>

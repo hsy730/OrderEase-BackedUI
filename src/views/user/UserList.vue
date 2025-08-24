@@ -77,6 +77,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import '@/assets/table-global.css'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserList, createUser, deleteUser, updateUser } from '@/api/user'
 

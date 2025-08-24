@@ -66,6 +66,7 @@
 
 // 在 script 部分添加引入
 <script setup>
+import '@/assets/table-global.css'
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
@@ -230,26 +231,5 @@ const handleView = (row) => {
   display: flex;
   justify-content: flex-end;
 }
-:deep(.el-table) {
-  --el-table-border-color: #ebeef5;
-  --el-table-header-bg-color: #f5f7fa;
-  font-size: 13px;
-}
-
-:deep(.el-table .cell) {
-  padding: 0;
-  line-height: 1.4;
-}
-
-/* 调整表格行高 */
-:deep(.el-table__row) {
-  height: 56px;
-}
-
-/* 优化表格头部样式 */
-:deep(.el-table__header) th {
-  font-weight: 500;
-  color: #606266;
-  font-size: 13px;
-}
+/* 表格样式已移至全局样式文件 table-global.css */
 </style>

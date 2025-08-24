@@ -103,6 +103,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import '@/assets/table-global.css'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTagList, createTag, updateTag, deleteTag, batchUpdateTags, getTagProducts } from '@/api/tag'
 import { useRouter } from 'vue-router'
@@ -353,29 +354,7 @@ onMounted(() => {
   margin: 0;
 }
 
-/* 表格样式 */
-:deep(.el-table) {
-  --el-table-border-color: #ebeef5;
-  --el-table-header-bg-color: #f5f7fa;
-  font-size: 13px;
-}
-
-:deep(.el-table .cell) {
-  padding: 0;
-  line-height: 1.4;
-}
-
-/* 调整表格行高 */
-:deep(.el-table__row) {
-  height: 56px;
-}
-
-/* 优化表格头部样式 */
-:deep(.el-table__header) th {
-  font-weight: 500;
-  color: #606266;
-  font-size: 13px;
-}
+/* 表格样式已移至全局样式文件 table-global.css */
 
 :deep(.el-button--primary.is-link) {
   color: #409eff;

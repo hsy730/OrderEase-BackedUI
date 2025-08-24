@@ -83,6 +83,7 @@
 </template>
 
 <script setup>
+import '@/assets/table-global.css'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -253,4 +254,4 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
 }
-</style> 
+</style>

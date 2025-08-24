@@ -1,0 +1,20 @@
+.el-table {
+  --el-table-border-color: #ebeef5;
+  --el-table-header-bg-color: #f5f7fa;
+  font-size: 13px;
+}
+
+.el-table .cell {
+  padding: 0 10px;
+  line-height: 1.4;
+}
+
+.el-table__row {
+  height: 30px;
+}
+
+.el-table__header th {
+  font-weight: 500;
+  color: #606266;
+  font-size: 13px;
+}

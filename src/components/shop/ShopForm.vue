@@ -132,7 +132,7 @@ const validatePassword = (rule, value, callback) => {
   
   // 检查密码长度
   if (value && value.length < 8) {
-    errors.push('密码长度至少8位')
+    errors.push('长度至少8位')
   }
   
   // 检查是否包含数字

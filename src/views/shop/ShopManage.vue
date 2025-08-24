@@ -193,7 +193,7 @@ const handleSubmit = async () => {
 const router = useRouter()
 
 const handleView = (row) => {
-  router.push(`/shop/detail/${row.id}`)
+  router.push(`/shop/${row.id}`)
 }
 </script>
 

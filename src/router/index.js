@@ -60,6 +60,12 @@ const routes = [
                 meta: { title: '商品详情' }
             },
             {
+                path: 'shop/:id',
+                name: 'ShopDetail',
+                component: () => import('@/views/shop/ShopDetail.vue'),
+                meta: { title: '店铺详情' }
+            },
+            {
                 path: 'tag',
                 name: 'TagManage',
                 component: () => import('@/views/tag/TagManage.vue'),

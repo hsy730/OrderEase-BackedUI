@@ -9,8 +9,7 @@
       <el-input v-model="formData.owner_password" type="password" show-password @input="formRef?.validateField('owner_password')" />
     </el-form-item>
     <el-form-item v-else label="店主密码" prop="owner_password">
-      <el-input v-model="formData.owner_password" type="password" show-password @input="formRef?.validateField('owner_password')" />
-      <div class="el-form-item__help" v-if="!formData.owner_password">不填写则保持原密码不变</div>
+      <el-input v-model="formData.owner_password" type="password" show-password @input="formRef?.validateField('owner_password')" placeholder="不填写则保持原密码不变" />
     </el-form-item>
 
     <!-- 原有字段 -->
@@ -19,7 +18,7 @@
     </el-form-item>
 
     <!-- 新增联系字段 -->
-    <el-form-item label="联系电话" prop="contact_phone" >
+    <el-form-item label="联系电话" prop="contact_phone" :rules="[{ validator: validatePhone, trigger: 'blur' }]">
       <el-input v-model="formData.contact_phone" />
     </el-form-item>
     
@@ -174,6 +173,20 @@ const formRules = computed(() => ({
     }
   ]
 }))
+
+// 验证电话格式
+const validatePhone = (rule, value, callback) => {
+  if (!value) {
+    return callback();
+  }
+  // 匹配中国大陆手机号和固定电话的正则表达式
+  const phoneRegex = /^1[3-9]\d{9}$|^0\d{2,3}-?\d{7,8}$/;
+  if (phoneRegex.test(value)) {
+    callback();
+  } else {
+    callback(new Error('请输入有效的电话号码'));
+  }
+};
 
 const formData = ref({
   owner_username: '',

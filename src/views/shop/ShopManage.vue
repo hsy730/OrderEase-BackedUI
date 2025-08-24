@@ -25,7 +25,7 @@
         <el-table-column prop="valid_until" label="到期时间" min-width="250" />
         <el-table-column label="操作" width="220" fixed="right" align="center">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleView(row)">查看</el-button>
+            <el-button type="info" link @click="handleView(row)">查看</el-button>
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
@@ -229,5 +229,27 @@ const handleView = (row) => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+:deep(.el-table) {
+  --el-table-border-color: #ebeef5;
+  --el-table-header-bg-color: #f5f7fa;
+  font-size: 13px;
+}
+
+:deep(.el-table .cell) {
+  padding: 0;
+  line-height: 1.4;
+}
+
+/* 调整表格行高 */
+:deep(.el-table__row) {
+  height: 56px;
+}
+
+/* 优化表格头部样式 */
+:deep(.el-table__header) th {
+  font-weight: 500;
+  color: #606266;
+  font-size: 13px;
 }
 </style>

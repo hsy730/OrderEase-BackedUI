@@ -35,10 +35,10 @@ export const deleteUser = (params) => {
   })
 }
 
-export const updateUser = (params) => {
+export const updateUser = (data) => {
   return request({
     url: '/admin/user/update',
     method: 'put',
-    params: {...params, shop_id: getCurrentShopId()}
+    data
   })
 }

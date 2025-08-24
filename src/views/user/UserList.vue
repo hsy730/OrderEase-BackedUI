@@ -12,7 +12,7 @@
       style="width: 100%"
     >
       <el-table-column prop="name" label="用户名" min-width="120"></el-table-column>
-      <el-table-column prop="role" label="角色" min-width="100"></el-table-column>
+      <el-table-column prop="role" label="角色" min-width="100" :formatter="formatRole"></el-table-column>
       <el-table-column prop="phone" label="电话" min-width="120"></el-table-column>
       <el-table-column prop="address" label="地址" min-width="200"></el-table-column>
       <el-table-column label="操作" width="180" align="center">
@@ -38,13 +38,16 @@
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle">
       <el-form :model="form" :rules="rules" ref="formRef">
-        <el-form-item label="用户名" prop="name">
-          <el-input v-model="form.name" />
+        <el-form-item label="用户名" prop="name" :rules="[{ required: true, message: '请输入用户名' }]">
+          <el-input v-model="form.name" :disabled="!!form.id" />
         </el-form-item>
-            <el-form-item label="密码" prop="password" >
-          <el-input v-model="form.password" type="password" show-password />
+        <el-form-item v-if="!form.id" label="密码" prop="password" required :rules="[{ required: true, message: '请输入密码' }]">
+          <el-input v-model="form.password" type="password" show-password @input="formRef?.validateField('password')" />
         </el-form-item>
-        <el-form-item label="电话" prop="phone">
+        <el-form-item v-else label="密码" prop="password">
+          <el-input v-model="form.password" type="password" show-password @input="formRef?.validateField('password')" placeholder="不填写则保持原密码不变" />
+        </el-form-item>
+        <el-form-item label="电话" prop="phone" :rules="[{ validator: validatePhone, trigger: 'blur' }]">
           <el-input v-model="form.phone" />
         </el-form-item>
         <el-form-item label="地址" prop="address">
@@ -54,11 +57,10 @@
           <el-select v-model="form.type">
             <el-option label="邮寄" value="delivery" />
             <el-option label="自提" value="pickup" />
-            <el-option label="系统用户" value="system" />
           </el-select>
         </el-form-item>
       
-        <el-form-item label="角色" prop="role" :rules="[{ required: true, message: '请选择用户角色' }]">
+        <el-form-item label="角色" prop="role">
           <el-select v-model="form.role">
             <el-option label="公共用户" value="system" />
             <el-option label="普通用户" value="user" />
@@ -77,6 +79,15 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserList, createUser, deleteUser, updateUser } from '@/api/user'
+
+// 角色格式化函数
+const formatRole = (row) => {
+  const roleMap = {
+    'user': '普通用户',
+    'system': '公共用户'
+  }
+  return roleMap[row.role] || row.role;
+}
 
 const userList = ref([])
 const dialogVisible = ref(false)
@@ -167,6 +178,20 @@ const handleEdit = (row) => {
 }
 
 // 提交表单
+// 验证电话格式
+const validatePhone = (rule, value, callback) => {
+  if (!value) {
+    return callback();
+  }
+  // 匹配中国大陆手机号和固定电话的正则表达式
+  const phoneRegex = /^1[3-9]\d{9}$|^0\d{2,3}-?\d{7,8}$/;
+  if (phoneRegex.test(value)) {
+    callback();
+  } else {
+    callback(new Error('请输入有效的电话号码'));
+  }
+};
+
 const submitForm = async () => {
   await formRef.value.validate()
   

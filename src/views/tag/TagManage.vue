@@ -13,8 +13,8 @@
     >
       <el-table-column prop="name" label="标签名称" min-width="120" />
       <el-table-column prop="description" label="描述" min-width="200" />
-      <el-table-column prop="product_count" label="商品数量" width="100" align="center" />
-      <el-table-column label="操作" width="180" align="center">
+      <!-- <el-table-column prop="product_count" label="商品数量" width="100" align="center" /> -->
+      <el-table-column label="操作" width="180" fixed="right" align="center">
         <template #default="{ row }">
           <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-button type="info" link @click="handleViewDetails(row)">查看</el-button>
@@ -351,5 +351,37 @@ onMounted(() => {
 :deep(.el-divider--vertical) {
   height: 1em;
   margin: 0;
+}
+
+/* 表格样式 */
+:deep(.el-table) {
+  --el-table-border-color: #ebeef5;
+  --el-table-header-bg-color: #f5f7fa;
+  font-size: 13px;
+}
+
+:deep(.el-table .cell) {
+  padding: 0;
+  line-height: 1.4;
+}
+
+/* 调整表格行高 */
+:deep(.el-table__row) {
+  height: 56px;
+}
+
+/* 优化表格头部样式 */
+:deep(.el-table__header) th {
+  font-weight: 500;
+  color: #606266;
+  font-size: 13px;
+}
+
+:deep(.el-button--primary.is-link) {
+  color: #409eff;
+}
+
+:deep(.el-button--danger.is-link) {
+  color: #f56c6c;
 }
 </style>

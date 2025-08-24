@@ -21,9 +21,9 @@
         border
         style="width: 100%"
       >
-        <el-table-column prop="name" label="店铺名称" width="200" align="center" />
+        <el-table-column prop="name" label="店铺名称" width="200" />
         <el-table-column prop="valid_until" label="到期时间" min-width="250" />
-        <el-table-column label="操作" width="220" fixed="right" align="center">
+        <el-table-column label="操作" width="220" fixed="right" >
           <template #default="{ row }">
             <el-button type="info" link @click="handleView(row)">查看</el-button>
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>

@@ -12,34 +12,34 @@
         border
         style="width: 100%"
       >
-        <el-table-column label="订单金额" width="150" align="center">
+        <el-table-column label="订单金额" width="150">
           <template #default="{ row }">
             <span class="price">¥{{ row.total_price.toFixed(2) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="订单状态" width="120" align="center">
+        <el-table-column prop="status" label="订单状态" width="120">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="商品数量" width="120" align="center">
+        <el-table-column label="商品数量" width="120">
           <template #default="{ row }">
             <span class="quantity">{{ row.items.length }}件</span>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" min-width="180" align="center">
+        <el-table-column label="创建时间" min-width="180">
           <template #default="{ row }">
             {{ formatTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="更新时间" min-width="180" align="center">
+        <el-table-column label="更新时间" min-width="180">
           <template #default="{ row }">
             {{ formatTime(row.updated_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right" align="center">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-button type="info" link @click="handleView(row)">查看</el-button>
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>

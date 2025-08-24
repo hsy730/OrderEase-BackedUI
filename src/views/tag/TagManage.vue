@@ -14,7 +14,7 @@
       <el-table-column prop="name" label="标签名称" min-width="120" />
       <el-table-column prop="description" label="描述" min-width="200" />
       <!-- <el-table-column prop="product_count" label="商品数量" width="100" align="center" /> -->
-      <el-table-column label="操作" width="180" fixed="right" align="center">
+      <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
           <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-button type="info" link @click="handleViewDetails(row)">查看</el-button>

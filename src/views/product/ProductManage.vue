@@ -21,7 +21,7 @@
         border
         style="width: 100%"
       >
-        <el-table-column label="商品信息" min-width="260" align="center">
+        <el-table-column label="商品信息" min-width="260">
           <template #default="{ row }">
             <div class="product-info">
               <el-image
@@ -44,27 +44,27 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="价格" width="100" align="center">
+        <el-table-column label="价格" width="100">
           <template #default="{ row }">
             <span class="price">¥{{ Number(row.price || 0).toFixed(2) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="stock" label="库存" width="80" align="center">
+        <el-table-column prop="stock" label="库存" width="80">
           <template #default="{ row }">
             <span :class="{ 'low-stock': row.stock < 10 }">{{ row.stock }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" width="150" align="center">
+        <el-table-column label="创建时间" width="150">
           <template #default="{ row }">
             {{ formatTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="更新时间" width="150" align="center">
+        <el-table-column label="更新时间" width="150">
           <template #default="{ row }">
             {{ formatTime(row.updated_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right" align="center">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <div class="operation-buttons">
               <el-button type="info" link @click="handleView(row)">查看</el-button>
@@ -139,6 +139,7 @@
 </template>
 
 <script setup>
+import '@/assets/table-global.css'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -417,16 +418,7 @@ onMounted(() => {
   padding-top: 16px;
 }
 
-:deep(.el-table) {
-  --el-table-border-color: #ebeef5;
-  --el-table-header-bg-color: #f5f7fa;
-  font-size: 13px;
-}
-
-:deep(.el-table .cell) {
-  padding: 0;
-  line-height: 1.4;
-}
+/* 表格样式已移至全局样式文件 table-global.css */
 
 :deep(.el-button--primary.is-link),
 :deep(.el-button--danger.is-link) {
@@ -441,18 +433,6 @@ onMounted(() => {
 
 :deep(.el-button--danger.is-link) {
   color: #f56c6c;
-}
-
-/* 调整表格行高 */
-:deep(.el-table__row) {
-  height: 56px;
-}
-
-/* 优化表格头部样式 */
-:deep(.el-table__header) th {
-  font-weight: 500;
-  color: #606266;
-  font-size: 13px;
 }
 
 .operation-buttons {

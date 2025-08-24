@@ -15,7 +15,7 @@
       <el-table-column prop="role" label="角色" min-width="100" :formatter="formatRole"></el-table-column>
       <el-table-column prop="phone" label="电话" min-width="120"></el-table-column>
       <el-table-column prop="address" label="地址" min-width="200"></el-table-column>
-      <el-table-column label="操作" width="180" align="center">
+      <el-table-column label="操作" width="180" fixed="right">
         <template #default="scope">
           <el-button type="primary" link size="small" @click="handleEdit(scope.row)">编辑</el-button>
           <el-button type="danger" link size="small" @click="handleDelete(scope.row.id)">删除</el-button>

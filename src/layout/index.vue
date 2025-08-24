@@ -92,7 +92,7 @@
       <div class="app-main">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
-            <keep-alive :exclude="['TagDetail']">
+            <keep-alive :include="['Migration']">
               <component :is="Component" />
             </keep-alive>
           </transition>

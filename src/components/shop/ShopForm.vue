@@ -38,11 +38,7 @@
         type="datetime"
         value-format="YYYY-MM-DDTHH:mm:ssZ"
         placeholder="选择有效期"
-    >
-      <template #default>
-        <div></div>
-      </template>
-    </el-date-picker>
+      />
     </el-form-item>
 
     <el-form-item label="店铺描述" prop="description">

@@ -45,7 +45,22 @@
     </el-form-item>
 
     <el-form-item label="店铺设置" prop="settings">
-      <el-input v-model="formData.settings" type="textarea" :rows="3" />
+      <el-input v-model="formData.settings" type="textarea" :rows="3" />    
+    </el-form-item>
+
+    <el-form-item label="店铺图片">
+      <el-upload
+        v-if="formData.id"
+        class="shop-image-upload"
+        :action="null"
+        :http-request="handleUpload"
+        :show-file-list="false"
+        accept="image/*"
+      >
+        <img v-if="formData.image_url" :src="getImageUrl(formData.image_url)" class="preview-image">
+        <el-icon v-else class="upload-icon"><Plus /></el-icon>
+      </el-upload>
+      <div v-else class="upload-tip">请先保存店铺信息后再上传图片</div>
     </el-form-item>
   </el-form>
 </template>
@@ -53,7 +68,9 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { createShop, updateShop, getShopDetail } from '@/api/shop'  // 新增API引用
+import { Plus } from '@element-plus/icons-vue'
+import { createShop, updateShop, getShopDetail, uploadShopImage } from '@/api/shop'  // 新增API引用
+import { API_BASE_URL, API_PREFIX } from '@/config'
 
 // 修改props接收方式
 const props = defineProps({
@@ -79,7 +96,8 @@ const fetchShopDetail = async () => {
       address: data.address || '',
       description: data.description || '',
       settings: data.settings || '',
-      valid_until: data.valid_until || new Date().toISOString()
+      valid_until: data.valid_until || new Date().toISOString(),
+      image_url: data.image_url || ''
     }
     console.log('店铺详情数据:', formData.value)
   } catch (error) {
@@ -102,7 +120,8 @@ watch(() => props.shopId, (newVal) => {
       description: '',
       valid_until: new Date().toISOString(),
       address: '',
-      settings: ''
+      settings: '',
+      image_url: ''
     }
   }
 })
@@ -197,7 +216,8 @@ const formData = ref({
       description: '',
       valid_until: new Date().toISOString(),
       address: '',
-      settings: ''
+      settings: '',
+      image_url: ''
 })
 
 const submit = () => {
@@ -233,7 +253,61 @@ const submit = () => {
 }
 
 // 暴露submit方法给父组件
+// 处理图片上传
+const handleUpload = async ({ file }) => {
+  if (formData.value.id) {
+    try {
+      const res = await uploadShopImage(formData.value.id, file)
+      formData.value.image_url = res.url
+      ElMessage.success('图片上传成功')
+    } catch (error) {
+      console.error('图片上传失败:', error)
+      ElMessage.error('图片上传失败')
+    }
+  } else {
+    ElMessage.warning('请先保存店铺信息')
+  }
+}
+
+// 获取图片完整URL
+const getImageUrl = (path) => {
+  return path ? `${API_BASE_URL}${API_PREFIX}/admin/shop/image?path=${path}` : ''
+}
+
 defineExpose({
   submit
 })
 </script>
+
+<style scoped>
+.shop-image-upload {
+  width: 200px;
+  height: 200px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-tip {
+  color: #909399;
+  font-size: 14px;
+}
+</style>

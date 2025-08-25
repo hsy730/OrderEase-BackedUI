@@ -109,7 +109,7 @@ const getImageUrl = (path) => {
   if (path.startsWith('http')) return path
   // 如果path以/开头，去掉开头的/
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
-  return `${API_BASE_URL}${API_PREFIX}/product/image?path=${cleanPath}`
+  return `${API_BASE_URL}${API_PREFIX}/admin/product/image?path=${cleanPath}`
 }
 
 // 格式化时间

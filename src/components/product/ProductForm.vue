@@ -115,7 +115,7 @@ const handleUpload = async ({ file }) => {
 
 // 获取图片完整URL
 const getImageUrl = (path) => {
-  return path ? `${API_BASE_URL}${API_PREFIX}/product/image?path=${path}` : ''
+  return path ? `${API_BASE_URL}${API_PREFIX}/admin/product/image?path=${path}` : ''
 }
 
 // 提交表单

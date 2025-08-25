@@ -57,3 +57,16 @@ export function getShopDetail(shopId) {
   })
 }
 
+export function uploadShopImage(id, file) {
+    const formData = new FormData()
+    formData.append('image', file)
+    return request({
+        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/upload-image`,
+        method: 'post',
+        params: { id, shop_id: getCurrentShopId()},
+        data: formData,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+}

@@ -16,30 +16,21 @@
         </el-descriptions>
 
         <div class="product-list">
-          <div class="list-header">
-            <h3>关联商品</h3>
-            <!-- <div class="search-box">
-              <el-input
-                v-model="searchText"
-                placeholder="搜索商品名称"
-                clearable
-                @change="fetchTagDetail"
-                style="width: 200px; margin-right: 10px;"
-              />
-            </div> -->
+          <div class="list-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>已绑定商品</h3>
             <div class="action-buttons">
               <el-button
                 type="primary"
                 @click="bindDialogVisible = true"
               >
-                绑定商品
+                绑定
               </el-button>
               <el-button
-                type="danger"
+                type=""
                 :disabled="selectedProducts.length === 0"
                 @click="handleBatchUnbind"
               >
-                批量解绑
+                解绑
               </el-button>
             </div>
           </div>
@@ -51,18 +42,18 @@
             style="width: 100%"
             @selection-change="handleSelectionChange"
           >
-            <el-table-column type="selection" width="55" />
+            <el-table-column type="selection" width="35" />
             <el-table-column prop="name" label="商品名称" />
-            <el-table-column prop="price" label="价格" width="120" align="center">
+            <el-table-column prop="price" label="价格" width="120">
               <template #default="{ row }">
                 ¥{{ row.price.toFixed(2) }}
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="120" align="center">
+            <el-table-column label="操作" width="120">
               <template #default="{ row }">
-                                  <el-button type="primary" link @click="viewProduct(row)">查看</el-button>
-                                    <el-button type="danger" link @click="handleUnbind(row)">解绑</el-button>
-                              </template>
+                <el-button type="primary" link @click="viewProduct(row)">查看</el-button>
+                <el-button type="danger" link @click="handleUnbind(row)">解绑</el-button>
+              </template>
             </el-table-column>
           </el-table>
           <el-pagination
@@ -222,7 +213,7 @@ const handleUnbind = async (product) => {
     )
     
     loading.value = true
-    await unbindProductTag(route.params.id, product.id)
+    await unbindProductTag(route.params.id, [product.id])
     ElMessage.success('解绑成功，正在刷新商品列表...')
     loading.value = true
     await fetchTagDetail() // 刷新数据

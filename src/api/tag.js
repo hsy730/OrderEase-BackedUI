@@ -103,13 +103,13 @@ export const getAvailableTags = (productId) => {
 }
 
 // 批量解绑商品标签
-export const unbindProductTag = (tagId, productId) => {
+export const unbindProductTag = (tagId, productIds) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shopOwner'}/tag/batch-untag`,
     method: 'delete',
     data: {
       tag_id: Number(tagId),
-      product_ids: [Number(productId)],
+      product_ids: productIds,
       shop_id: getCurrentShopId()
     }
   })

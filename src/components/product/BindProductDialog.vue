@@ -25,7 +25,7 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" />
+        <el-table-column type="selection" width="35" />
         <el-table-column prop="name" label="商品名称" />
         <el-table-column prop="price" label="价格" width="120" align="center">
           <template #default="{ row }">
@@ -53,7 +53,7 @@
 
     <template #footer>
       <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleBatchBind">批量绑定</el-button>
+      <el-button type="primary" @click="handleBatchBind">绑定</el-button>
     </template>
   </el-dialog>
 </template>

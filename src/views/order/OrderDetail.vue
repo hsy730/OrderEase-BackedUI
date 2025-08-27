@@ -56,14 +56,14 @@
           </div>
         </template>
         <el-table :data="order.items || []" style="width: 100%" size="small">
-          <el-table-column label="商品信息" min-width="400">
+          <el-table-column label="商品信息" min-width="200">
             <template #default="{ row }">
               <div class="product-info">
                 <el-image
-                  v-if="row.product?.image_url"
-                  :src="getImageUrl(row.product.image_url)"
+                  v-if="row.product_image_url"
+                  :src="getImageUrl(row.product_image_url)"
                   class="product-image"
-                  :preview-src-list="[getImageUrl(row.product.image_url)]"
+                  :preview-src-list="[getImageUrl(row.product_image_url)]"
                 >
                   <template #error>
                     <div class="image-placeholder">
@@ -72,8 +72,8 @@
                   </template>
                 </el-image>
                 <div class="product-detail">
-                  <div class="product-name">{{ row.product?.name || '未知商品' }}</div>
-                  <div class="product-desc">{{ row.product?.description || '暂无描述' }}</div>
+                  <div class="product-name">{{ row.product_name || '未知商品' }}</div>
+                  <div class="product-desc">{{ row.product_description || '暂无描述' }}</div>
                 </div>
               </div>
             </template>
@@ -222,7 +222,7 @@ const formatTime = (time) => {
 const getImageUrl = (path) => {
   if (!path) return ''
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
-  return `${API_BASE_URL}${API_PREFIX}/product/image?path=${cleanPath}`
+  return `${API_BASE_URL}${API_PREFIX}/admin/product/image?path=${cleanPath}`
 }
 
 onMounted(() => {

@@ -12,7 +12,7 @@
         active-text-color="#409EFF"
       >
         <el-menu-item index="/shop" v-if="isAdmin">
-          <el-icon><User /></el-icon>
+          <el-icon><Shop /></el-icon>
           <span>店铺管理</span>
         </el-menu-item>
 
@@ -150,7 +150,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Document, Goods, Fold, Upload, Collection, User } from '@element-plus/icons-vue'
+import { Document, Goods, Fold, Upload, Collection, User, Shop } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { changePassword, logout } from '@/api/auth'
 import { getShopList, getCurrentShopId } from '@/api/shop'

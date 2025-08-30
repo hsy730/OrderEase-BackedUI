@@ -8,7 +8,7 @@
     <div class="detail-content" v-loading="loading">
       <el-row :gutter="20">
         <!-- 左侧商品信息 -->
-        <el-col :span="8">
+        <el-col :span="4">
           <!-- 商品图片展示区 -->
           <div class="product-image" v-if="product.image_url">
             <el-image
@@ -35,7 +35,7 @@
         </el-col>
 
         <!-- 右侧商品详情 -->
-        <el-col :span="16">
+        <el-col :span="20">
           <el-descriptions :column="1" border>
             <el-descriptions-item label="商品ID">{{ product.id }}</el-descriptions-item>
             <el-descriptions-item label="商品名称">{{ product.name }}</el-descriptions-item>
@@ -58,6 +58,32 @@
                 <span v-if="product.tags.length === 0">暂无标签</span>
               </div>
             </el-descriptions-item>
+            <el-descriptions-item label="商品选项参数">
+              <div v-if="product.option_categories && product.option_categories.length > 0" class="option-categories-container">
+                <div v-for="category in product.option_categories" :key="category.id" class="category-item">
+                  <div class="category-header">
+                    <span class="category-name">{{ category.name }}</span>
+                    <span v-if="category.is_required" class="required-mark">*</span>
+                    <span v-if="category.is_multiple" class="multiple-mark">(多选)</span>
+                  </div>
+                  <div class="category-options">
+                    <el-tag
+                      v-for="option in category.options"
+                      :key="option.id"
+                      class="option-tag"
+                      :type="option.is_default ? 'primary' : ''"
+                    >
+                      {{ option.name }}
+                      <span v-if="option.price_adjustment !== 0" class="price-adjustment">
+                        {{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }}
+                      </span>
+                      <span v-if="option.is_default" class="default-mark">默认</span>
+                    </el-tag>
+                  </div>
+                </div>
+              </div>
+              <span v-else>暂无选项参数</span>
+            </el-descriptions-item>
           </el-descriptions>
         </el-col>
       </el-row>
@@ -76,7 +102,8 @@ import { API_BASE_URL, API_PREFIX } from '@/config'
 const route = useRoute()
 const loading = ref(false)
 const product = ref({
-  tags: []
+  tags: [],
+  option_categories: []
 })
 
 // 获取商品详情
@@ -93,7 +120,8 @@ const fetchProductDetail = async () => {
     
     product.value = {
       ...productData,
-      tags: tagsData
+      tags: tagsData,
+      option_categories: productData.option_categories || []
     }
     } catch (tagsError) {
       console.error('获取商品标签失败:', tagsError)
@@ -151,7 +179,7 @@ onMounted(() => {
 .product-image {
   position: relative;
   width: 100%;
-  max-width: 300px;
+  max-width: 100px;
   aspect-ratio: 1;
   border-radius: 8px;
   overflow: hidden;
@@ -226,6 +254,66 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* 商品选项参数样式 */
+.option-categories-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-item {
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  padding: 12px;
+  background-color: #fafafa;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.required-mark {
+  color: #f56c6c;
+  margin-left: 4px;
+}
+
+.multiple-mark {
+  font-size: 12px;
+  color: #909399;
+  margin-left: 8px;
+}
+
+.category-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.option-tag {
+  cursor: default;
+  transition: all 0.2s;
+}
+
+.option-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.price-adjustment {
+  color: #f56c6c;
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.default-mark {
+  font-size: 11px;
+  margin-left: 4px;
+  opacity: 0.8;
+}
+
 :deep(.el-descriptions) {
   padding: 0;
 }
@@ -233,4 +321,4 @@ onMounted(() => {
 :deep(.el-descriptions__body) {
   background-color: transparent;
 }
-</style> 
+</style>

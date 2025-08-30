@@ -71,7 +71,7 @@
                     size="small"
                     style="width: 205px; margin-right: 0;"
                   />
-                  <span class="field-label">价格</span>
+                  <span class="field-label">调价</span>
                   <el-input-number
                     v-model="option.price_adjustment"
                     :precision="2"
@@ -183,17 +183,54 @@ const fetchProductDetail = async () => {
   
   try {
     const data = await getProductDetail(props.productId)
+    console.log('获取到的商品数据:', data)
+    
+    // 确保 option_categories 存在且是数组
+    const optionCategories = data.option_categories || []
+    
+    // 对每个选项类别进行处理，确保数据结构完整
+    const processedCategories = optionCategories.map(category => {
+      // 确保类别基本字段存在
+      const processedCategory = {
+        name: category.name || '',
+        is_required: !!category.is_required,
+        is_multiple: !!category.is_multiple,
+        display_order: category.display_order || 0,
+        options: []
+      }
+      
+      // 处理选项列表
+      if (Array.isArray(category.options)) {
+        processedCategory.options = category.options.map(option => ({
+          name: option.name || '',
+          price_adjustment: option.price_adjustment || 0,
+          display_order: option.display_order || 0,
+          is_default: !!option.is_default
+        }))
+      }
+      
+      // 确保每个类别至少有一个选项
+      if (processedCategory.options.length === 0) {
+        processedCategory.options = [{ name: '', price_adjustment: 0, display_order: 0, is_default: false }]
+      }
+      
+      return processedCategory
+    })
+    
     form.value = {
       id: data.id,
-      name: data.name,
-      price: data.price,
-      stock: data.stock,
-      description: data.description,
-      image_url: data.image_url,
-      option_categories: data.option_categories || [] // 处理选项类别数据
+      name: data.name || '',
+      price: data.price || 0,
+      stock: data.stock || 0,
+      description: data.description || '',
+      image_url: data.image_url || '',
+      option_categories: processedCategories
     }
+    
+    console.log('处理后的表单数据:', form.value)
   } catch (error) {
     console.error('获取商品详情失败:', error)
+    ElMessage.error('获取商品详情失败，请重试')
   }
 }
 
@@ -204,7 +241,7 @@ const addCategory = () => {
     is_required: false,
     is_multiple: false,
     display_order: 0,
-    options: [{ name: '', price_adjustment: 0, display_order: 0 }]
+    options: [{ name: '', price_adjustment: 0, display_order: 0, is_default: false }]
   })
 }
 
@@ -218,7 +255,8 @@ const addOption = (categoryIndex) => {
   form.value.option_categories[categoryIndex].options.push({
     name: '',
     price_adjustment: 0,
-    display_order: 0
+    display_order: 0,
+    is_default: false
   })
 }
 
@@ -320,8 +358,8 @@ defineExpose({
 // 在 style 标签中添加以下样式
 <style scoped>
 .product-image-upload {
-  width: 200px;
-  height: 200px;
+  width: 100px;
+  height: 100px;
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
   cursor: pointer;

@@ -3,11 +3,11 @@ import { isAdminRole } from '@/utils/auth';
 import { getCurrentShopId} from '@/api/shop';
 
 
-export const getSimpleUserList = () => {
+export const getSimpleUserList = (params) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shopOwner'}/user/simple-list`,
     method: 'get',
-    params: { shop_id: getCurrentShopId() }
+    params: { ...params, shop_id: getCurrentShopId() }
   })
 }
 

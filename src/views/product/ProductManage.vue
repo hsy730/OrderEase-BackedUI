@@ -21,7 +21,7 @@
         border
         style="width: 100%"
       >
-        <el-table-column label="商品信息" min-width="260">
+        <el-table-column label="商品信息" min-width="150">
           <template #default="{ row }">
             <div class="product-info">
               <el-image
@@ -64,13 +64,13 @@
             {{ formatTime(row.updated_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <div class="operation-buttons">
               <el-button type="info" link @click="handleView(row)">查看</el-button>
               <!-- <el-divider direction="vertical" /> -->
               <el-button 
-                v-if="row.status === 'pending' || row.status === ''"
+                v-if="row.status !== 'online'"
                 type="success" 
                 link 
                 @click="handleStatusChange(row, 'online')"
@@ -356,16 +356,16 @@ onMounted(() => {
 }
 
 .product-image {
-  width: 48px;
-  height: 48px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   object-fit: cover;
   border: 1px solid #ebeef5;
 }
 
 .image-placeholder {
-  width: 48px;
-  height: 48px;
+  width: 24px;
+  height: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -391,7 +391,7 @@ onMounted(() => {
 }
 
 .product-desc {
-  font-size: 12px;
+  font-size: 8px;
   color: #909399;
   display: -webkit-box;
   -webkit-line-clamp: 1;

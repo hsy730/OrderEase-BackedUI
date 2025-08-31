@@ -8,8 +8,13 @@
     <el-form-item label="用户" prop="user_id">
       <el-select 
         v-model="form.user_id" 
-        placeholder="请选择用户"
+        placeholder="请选择用户" 
         style="width: 100%"
+        filterable
+        remote
+        :remote-method="remoteSearchUser"
+        :loading="userLoading"
+        clearable
       >
         <el-option
           v-for="user in userList"
@@ -37,6 +42,11 @@
             placeholder="选择商品"
             @change="handleProductChange($event, index)"
             style="width: 200px"
+            filterable
+            remote
+            :remote-method="(query) => remoteSearchProduct(query, index)"
+            :loading="productLoading[index]"
+            clearable
           >
             <el-option
               v-for="product in productList"
@@ -111,6 +121,11 @@ const form = ref({
   total_price: 0
 })
 
+// 添加加载状态和搜索相关变量
+const userLoading = ref(false)
+const productLoading = ref({})
+const searchProductList = ref([]) // 用于存储搜索结果的商品列表
+
 // 初始化一个新的商品项
 const initOrderItem = () => ({
   product_id: '',
@@ -121,25 +136,26 @@ const initOrderItem = () => ({
 // 添加商品项
 const addItem = () => {
   form.value.items.push(initOrderItem())
+  // 初始化新添加项的加载状态
+  const newIndex = form.value.items.length - 1
+  productLoading.value[newIndex] = false
 }
 
 // 移除商品项
 const removeItem = (index) => {
   form.value.items.splice(index, 1)
   calculateTotal()
-}
-
-// 获取商品列表
-const fetchProductList = async () => {
-  try {
-    const response = await getProductList({ page: 1, pageSize: 100 })
-    console.log('商品列表数据:', response)
-    productList.value = response.data || []
-  } catch (error) {
-    console.error('获取商品列表失败:', error)
-    ElMessage.error('获取商品列表失败')
-    productList.value = []
-  }
+  // 清理对应的加载状态
+  const newLoadingState = {}
+  Object.keys(productLoading.value).forEach(key => {
+    const numKey = parseInt(key)
+    if (numKey < index) {
+      newLoadingState[key] = productLoading.value[key]
+    } else if (numKey > index) {
+      newLoadingState[numKey - 1] = productLoading.value[key]
+    }
+  })
+  productLoading.value = newLoadingState
 }
 
 // 商品选择变化
@@ -163,6 +179,20 @@ const calculateTotalAmount = () => {
   }, 0).toFixed(2)
 }
 
+// 获取商品列表
+const fetchProductList = async () => {
+  try {
+    const response = await getProductList({ page: 1, pageSize: 100 })
+    console.log('商品列表数据:', response)
+    productList.value = response.data || []
+    searchProductList.value = [...productList.value] // 保存原始商品列表
+  } catch (error) {
+    console.error('获取商品列表失败:', error)
+    ElMessage.error('获取商品列表失败')
+    productList.value = []
+  }
+}
+
 // 获取用户列表
 const fetchUserList = async () => {
   try {
@@ -172,6 +202,54 @@ const fetchUserList = async () => {
     console.error('获取用户列表失败:', error)
     ElMessage.error('获取用户列表失败')
     userList.value = []
+  }
+}
+
+const remoteSearchUser = async (query) => {
+  if (query.trim() === '') {
+    // 如果查询为空，加载所有用户
+    await fetchUserList()
+    return
+  }
+  
+  userLoading.value = true
+  try {
+    // 调用API搜索用户，假设后端有搜索接口
+    // 如果没有专门的搜索接口，可以先获取所有用户再进行前端过滤
+    const response = await getSimpleUserList({ page: 1, pageSize: 20, search: query })
+    const filteredUsers = response.filter(user => 
+      user.name.toLowerCase().includes(query.toLowerCase())
+    )
+    userList.value = filteredUsers
+  } catch (error) {
+    console.error('搜索用户失败:', error)
+    ElMessage.error('搜索用户失败')
+  } finally {
+    userLoading.value = false
+  }
+}
+
+// 远程搜索商品
+const remoteSearchProduct = async (query, index) => {
+  // 设置当前索引的加载状态
+  productLoading.value[index] = true
+  
+  try {
+    // 如果查询为空，使用原始商品列表
+    if (query.trim() === '') {
+      productList.value = [...searchProductList.value]
+      productLoading.value[index] = false
+      return
+    }
+    
+    // 调用API搜索商品
+    const response = await getProductList({ page: 1, pageSize: 20, search: query })
+    productList.value = response.data || []
+  } catch (error) {
+    console.error('搜索商品失败:', error)
+    ElMessage.error('搜索商品失败')
+  } finally {
+    productLoading.value[index] = false
   }
 }
 
@@ -278,4 +356,28 @@ const rules = {
   font-weight: bold;
   color: #f56c6c;
 }
-</style> 
+
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.item-price,
+.item-subtotal {
+  min-width: 100px;
+  color: #606266;
+}
+
+.total-amount {
+  font-size: 16px;
+  font-weight: bold;
+  color: #f56c6c;
+}
+</style>

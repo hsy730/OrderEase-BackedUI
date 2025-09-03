@@ -74,6 +74,15 @@
                 <div class="product-detail">
                   <div class="product-name">{{ row.product_name || '未知商品' }}</div>
                   <div class="product-desc">{{ row.product_description || '暂无描述' }}</div>
+                  <!-- 显示商品选项标签 -->
+                  <div v-if="row.options && row.options.length > 0" class="product-options">
+                    <div v-for="(option, index) in row.options" :key="index" class="option-tag">
+                      {{ option.category_name }}: {{ option.option_name }}
+                      <span v-if="option.price_adjustment !== 0">
+                        ({{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }})
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </template>
@@ -339,6 +348,27 @@ onMounted(() => {
   margin-left: 8px;
 }
 
+/* 商品选项标签样式 */
+.product-options {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.option-tag {
+  font-size: 12px;
+  background-color: #f0f2f5;
+  color: #606266;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.option-tag span {
+  color: #f56c6c;
+  font-weight: 500;
+}
+
 :deep(.el-descriptions__cell) {
   padding: 12px 16px;
 }
@@ -371,4 +401,4 @@ onMounted(() => {
     justify-content: flex-end;
   }
 }
-</style> 
+</style>

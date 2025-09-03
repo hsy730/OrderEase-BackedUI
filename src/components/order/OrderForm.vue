@@ -97,8 +97,11 @@
                 <template v-else>
                   <!-- 单选 -->
                   <el-radio-group 
-                    v-model="item.selectedOptions[category.id]" 
-                    @change="calculateTotal"
+                    :model-value="item.selectedOptions[category.id] && item.selectedOptions[category.id].length > 0 ? item.selectedOptions[category.id][0] : null"
+                    @update:model-value="val => {
+                      item.selectedOptions[category.id] = val ? [val] : [];
+                      calculateTotal();
+                    }"
                   >
                     <el-radio
                       v-for="option in category.options"
@@ -242,12 +245,12 @@ const handleProductChange = async (productId, index) => {
           // 多选：可以选择多个默认选项
           form.value.items[index].selectedOptions[category.id] = defaultOptions.map(option => option.id)
         } else {
-          // 单选：只选择第一个默认选项
+          // 单选：也使用数组格式，只包含一个元素
           if (defaultOptions.length > 0) {
-            form.value.items[index].selectedOptions[category.id] = defaultOptions[0].id
+            form.value.items[index].selectedOptions[category.id] = [defaultOptions[0].id]
           } else {
             // 如果没有默认选项，选择第一个选项
-            form.value.items[index].selectedOptions[category.id] = category.options.length > 0 ? category.options[0].id : null
+            form.value.items[index].selectedOptions[category.id] = category.options.length > 0 ? [category.options[0].id] : []
           }
         }
       })
@@ -266,22 +269,14 @@ const calculateItemPrice = (item) => {
     item.selectedProduct.option_categories.forEach(category => {
       const selectedOptionIds = item.selectedOptions[category.id]
       
-      if (selectedOptionIds) {
-        if (category.is_multiple) {
-          // 多选：累加所有选中选项的价格调整
-          selectedOptionIds.forEach(optionId => {
-            const option = category.options.find(opt => opt.id === optionId)
-            if (option) {
-              price += option.price_adjustment || 0
-            }
-          })
-        } else {
-          // 单选：只计算选中选项的价格调整
-          const option = category.options.find(opt => opt.id === selectedOptionIds)
+      if (selectedOptionIds && Array.isArray(selectedOptionIds)) {
+        // 统一处理：无论是单选还是多选，都遍历数组
+        selectedOptionIds.forEach(optionId => {
+          const option = category.options.find(opt => opt.id === optionId)
           if (option) {
             price += option.price_adjustment || 0
           }
-        }
+        })
       }
     })
   }
@@ -404,6 +399,7 @@ const remoteSearchProduct = async (query, index) => {
               orderItem.price = product.price;
               
               // 如果订单数据中包含已选择的选项，则使用这些选项
+              // 确保即使是单选也转换为数组格式
               if (item.selected_options) {
                 orderItem.selectedOptions = item.selected_options;
               }
@@ -437,13 +433,30 @@ const submit = async () => {
     // 准备提交数据，包含选项信息
     const submitData = {
       ...form.value,
-      items: form.value.items.map(item => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: calculateItemPrice(item),
-        // 可以根据需要添加选项信息
-        selected_options: item.selectedOptions
-      }))
+      items: form.value.items.map(item => {
+        // 格式化选项数据，确保所有选项都是数组格式
+        const formattedOptions = {};
+        Object.keys(item.selectedOptions || {}).forEach(key => {
+          const option = item.selectedOptions[key];
+          if (Array.isArray(option)) {
+            formattedOptions[key] = option;
+          } else if (option !== undefined && option !== null) {
+            // 如果不是数组但有值，转换为数组
+            formattedOptions[key] = [option];
+          } else {
+            // 如果没有值，设置为空数组
+            formattedOptions[key] = [];
+          }
+        });
+        
+        return {
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: calculateItemPrice(item),
+          // 使用格式化后的选项数据
+          selected_options: formattedOptions
+        };
+      })
     }
     
     if (form.value.id) {
@@ -567,7 +580,7 @@ const rules = {
 .option-category {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 10px;
 }
 
 .category-header {

@@ -137,7 +137,27 @@ const fetchOrderList = async () => {
       pageSize: pageSize.value,
       tag_id: router.currentRoute.value.query.tag_id
     })
-    orderList.value = response.data || []
+    
+    // 处理新的返回格式
+    if (response.data) {
+      // 为每个订单项添加total_price字段，如果原数据中没有的话
+      orderList.value = response.data.map(order => {
+        // 如果订单中没有total_price字段，可以根据商品价格和数量计算
+        if (order.total_price === undefined) {
+          const totalPrice = order.items.reduce((sum, item) => {
+            return sum + (item.price * item.quantity)
+          }, 0)
+          return {
+            ...order,
+            total_price: totalPrice
+          }
+        }
+        return order
+      })
+    } else {
+      orderList.value = []
+    }
+    
     total.value = response.total || 0
     currentPage.value = response.page || 1
     pageSize.value = response.pageSize || 10

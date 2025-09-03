@@ -76,10 +76,11 @@
                   <div class="product-desc">{{ row.product_description || '暂无描述' }}</div>
                   <!-- 显示商品选项标签 -->
                   <div v-if="row.options && row.options.length > 0" class="product-options">
-                    <div v-for="(option, index) in row.options" :key="index" class="option-tag">
-                      {{ option.category_name }}: {{ option.option_name }}
-                      <span v-if="option.price_adjustment !== 0">
-                        ({{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }})
+                    <!-- 按类别分组选项 -->
+                    <div v-for="(options, category) in groupOptionsByCategory(row.options)" :key="category" class="option-tag">
+                      {{ category }}: {{ formatOptionNames(options) }}
+                      <span v-if="getTotalPriceAdjustment(options) !== 0">
+                        ({{ getTotalPriceAdjustment(options) > 0 ? '+' : '' }}{{ getTotalPriceAdjustment(options) }})
                       </span>
                     </div>
                   </div>
@@ -232,6 +233,34 @@ const getImageUrl = (path) => {
   if (!path) return ''
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
   return `${API_BASE_URL}${API_PREFIX}/admin/product/image?path=${cleanPath}`
+}
+
+// 按类别分组选项
+const groupOptionsByCategory = (options) => {
+  if (!options || options.length === 0) return {}
+  
+  const grouped = {}
+  options.forEach(option => {
+    const categoryName = option.category_name || '未知类别'
+    if (!grouped[categoryName]) {
+      grouped[categoryName] = []
+    }
+    grouped[categoryName].push(option)
+  })
+  
+  return grouped
+}
+
+// 格式化选项名称，将同一类别的多个选项名称合并
+const formatOptionNames = (options) => {
+  if (!options || options.length === 0) return ''
+  return options.map(option => option.option_name || '未知选项').join(', ')
+}
+
+// 计算同一类别选项的总价格调整
+const getTotalPriceAdjustment = (options) => {
+  if (!options || options.length === 0) return 0
+  return options.reduce((total, option) => total + (option.price_adjustment || 0), 0)
 }
 
 onMounted(() => {

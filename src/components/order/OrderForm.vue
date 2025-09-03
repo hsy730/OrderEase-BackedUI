@@ -386,8 +386,8 @@ const remoteSearchProduct = async (query, index) => {
             product_id: item.product_id,
             quantity: item.quantity || 1,
             price: item.price || 0,
-            selectedProduct: item.selectedProduct || null,
-            selectedOptions: item.selectedOptions || {}
+             selectedProduct: item.selectedProduct || null,
+            selectedOptions: {}
           };
           
           // 如果有商品ID但没有selectedProduct，需要获取商品信息
@@ -397,13 +397,20 @@ const remoteSearchProduct = async (query, index) => {
             if (product) {
               orderItem.selectedProduct = product;
               orderItem.price = product.price;
-              
-              // 如果订单数据中包含已选择的选项，则使用这些选项
-              // 确保即使是单选也转换为数组格式
-              if (item.selected_options) {
-                orderItem.selectedOptions = item.selected_options;
-              }
             }
+          }
+          
+          // 使用订单详情接口返回的选项数据
+          if (item.options && Array.isArray(item.options)) {
+            // 按category_id分组选项
+            const groupedOptions = {};
+            item.options.forEach(option => {
+              if (!groupedOptions[option.category_id]) {
+                groupedOptions[option.category_id] = [];
+              }
+              groupedOptions[option.category_id].push(option.option_id);
+            });
+            orderItem.selectedOptions = groupedOptions;
           }
           
           processedItems.push(orderItem);
@@ -434,27 +441,28 @@ const submit = async () => {
     const submitData = {
       ...form.value,
       items: form.value.items.map(item => {
-        // 格式化选项数据，确保所有选项都是数组格式
-        const formattedOptions = {};
-        Object.keys(item.selectedOptions || {}).forEach(key => {
-          const option = item.selectedOptions[key];
-          if (Array.isArray(option)) {
-            formattedOptions[key] = option;
-          } else if (option !== undefined && option !== null) {
-            // 如果不是数组但有值，转换为数组
-            formattedOptions[key] = [option];
-          } else {
-            // 如果没有值，设置为空数组
-            formattedOptions[key] = [];
-          }
-        });
+        // 格式化选项数据，使用订单详情接口返回的格式
+        const formattedOptions = [];
+        if (item.selectedOptions && typeof item.selectedOptions === 'object') {
+          Object.keys(item.selectedOptions).forEach(categoryId => {
+            const options = item.selectedOptions[categoryId];
+            if (Array.isArray(options)) {
+              options.forEach(optionId => {
+                formattedOptions.push({
+                  category_id: categoryId,
+                  option_id: optionId
+                });
+              });
+            }
+          });
+        }
         
         return {
           product_id: item.product_id,
           quantity: item.quantity,
           price: calculateItemPrice(item),
           // 使用格式化后的选项数据
-          selected_options: formattedOptions
+          options: formattedOptions
         };
       })
     }

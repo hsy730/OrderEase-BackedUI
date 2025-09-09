@@ -68,7 +68,7 @@ const exporting = ref(false)
 const importing = ref(false)
 
 // 获取上传 URL
-const uploadUrl = `${API_BASE_URL}${API_PREFIX}/data/import`
+const uploadUrl = `${API_BASE_URL}${API_PREFIX}/admin/data/import`
 
 // 设置上传请求头
 const uploadHeaders = computed(() => {

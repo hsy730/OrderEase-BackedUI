@@ -12,34 +12,34 @@
         border
         style="width: 100%"
       >
-        <el-table-column label="订单金额" width="150">
+        <el-table-column label="订单金额" width="100">
           <template #default="{ row }">
             <span class="price">¥{{ row.total_price.toFixed(2) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="订单状态" width="120">
+        <el-table-column prop="status" label="订单状态" width="80">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="商品数量" width="120">
+        <el-table-column label="商品数量" width="80">
           <template #default="{ row }">
             <span class="quantity">{{ row.items.length }}件</span>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" min-width="180">
+        <el-table-column label="创建时间" min-width="140">
           <template #default="{ row }">
             {{ formatTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="更新时间" min-width="180">
+        <el-table-column label="更新时间" min-width="140">
           <template #default="{ row }">
             {{ formatTime(row.updated_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
             <el-button type="info" link @click="handleView(row)">查看</el-button>
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
@@ -205,18 +205,15 @@ const handleDelete = (row) => {
 }
 
 // 提交表单
+// 在submitForm方法中添加
 const submitForm = async () => {
-  if (!orderFormRef.value) return
-  
   try {
-    await orderFormRef.value.submit()
-    dialogVisible.value = false
-    ElMessage.success('保存成功')
-    // 刷新订单列表
-    fetchOrderList()
-  } catch (error) {
-    console.error('保存失败:', error)
-    ElMessage.error(error.response?.data?.error || '保存失败')
+    loading.value = true; // 添加加载状态
+    await orderFormRef.value.submit();
+    await fetchOrderList(); // 强制刷新
+    ElMessage.success('添加成功');
+  } finally {
+    loading.value = false;
   }
 }
 

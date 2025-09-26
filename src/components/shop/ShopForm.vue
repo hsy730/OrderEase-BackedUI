@@ -45,7 +45,8 @@
     </el-form-item>
 
     <el-form-item label="店铺设置" prop="settings">
-      <el-input v-model="formData.settings" type="textarea" :rows="3" />    
+      <el-input v-model="settingsStr" type="textarea" :rows="3" @input="handleSettingsInput" />
+      <div v-if="settingsError" class="settings-error">{{ settingsError }}</div>
     </el-form-item>
 
     <el-form-item label="店铺图片">
@@ -95,10 +96,12 @@ const fetchShopDetail = async () => {
       contact_email: data.contact_email || '',
       address: data.address || '',
       description: data.description || '',
-      settings: data.settings || '',
+      settings: data.settings || {},
       valid_until: data.valid_until || new Date().toISOString(),
       image_url: data.image_url || ''
     }
+    // 将settings对象转换为字符串显示
+    settingsStr.value = JSON.stringify(formData.value.settings, null, 2)
     console.log('店铺详情数据:', formData.value)
   } catch (error) {
     ElMessage.error('获取店铺详情失败')
@@ -120,9 +123,11 @@ watch(() => props.shopId, (newVal) => {
       description: '',
       valid_until: new Date().toISOString(),
       address: '',
-      settings: '',
+      settings: {},
       image_url: ''
     }
+    // 重置settingsStr
+    settingsStr.value = '{}'
   }
 })
 
@@ -216,9 +221,14 @@ const formData = ref({
       description: '',
       valid_until: new Date().toISOString(),
       address: '',
-      settings: '',
+      settings: {},
       image_url: ''
 })
+
+// 用于显示的settings字符串
+const settingsStr = ref('')
+// 用于显示的settings错误信息
+const settingsError = ref('')
 
 const submit = () => {
   return new Promise((resolve, reject) => {
@@ -228,11 +238,26 @@ const submit = () => {
         return
       }
 
+      // 检查settings JSON格式
+      if (settingsError.value) {
+        ElMessage.error('店铺设置JSON格式不正确，请检查后重试')
+        reject(new Error('店铺设置JSON格式不正确'))
+        return
+      }
+
       try {
         const formValues = { ...formData.value }
         // 编辑店铺时，如果密码未填写则删除该字段，使用服务端旧密码
         if (formValues.id && !formValues.owner_password) {
           delete formValues.owner_password
+        }
+        // 确保settings字段是对象格式
+        if (typeof formValues.settings === 'string') {
+          try {
+            formValues.settings = JSON.parse(formValues.settings)
+          } catch (e) {
+            formValues.settings = {}
+          }
         }
         if (formValues.id) {
           await updateShop(formValues)
@@ -274,6 +299,22 @@ const getImageUrl = (path) => {
   return path ? `${API_BASE_URL}${API_PREFIX}/admin/shop/image?path=${path}` : ''
 }
 
+// 处理settings输入
+const handleSettingsInput = (value) => {
+  try {
+    // 清除之前的错误信息
+    settingsError.value = ''
+    
+    // 尝试解析输入的JSON字符串
+    const parsed = JSON.parse(value)
+    formData.value.settings = parsed
+  } catch (e) {
+    // 如果解析失败，显示错误信息
+    settingsError.value = 'JSON格式不正确: ' + e.message
+    console.log('Settings JSON解析失败:', e)
+  }
+}
+
 defineExpose({
   submit
 })
@@ -309,5 +350,11 @@ defineExpose({
 .upload-tip {
   color: #909399;
   font-size: 14px;
+}
+
+.settings-error {
+  color: #f56c6c;
+  font-size: 12px;
+  margin-top: 5px;
 }
 </style>

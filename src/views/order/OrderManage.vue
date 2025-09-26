@@ -24,11 +24,11 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="商品数量" width="80">
+        <!-- <el-table-column label="商品数量" width="80">
           <template #default="{ row }">
             <span class="quantity">{{ row.items.length }}件</span>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column label="创建时间" min-width="140">
           <template #default="{ row }">
             {{ formatTime(row.created_at) }}

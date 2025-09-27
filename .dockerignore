@@ -1,0 +1,17 @@
+node_modules
+.git
+.gitignore
+.DS_Store
+.env.local
+.env.*.local
+dist
+logs
+.npm
+.cache
+.vscode
+.editorconfig
+*.log
+*.md
+LICENSE
+Dockerfile
+docker-compose.yaml

@@ -62,8 +62,8 @@
       
         <el-form-item label="角色" prop="role">
           <el-select v-model="form.role">
-            <el-option label="公共用户" value="system" />
-            <el-option label="普通用户" value="user" />
+            <el-option label="公共用户" value="public_user" />
+            <el-option label="普通用户" value="private_user" />
           </el-select>
         </el-form-item> 
       </el-form>
@@ -209,6 +209,7 @@ const submitForm = async () => {
       if (!data.password) {
         delete data.password
       }
+      console.log('更新用户数据:', data)
       await updateUser(data)
       ElMessage.success('更新成功')
     }

@@ -6,6 +6,11 @@
         <el-button type="primary" @click="handleAdd">新增订单</el-button>
       </div>
 
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+        <el-tab-pane label="当前订单" name="current"></el-tab-pane>
+        <el-tab-pane label="历史订单" name="history"></el-tab-pane>
+      </el-tabs>
+
       <el-table
         v-loading="loading"
         :data="orderList"
@@ -101,6 +106,7 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 const orderFormRef = ref(null)
+const activeTab = ref('current') // 当前激活的标签页
 
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
@@ -130,6 +136,8 @@ const getStatusType = (status) => {
 
 // 获取订单列表
 const fetchOrderList = async () => {
+    // if (activeTab.value === 'current') {
+
   loading.value = true
   try {
     const response = await getOrderList({
@@ -220,6 +228,13 @@ const submitForm = async () => {
 // 表单提交成功
 const handleSubmit = () => {
   dialogVisible.value = false
+  fetchOrderList()
+}
+
+// 标签页切换处理
+const handleTabChange = () => {
+  // 重置分页参数并重新获取数据
+  currentPage.value = 1
   fetchOrderList()
 }
 

@@ -89,11 +89,14 @@
 
 <script setup>
 import '@/assets/table-global.css'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOrderList, deleteOrder } from '@/api/order'
 import OrderForm from '@/components/order/OrderForm.vue'
+import { getCurrentShopId } from '@/api/shop'
+import { getToken, isAdminRole } from '@/utils/auth'
+import { EventSourcePolyfill } from 'event-source-polyfill'
 
 const router = useRouter()
 const loading = ref(false)
@@ -107,6 +110,7 @@ const pageSize = ref(10)
 const total = ref(0)
 const orderFormRef = ref(null)
 const activeTab = ref('current') // 当前激活的标签页
+const eventSource = ref(null) // SSE 连接实例
 
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
@@ -253,7 +257,76 @@ const formatTime = (time) => {
 }
 
 onMounted(() => {
+  // 初始化 SSE 连接
+  const shopId = getCurrentShopId()
+  if (shopId) {
+    connectSSE(shopId)
+  }
+  
   fetchOrderList()
+})
+
+// SSE 连接函数，支持重连机制
+const connectSSE = (shopId) => {
+  // 如果已有连接，先关闭
+  if (eventSource.value) {
+    eventSource.value.close()
+  }
+  
+  // 获取当前token
+  const token = getToken()
+  
+  // 构造URL - 直接指向后端8080端口
+  const sseUrl = `http://localhost:8080/api/order-ease/v1${isAdminRole() ? '/admin' : '/shopOwner'}/order/sse?shop_id=${shopId}`
+  
+  // 使用EventSourcePolyfill实现带认证头的SSE
+  eventSource.value = new EventSourcePolyfill(sseUrl, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    heartbeatTimeout: 60000 // 心跳超时时间
+  })
+  
+  // 监听new-order事件
+  eventSource.value.addEventListener('new_order', (event) => {
+    try {
+      const order = JSON.parse(event.data)
+      ElMessage.success(`您有新的订单: ${order.id}`)
+      fetchOrderList()
+    } catch (error) {
+      console.error('解析订单数据错误:', error)
+    }
+  })
+  
+  // 监听连接打开事件
+  eventSource.value.onopen = (event) => {
+    console.log('SSE 连接已建立')
+  }
+  
+  // 监听错误事件
+  eventSource.value.onerror = (event) => {
+    // console.error('SSE 连接错误:', event)
+    
+    // 如果连接已关闭，尝试重连
+    if (eventSource.value.readyState === EventSourcePolyfill.CLOSED) {
+      setTimeout(() => {
+        console.log('尝试重新连接...')
+        connectSSE(shopId)
+      }, 5000)
+    }
+  }
+  
+  // 监听连接关闭事件
+  eventSource.value.onclose = (event) => {
+    console.log('SSE 连接已关闭')
+  }
+}
+
+// 组件销毁时关闭 SSE 连接
+onUnmounted(() => {
+  if (eventSource.value) {
+    eventSource.value.close()
+  }
 })
 </script>
 

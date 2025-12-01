@@ -291,7 +291,12 @@ const connectSSE = (shopId) => {
   eventSource.value.addEventListener('new_order', (event) => {
     try {
       const order = JSON.parse(event.data)
-      ElMessage.success(`您有新的订单: ${order.id}`)
+      ElMessage({
+        message: `您有新的订单: ${order.id}`,
+        type: 'success',
+        duration: 0, // 不自动关闭
+        showClose: true // 显示关闭按钮
+      })
       fetchOrderList()
     } catch (error) {
       console.error('解析订单数据错误:', error)

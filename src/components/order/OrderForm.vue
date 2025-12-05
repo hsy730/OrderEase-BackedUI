@@ -6,23 +6,7 @@
     label-width="100px"
   >
     <el-form-item label="用户" prop="user_id">
-      <el-select 
-        v-model="form.user_id" 
-        placeholder="请选择用户" 
-        style="width: 100%"
-        filterable
-        remote
-        :remote-method="remoteSearchUser"
-        :loading="userLoading"
-        clearable
-      >
-        <el-option
-          v-for="user in userList"
-          :key="user.id"
-          :label="user.name"
-          :value="user.id"
-        />
-      </el-select>
+      <UserSelect v-model="form.user_id" />
     </el-form-item>
     
     <el-form-item label="订单状态" prop="status">
@@ -163,7 +147,7 @@ import { ref, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createOrder, updateOrder } from '@/api/order'
 import { getProductList } from '@/api/product'
-import { getSimpleUserList } from '@/api/user'
+import UserSelect from '@/components/UserSelect.vue'
 
 const props = defineProps({
   formData: {
@@ -176,7 +160,6 @@ const emit = defineEmits(['submit'])
 
 const formRef = ref(null)
 const productList = ref([])
-const userList = ref([])
 const form = ref({
   user_id: null,
   status: 'pending',
@@ -186,7 +169,6 @@ const form = ref({
 })
 
 // 添加加载状态和搜索相关变量
-const userLoading = ref(false)
 const productLoading = ref({})
 const searchProductList = ref([]) // 用于存储搜索结果的商品列表
 
@@ -310,42 +292,6 @@ const fetchProductList = async () => {
   }
 }
 
-// 获取用户列表
-const fetchUserList = async () => {
-  try {
-    const response = await getSimpleUserList()
-    userList.value = response || []
-  } catch (error) {
-    console.error('获取用户列表失败:', error)
-    ElMessage.error('获取用户列表失败')
-    userList.value = []
-  }
-}
-
-const remoteSearchUser = async (query) => {
-  if (query.trim() === '') {
-    // 如果查询为空，加载所有用户
-    await fetchUserList()
-    return
-  }
-  
-  userLoading.value = true
-  try {
-    // 调用API搜索用户，假设后端有搜索接口
-    // 如果没有专门的搜索接口，可以先获取所有用户再进行前端过滤
-    const response = await getSimpleUserList({ page: 1, pageSize: 20, search: query })
-    const filteredUsers = response.filter(user => 
-      user.name.toLowerCase().includes(query.toLowerCase())
-    )
-    userList.value = filteredUsers
-  } catch (error) {
-    console.error('搜索用户失败:', error)
-    ElMessage.error('搜索用户失败')
-  } finally {
-    userLoading.value = false
-  }
-}
-
 // 远程搜索商品
 const remoteSearchProduct = async (query, index) => {
   // 设置当前索引的加载状态
@@ -369,69 +315,70 @@ const remoteSearchProduct = async (query, index) => {
     productLoading.value[index] = false
   }
 }
-  // 监听表单数据变化
-  watch(() => props.formData, async (newVal) => {
-    if (newVal && Object.keys(newVal).length > 0) {
-      // 确保商品列表已加载
-      if (productList.value.length === 0) {
-        await fetchProductList();
-      }
-      
-      // 处理订单项
-      const processedItems = [];
-      if (newVal.items) {
-        for (const item of newVal.items) {
-          // 初始化商品项
-          const orderItem = {
-            product_id: item.product_id,
-            quantity: item.quantity || 1,
-            price: item.price || 0,
-             selectedProduct: item.selectedProduct || null,
-            selectedOptions: {}
-          };
-          
-          // 如果有商品ID但没有selectedProduct，需要获取商品信息
-          if (item.product_id && !item.selectedProduct) {
-            // 从已有的商品列表中查找
-            const product = productList.value.find(p => p.id === item.product_id);
-            if (product) {
-              orderItem.selectedProduct = product;
-              orderItem.price = product.price;
-            }
-          }
-          
-          // 使用订单详情接口返回的选项数据
-          if (item.options && Array.isArray(item.options)) {
-            // 按category_id分组选项
-            const groupedOptions = {};
-            item.options.forEach(option => {
-              if (!groupedOptions[option.category_id]) {
-                groupedOptions[option.category_id] = [];
-              }
-              groupedOptions[option.category_id].push(option.option_id);
-            });
-            orderItem.selectedOptions = groupedOptions;
-          }
-          
-          processedItems.push(orderItem);
-        }
-      }
-      
-      form.value = {
-        ...newVal,
-        user_id: newVal.user_id || null,
-        items: processedItems
-      };
-    } else {
-      form.value = {
-        user_id: null,
-        status: 'pending',
-        items: [],
-        remark: '',
-        total_price: 0
-      };
+
+// 监听表单数据变化
+watch(() => props.formData, async (newVal) => {
+  if (newVal && Object.keys(newVal).length > 0) {
+    // 确保商品列表已加载
+    if (productList.value.length === 0) {
+      await fetchProductList();
     }
-  }, { deep: true, immediate: true });
+    
+    // 处理订单项
+    const processedItems = [];
+    if (newVal.items) {
+      for (const item of newVal.items) {
+        // 初始化商品项
+        const orderItem = {
+          product_id: item.product_id,
+          quantity: item.quantity || 1,
+          price: item.price || 0,
+           selectedProduct: item.selectedProduct || null,
+          selectedOptions: {}
+        };
+        
+        // 如果有商品ID但没有selectedProduct，需要获取商品信息
+        if (item.product_id && !item.selectedProduct) {
+          // 从已有的商品列表中查找
+          const product = productList.value.find(p => p.id === item.product_id);
+          if (product) {
+            orderItem.selectedProduct = product;
+            orderItem.price = product.price;
+          }
+        }
+        
+        // 使用订单详情接口返回的选项数据
+        if (item.options && Array.isArray(item.options)) {
+          // 按category_id分组选项
+          const groupedOptions = {};
+          item.options.forEach(option => {
+            if (!groupedOptions[option.category_id]) {
+              groupedOptions[option.category_id] = [];
+            }
+            groupedOptions[option.category_id].push(option.option_id);
+          });
+          orderItem.selectedOptions = groupedOptions;
+        }
+        
+        processedItems.push(orderItem);
+      }
+    }
+    
+    form.value = {
+      ...newVal,
+      user_id: newVal.user_id || null,
+      items: processedItems
+    };
+  } else {
+    form.value = {
+      user_id: null,
+      status: 'pending',
+      items: [],
+      remark: '',
+      total_price: 0
+    };
+  }
+}, { deep: true, immediate: true });
 
 // 提交表单
 const submit = async () => {
@@ -486,7 +433,6 @@ defineExpose({
 
 onMounted(() => {
   fetchProductList()
-  fetchUserList()
 })
 
 const rules = {

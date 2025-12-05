@@ -123,23 +123,23 @@ const toggleLoading = ref(false)
 
 // 状态转换映射
 const statusTransitions = {
-  'pending': { next: 'accepted', text: '接单' },
-  'accepted': { next: 'shipped', text: '发货' },
-  'shipped': { next: 'completed', text: '完成' },
-  'completed': null,  // 终态
-  'rejected': null,   // 终态
-  'canceled': null    // 终态
+  1: { next: 2, text: '接单' },     // OrderStatusPending -> OrderStatusAccepted
+  2: { next: 4, text: '发货' },     // OrderStatusAccepted -> OrderStatusShipped
+  4: { next: 10, text: '完成' },    // OrderStatusShipped -> OrderStatusComplete
+  10: null,  // 终态 - OrderStatusComplete
+  3: null,   // 终态 - OrderStatusRejected
+  '-1': null // 终态 - OrderStatusCanceled
 }
 
 // 获取状态文本
 const getStatusText = (status) => {
   const statusMap = {
-    'pending': '待处理',
-    'accepted': '已接单',
-    'shipped': '已发货',
-    'completed': '已完成',
-    'rejected': '已拒绝',
-    'canceled': '已取消'
+    1: '待处理',   // OrderStatusPending
+    2: '已接单',   // OrderStatusAccepted
+    3: '已拒绝',   // OrderStatusRejected
+    4: '已发货',   // OrderStatusShipped
+    10: '已完成',  // OrderStatusComplete
+    '-1': '已取消' // OrderStatusCanceled
   }
   return statusMap[status] || '未知状态'
 }
@@ -147,12 +147,12 @@ const getStatusText = (status) => {
 // 获取状态类型（用于标签颜色）
 const getStatusType = (status) => {
   const statusMap = {
-    'pending': 'warning',    // 黄色
-    'accepted': 'primary',   // 蓝色
-    'shipped': 'info',       // 灰蓝色
-    'completed': 'success',  // 绿色
-    'rejected': 'danger',    // 红色
-    'canceled': 'info'       // 灰蓝色
+    1: 'warning',   // OrderStatusPending - 待处理
+    2: 'primary',   // OrderStatusAccepted - 已接单
+    3: 'danger',    // OrderStatusRejected - 已拒绝
+    4: 'info',      // OrderStatusShipped - 已发货
+    10: 'success',  // OrderStatusComplete - 已完成
+    '-1': 'info'    // OrderStatusCanceled - 已取消
   }
   return statusMap[status] || 'info'
 }

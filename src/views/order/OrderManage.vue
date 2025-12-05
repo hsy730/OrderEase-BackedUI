@@ -8,8 +8,94 @@
 
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="当前订单" name="current"></el-tab-pane>
-        <el-tab-pane label="历史订单" name="history"></el-tab-pane>
+        <el-tab-pane label="全部订单" name="all"></el-tab-pane>
       </el-tabs>
+
+      <!-- 高级查询条件 - 仅在全部订单页面显示 -->
+      <el-card v-show="activeTab === 'all'" class="search-card" shadow="never" style="padding: 10px;">
+        <el-form :model="searchParams" label-width="80px">
+          <el-row :gutter="20">
+            <el-col :span="6">
+              <el-form-item label="用户">
+                <UserSelect 
+                  v-model="searchParams.user_id" 
+                  placeholder="请选择用户" 
+                  style="width: 150px;"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="订单状态">
+                <el-select 
+                  v-model="searchParams.status" 
+                  placeholder="请选择订单状态" 
+                  clearable
+                  multiple
+                  style="width: 150px;"
+                >
+                  <el-option label="待处理" value="1" />
+                  <el-option label="已接单" value="2" />
+                  <el-option label="已备货" value="3" />
+                  <el-option label="已发货" value="4" />
+                  <el-option label="已完成" value="10" />
+                  <el-option label="已取消" value="-1" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="创建时间">
+                <el-date-picker
+                  v-model="searchParams.create_time_range"
+                  type="datetimerange"
+                  range-separator="至"
+                  start-placeholder="开始时间"
+                  end-placeholder="结束时间"
+                  value-format="YYYY-MM-DD HH:mm:ss"
+                  style="width: 300px;"
+                  format="YYYY-MM-DD HH:mm:ss"
+                  shortcuts-remove-other-values
+                  unlink-panels
+                  :shortcuts="[
+                    {
+                      text: '最近一周',
+                      value: () => {
+                        const end = new Date()
+                        const start = new Date()
+                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+                        return [start, end]
+                      }
+                    },
+                    {
+                      text: '最近一个月',
+                      value: () => {
+                        const end = new Date()
+                        const start = new Date()
+                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+                        return [start, end]
+                      }
+                    },
+                    {
+                      text: '最近三个月',
+                      value: () => {
+                        const end = new Date()
+                        const start = new Date()
+                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+                        return [start, end]
+                      }
+                    }
+                  ]"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item>
+                <el-button type="primary" @click="handleSearch" style="margin-right: 0px;">查询</el-button>
+                <el-button @click="handleReset">重置</el-button>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </el-card>
 
       <el-table
         v-loading="loading"
@@ -17,6 +103,11 @@
         border
         style="width: 100%"
       >
+        <el-table-column label="订单ID" width="160">
+          <template #default="{ row }">
+            <span class="id">{{ row.id }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="订单金额" width="100">
           <template #default="{ row }">
             <span class="price">¥{{ row.total_price.toFixed(2) }}</span>
@@ -89,14 +180,12 @@
 
 <script setup>
 import '@/assets/table-global.css'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOrderList, deleteOrder } from '@/api/order'
 import OrderForm from '@/components/order/OrderForm.vue'
-import { getCurrentShopId } from '@/api/shop'
-import { getToken, isAdminRole } from '@/utils/auth'
-import { EventSourcePolyfill } from 'event-source-polyfill'
+import UserSelect from '@/components/UserSelect.vue'
 
 const router = useRouter()
 const loading = ref(false)
@@ -110,17 +199,22 @@ const pageSize = ref(10)
 const total = ref(0)
 const orderFormRef = ref(null)
 const activeTab = ref('current') // 当前激活的标签页
-const eventSource = ref(null) // SSE 连接实例
+const searchParams = reactive({
+  user_id: null,
+  status: [],
+  create_time_range: []
+}) // 查询参数
+// const eventSource = ref(null) // SSE 连接实例 - 已移至App.vue
 
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
   const statusMap = {
-    'pending': '待处理',
-    'accepted': '已接单',
-    'shipped': '已发货',
-    'completed': '已完成',
-    'rejected': '已拒绝',
-    'canceled': '已取消'
+    1: '待处理',   // OrderStatusPending
+    2: '已接单',   // OrderStatusAccepted
+    3: '已备货',   // OrderStatusRejected
+    4: '已发货',   // OrderStatusShipped
+    10: '已完成',  // OrderStatusComplete
+    '-1': '已取消' // OrderStatusCanceled
   }
   return statusMap[status] || '未知状态'
 }
@@ -128,12 +222,12 @@ const getStatusText = (status) => {
 // 获取订单状态对应的类型
 const getStatusType = (status) => {
   const statusMap = {
-    'pending': 'warning',
-    'accepted': 'primary',
-    'shipped': 'info',
-    'completed': 'success',
-    'rejected': 'danger',
-    'canceled': 'info'
+    1: 'warning',   // OrderStatusPending - 待处理
+    2: 'primary',   // OrderStatusAccepted - 已接单
+    3: 'danger',    // OrderStatusRejected - 已拒绝
+    4: 'info',      // OrderStatusShipped - 已发货
+    10: 'success',  // OrderStatusComplete - 已完成
+    '-1': 'info'    // OrderStatusCanceled - 已取消
   }
   return statusMap[status] || 'info'
 }
@@ -144,11 +238,29 @@ const fetchOrderList = async () => {
 
   loading.value = true
   try {
-    const response = await getOrderList({
+    // 处理时间范围参数
+    let startTime = null
+    let endTime = null
+    if (searchParams.create_time_range && searchParams.create_time_range.length === 2) {
+      startTime = searchParams.create_time_range[0]
+      endTime = searchParams.create_time_range[1]
+    }
+    
+    const params = {
       page: currentPage.value,
       pageSize: pageSize.value,
       tag_id: router.currentRoute.value.query.tag_id
-    })
+    }
+    
+    // 仅在全部订单页面添加查询参数
+    if (activeTab.value === 'all') {
+      params.user_id = searchParams.user_id
+      params.status = searchParams.status.length > 0 ? searchParams.status.join(',') : null
+      params.start_time = startTime
+      params.end_time = endTime
+    }
+    
+    const response = await getOrderList(params)
     
     // 处理新的返回格式
     if (response.data) {
@@ -239,6 +351,13 @@ const handleSubmit = () => {
 const handleTabChange = () => {
   // 重置分页参数并重新获取数据
   currentPage.value = 1
+  // 重置查询条件
+  if (activeTab.value === 'current') {
+    // 切换到当前订单时，清空查询条件
+    searchParams.user_id = null
+    searchParams.status = []
+    searchParams.create_time_range = []
+  }
   fetchOrderList()
 }
 
@@ -257,82 +376,38 @@ const formatTime = (time) => {
 }
 
 onMounted(() => {
-  // 初始化 SSE 连接
-  const shopId = getCurrentShopId()
-  if (shopId) {
-    connectSSE(shopId)
-  }
-  
+  // 初始化订单列表
   fetchOrderList()
+  
+  // 监听全局SSE事件
+  window.addEventListener('new-order-received', handleNewOrder)
 })
 
-// SSE 连接函数，支持重连机制
-const connectSSE = (shopId) => {
-  // 如果已有连接，先关闭
-  if (eventSource.value) {
-    eventSource.value.close()
-  }
-  
-  // 获取当前token
-  const token = getToken()
-  
-  // 构造URL - 直接指向后端8080端口
-  const sseUrl = `http://localhost:8080/api/order-ease/v1${isAdminRole() ? '/admin' : '/shopOwner'}/order/sse?shop_id=${shopId}`
-  
-  // 使用EventSourcePolyfill实现带认证头的SSE
-  eventSource.value = new EventSourcePolyfill(sseUrl, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    },
-    heartbeatTimeout: 60000 // 心跳超时时间
-  })
-  
-  // 监听new-order事件
-  eventSource.value.addEventListener('new_order', (event) => {
-    try {
-      const order = JSON.parse(event.data)
-      ElMessage({
-        message: `您有新的订单: ${order.id}`,
-        type: 'success',
-        duration: 0, // 不自动关闭
-        showClose: true // 显示关闭按钮
-      })
-      fetchOrderList()
-    } catch (error) {
-      console.error('解析订单数据错误:', error)
-    }
-  })
-  
-  // 监听连接打开事件
-  eventSource.value.onopen = (event) => {
-    console.log('SSE 连接已建立')
-  }
-  
-  // 监听错误事件
-  eventSource.value.onerror = (event) => {
-    // console.error('SSE 连接错误:', event)
-    
-    // 如果连接已关闭，尝试重连
-    if (eventSource.value.readyState === EventSourcePolyfill.CLOSED) {
-      setTimeout(() => {
-        console.log('尝试重新连接...')
-        connectSSE(shopId)
-      }, 5000)
-    }
-  }
-  
-  // 监听连接关闭事件
-  eventSource.value.onclose = (event) => {
-    console.log('SSE 连接已关闭')
-  }
+// 组件销毁时移除事件监听
+onUnmounted(() => {
+  window.removeEventListener('new-order-received', handleNewOrder)
+})
+
+// 处理新订单事件
+const handleNewOrder = (event) => {
+  // 刷新订单列表
+  fetchOrderList()
 }
 
-// 组件销毁时关闭 SSE 连接
-onUnmounted(() => {
-  if (eventSource.value) {
-    eventSource.value.close()
-  }
-})
+// 查询按钮点击事件
+const handleSearch = () => {
+  currentPage.value = 1
+  fetchOrderList()
+}
+
+// 重置按钮点击事件
+const handleReset = () => {
+  searchParams.user_id = null
+  searchParams.status = []
+  searchParams.create_time_range = []
+  currentPage.value = 1
+  fetchOrderList()
+}
 </script>
 
 <style scoped>
@@ -350,7 +425,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .header h2 {
@@ -363,5 +438,9 @@ onUnmounted(() => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+.search-card {
+  margin-bottom: 20px;
 }
 </style>

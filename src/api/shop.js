@@ -1,5 +1,6 @@
 import request from '@/utils/request'
 import { isAdminRole } from '@/utils/auth';
+import { API_BASE_URL, API_PREFIX } from '@/config'
 
 export function getCurrentShopId() {
     const shopId = localStorage.getItem('currentShopId');
@@ -69,4 +70,8 @@ export function uploadShopImage(id, file) {
             'Content-Type': 'multipart/form-data'
         }
     })
+}
+
+export function getShopImageUrl(path) {
+    return `${API_BASE_URL}${API_PREFIX}${isAdminRole() ? '/admin' : '/shopOwner'}/shop/image?path=${path}`
 }

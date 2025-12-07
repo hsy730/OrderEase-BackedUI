@@ -106,9 +106,8 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
-import { getProductDetail, deleteProduct } from '@/api/product'
+import { getProductDetail, deleteProduct, getProductImageUrl } from '@/api/product'
 import { getProductTags } from '@/api/tag'
-import { API_BASE_URL, API_PREFIX } from '@/config'
 import AuthImage from '@/components/AuthImage.vue'
 
 const route = useRoute()
@@ -153,12 +152,7 @@ const getImageUrl = (path) => {
   if (!path) return ''
   
   // 如果path已经是完整URL，直接返回
-  if (path.startsWith('http')) return path
-  
-  // 如果path以/开头，去掉开头的/
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path
-  
-  return `${API_BASE_URL}${API_PREFIX}/admin/product/image?path=${cleanPath}`
+  return getProductImageUrl(path)
 }
 
 // 图片预览功能

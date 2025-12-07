@@ -1,6 +1,8 @@
 import request from '@/utils/request'
 import { isAdminRole } from '@/utils/auth';
 import { getCurrentShopId} from '@/api/shop';
+import { API_BASE_URL, API_PREFIX } from '@/config'
+
 
 
 // 获取商品列表
@@ -62,6 +64,18 @@ export function uploadProductImage(id, file) {
             'Content-Type': 'multipart/form-data'
         }
     })
+}
+
+export const getProductImageUrl = (path) => {
+  if (!path) return ''
+  
+  // 如果path已经是完整URL，直接返回
+  if (path.startsWith('http')) return path
+  
+  // 如果path以/开头，去掉开头的/
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path
+  
+  return `${API_BASE_URL}${API_PREFIX}/${isAdminRole() ? 'admin' : 'shopOwner'}/product/image?path=${cleanPath}`
 }
 
 // 更新商品状态

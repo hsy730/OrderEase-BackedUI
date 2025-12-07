@@ -76,7 +76,7 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { createShop, updateShop, getShopDetail, uploadShopImage } from '@/api/shop'  // 新增API引用
+import { createShop, updateShop, getShopDetail, uploadShopImage, getShopImageUrl } from '@/api/shop'  // 新增API引用
 import { API_BASE_URL, API_PREFIX } from '@/config'
 import AuthImage from '@/components/AuthImage.vue'
 
@@ -308,7 +308,7 @@ const handleUpload = async ({ file }) => {
 
 // 获取图片完整URL
 const getImageUrl = (path) => {
-  return path ? `${API_BASE_URL}${API_PREFIX}/admin/shop/image?path=${path}` : ''
+  return path ? getShopImageUrl(path) : ''
 }
 
 // 处理settings输入

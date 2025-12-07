@@ -84,9 +84,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { getShopDetail } from '@/api/shop'
-import { API_BASE_URL, API_PREFIX } from '@/config'
-// import { getShopTags } from '@/api/tag'
+import { getShopDetail, getShopImageUrl } from '@/api/shop'
 import AuthImage from '@/components/AuthImage.vue'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
 
@@ -123,11 +121,7 @@ const fetchShopDetail = async () => {
 // 获取图片URL
 const getImageUrl = (path) => {
   if (!path) return ''
-  // 如果path已经是完整URL，直接返回
-  if (path.startsWith('http')) return path
-  // 如果path以/开头，去掉开头的/
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path
-  return `${API_BASE_URL}${API_PREFIX}/admin/shop/image?path=${cleanPath}`
+  return getShopImageUrl(path)
 }
 
 // 处理图片预览

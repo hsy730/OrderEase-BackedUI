@@ -2,7 +2,17 @@
   <div class="user-manage">
     <div class="header">
       <h2>用户管理</h2>
-      <el-button type="primary" @click="showCreateDialog" v-if="isAdmin">新建用户</el-button>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <el-input
+          v-model="searchText"
+          placeholder="搜索用户名"
+          clearable
+          @input="handleSearchInput"
+          style="width: 200px;"
+        />
+        <el-button type="primary" @click="showCreateDialog" v-if="isAdmin">新建</el-button>
+        <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
+      </div>
     </div>
 
     <el-table
@@ -79,6 +89,7 @@
 import { ref, onMounted } from 'vue'
 import '@/assets/table-global.css'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Refresh } from '@element-plus/icons-vue'
 import { getUserList, createUser, deleteUser, updateUser } from '@/api/user'
 
 // 角色格式化函数
@@ -103,6 +114,8 @@ const isAdmin = JSON.parse(localStorage.getItem('admin') || '{}').role === 'admi
 const page = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+const searchText = ref('')
+let searchTimeout = null
 
 const form = ref({
   id: null,
@@ -114,13 +127,23 @@ const form = ref({
   address: '',
   type: 'delivery'
 })
+// 处理搜索输入
+const handleSearchInput = () => {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    page.value = 1
+    loadUsers()
+  }, 500)
+}
+
 // 获取用户列表
 const loadUsers = async () => {
   loading.value = true
   try {
     const res = await getUserList({
       page: page.value,
-      page_size: pageSize.value
+      page_size: pageSize.value,
+      search: searchText.value
     })
     userList.value = res.data
     total.value = res.total || 0
@@ -236,6 +259,13 @@ const handleDelete = async (id) => {
       ElMessage.error('删除失败')
     }
   }
+}
+
+// 刷新数据
+const handleRefresh = () => {
+  loading.value = true
+  loadUsers()
+  ElMessage.success('数据已刷新')
 }
 
 onMounted(() => {

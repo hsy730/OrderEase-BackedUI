@@ -3,7 +3,10 @@
     <div class="content-wrapper">
       <div class="header">
         <h2>订单管理</h2>
-        <el-button type="primary" @click="handleAdd">新增订单</el-button>
+        <div>
+          <el-button type="primary" @click="handleAdd">新建</el-button>
+          <el-button @click="handleRefresh" :icon="Refresh" title="刷新"></el-button>
+        </div>
       </div>
 
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
@@ -183,6 +186,7 @@ import '@/assets/table-global.css'
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Refresh } from '@element-plus/icons-vue'
 import { getOrderList, deleteOrder } from '@/api/order'
 import OrderForm from '@/components/order/OrderForm.vue'
 import UserSelect from '@/components/UserSelect.vue'
@@ -407,6 +411,13 @@ const handleReset = () => {
   searchParams.create_time_range = []
   currentPage.value = 1
   fetchOrderList()
+}
+
+// 刷新数据
+const handleRefresh = () => {
+  loading.value = true
+  fetchOrderList()
+  ElMessage.success('数据已刷新')
 }
 </script>
 

@@ -2,7 +2,10 @@
   <div class="tag-manage">
     <div class="header">
       <h2>标签管理</h2>
-      <el-button type="primary" @click="handleAdd">新增标签</el-button>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <el-button type="primary" @click="handleAdd">新建</el-button>
+        <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
+      </div>
     </div>
 
     <el-table
@@ -105,6 +108,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import '@/assets/table-global.css'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Refresh } from '@element-plus/icons-vue'
 import { getTagList, createTag, updateTag, deleteTag, batchUpdateTags, getTagProducts } from '@/api/tag'
 import { useRouter } from 'vue-router'
 
@@ -298,6 +302,13 @@ const handleSubmit = async () => {
   } finally {
     submitting.value = false
   }
+}
+
+// 刷新数据
+const handleRefresh = () => {
+  loading.value = true
+  fetchTagList()
+  ElMessage.success('数据已刷新')
 }
 
 onMounted(() => {

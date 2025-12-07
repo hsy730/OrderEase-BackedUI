@@ -3,16 +3,17 @@
     <div class="content-wrapper">
       <div class="header">
         <h2>店铺管理</h2>
-        <div class="search-box">
+        <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
           <el-input
             v-model="searchText"
             placeholder="搜索店铺名称"
             clearable
             @input="handleSearchInput"
-            style="width: 200px; margin-right: 10px;"
+            style="width: 200px;"
           />
+          <el-button type="primary" @click="handleAdd">新建</el-button>
+          <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
         </div>
-        <el-button type="primary" @click="handleAdd">新增店铺</el-button>
       </div>
 
       <el-table
@@ -69,6 +70,7 @@
 import '@/assets/table-global.css'
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Refresh } from '@element-plus/icons-vue'
 import { 
     getShopList, 
     deleteShop,
@@ -195,6 +197,13 @@ const router = useRouter()
 
 const handleView = (row) => {
   router.push(`/shop/${row.id}`)
+}
+
+// 刷新数据
+const handleRefresh = () => {
+  loading.value = true
+  fetchData()
+  ElMessage.success('数据已刷新')
 }
 </script>
 

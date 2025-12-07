@@ -11,29 +11,19 @@
         <el-col :span="8">
           <!-- 店铺图片展示区 -->
           <div class="shop-image" v-if="shopInfo.image_url">
-            <el-image
+            <AuthImage
               :src="getImageUrl(shopInfo.image_url)"
-              :preview-src-list="[getImageUrl(shopInfo.image_url)]"
-              :initial-index="0"
-              fit="cover"
-              :preview-teleported="true"
+              alt="店铺图片"
               class="thumbnail"
               @click="handlePreview"
-            >
-              <template #error>
-                <div class="image-error">
-                  <el-icon><Picture /></el-icon>
-                  <span>图片加载失败</span>
-                </div>
-              </template>
-            </el-image>
+              @error="handleImageError"
+            />
             <div class="image-hint">
               <el-icon><ZoomIn /></el-icon>
               <span>点击查看大图</span>
             </div>
           </div>
           <div class="no-image" v-else>
-            <el-icon><Picture /></el-icon>
             <span>暂无店铺图片</span>
           </div>
         </el-col>
@@ -69,22 +59,43 @@
         </el-col>
       </el-row>
     </div>
+    
+    <!-- 图片预览对话框 -->
+    <el-dialog
+      v-model="dialogVisible"
+      :title="shopInfo.name"
+      width="80%"
+      top="50px"
+      center
+      append-to-body
+    >
+      <div class="image-preview-container">
+        <AuthImage
+          :src="getImageUrl(shopInfo.image_url)"
+          :alt="shopInfo.name"
+          class="preview-image"
+          @error="handleImageError"
+        />
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { Picture, ZoomIn } from '@element-plus/icons-vue'
 import { getShopDetail } from '@/api/shop'
 import { API_BASE_URL, API_PREFIX } from '@/config'
 // import { getShopTags } from '@/api/tag'
+import AuthImage from '@/components/AuthImage.vue'
+import { Picture, ZoomIn } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const loading = ref(false)
 const shopInfo = ref({
   tags: []
 })
+const dialogVisible = ref(false)
 
 // 获取店铺详情
 const fetchShopDetail = async () => {
@@ -121,8 +132,14 @@ const getImageUrl = (path) => {
 
 // 处理图片预览
 const handlePreview = () => {
-  // Element Plus的el-image组件会自动处理预览
-  console.log('预览图片:', getImageUrl(shopInfo.value.image_url))
+  if (shopInfo.value.image_url) {
+    dialogVisible.value = true
+  }
+}
+
+// 处理图片加载错误
+const handleImageError = () => {
+  console.error('店铺图片加载失败')
 }
 
 // 格式化时间
@@ -269,6 +286,15 @@ onMounted(() => {
   color: #909399;
   background: #f5f7fa;
   border-radius: 8px;
+}
+
+.image-preview-container {
+  text-align: center;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 70vh;
 }
 
 .no-image .el-icon {

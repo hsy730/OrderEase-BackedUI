@@ -58,7 +58,13 @@
         :show-file-list="false"
         accept="image/*"
       >
-        <img v-if="formData.image_url" :src="getImageUrl(formData.image_url)" class="preview-image">
+        <AuthImage 
+          v-if="formData.image_url" 
+          :src="getImageUrl(formData.image_url)" 
+          alt="店铺图片"
+          class="preview-image"
+          @error="handleImageError"
+        />
         <el-icon v-else class="upload-icon"><Plus /></el-icon>
       </el-upload>
       <div v-else class="upload-tip">请先保存店铺信息后再上传图片</div>
@@ -72,6 +78,7 @@ import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { createShop, updateShop, getShopDetail, uploadShopImage } from '@/api/shop'  // 新增API引用
 import { API_BASE_URL, API_PREFIX } from '@/config'
+import AuthImage from '@/components/AuthImage.vue'
 
 // 修改props接收方式
 const props = defineProps({
@@ -210,6 +217,11 @@ const validatePhone = (rule, value, callback) => {
   } else {
     callback(new Error('请输入有效的电话号码'));
   }
+};
+
+// 处理图片加载错误
+const handleImageError = () => {
+  ElMessage.error('图片加载失败');
 };
 
 const formData = ref({

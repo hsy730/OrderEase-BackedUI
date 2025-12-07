@@ -8,25 +8,16 @@
     <div class="detail-content" v-loading="loading">
       <el-row :gutter="20">
         <!-- 左侧商品信息 -->
-        <el-col :span="4">
+        <el-col :span="3">
           <!-- 商品图片展示区 -->
           <div class="product-image" v-if="product.image_url">
-            <el-image
+            <AuthImage
               :src="getImageUrl(product.image_url)"
-              :preview-src-list="[getImageUrl(product.image_url)]"
-              :initial-index="0"
-              fit="cover"
-              :preview-teleported="true"
+              :alt="product.name"
               class="thumbnail"
               @click="handlePreview"
-            >
-              <template #error>
-                <div class="image-error">
-                  <el-icon><Picture /></el-icon>
-                  <span>图片加载失败</span>
-                </div>
-              </template>
-            </el-image>
+              @error="handleImageError"
+            />
             <div class="image-hint">
               <el-icon><ZoomIn /></el-icon>
               <span>点击查看大图</span>
@@ -35,7 +26,7 @@
         </el-col>
 
         <!-- 右侧商品详情 -->
-        <el-col :span="20">
+        <el-col :span="21">
           <el-descriptions :column="1" border>
             <el-descriptions-item label="商品ID">{{ product.id }}</el-descriptions-item>
             <el-descriptions-item label="商品名称">{{ product.name }}</el-descriptions-item>
@@ -55,7 +46,7 @@
                 >
                   {{ tag.name }}
                 </el-tag>
-                <span v-if="product.tags.length === 0">暂无标签</span>
+                <span v-if="!product.tags || product.tags.length === 0">暂无标签</span>
               </div>
             </el-descriptions-item>
             <el-descriptions-item label="商品选项参数">
@@ -88,23 +79,50 @@
         </el-col>
       </el-row>
     </div>
+    
+    <!-- 图片预览对话框 -->
+    <el-dialog
+      v-model="dialogVisible"
+      :title="product.name"
+      width="80%"
+      top="50px"
+      center
+      append-to-body
+    >
+      <div class="image-preview-container">
+        <AuthImage
+          :src="getImageUrl(product.image_url)"
+          :alt="product.name"
+          class="preview-image"
+          @error="handleImageError"
+        />
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
-import { getProductDetail } from '@/api/product'
+import { getProductDetail, deleteProduct } from '@/api/product'
 import { getProductTags } from '@/api/tag'
 import { API_BASE_URL, API_PREFIX } from '@/config'
+import AuthImage from '@/components/AuthImage.vue'
 
 const route = useRoute()
+const router = useRouter()
+
+const product = ref({})
+const tags = ref([])
 const loading = ref(false)
-const product = ref({
-  tags: [],
-  option_categories: []
-})
+const dialogVisible = ref(false)
+
+// 注册组件
+const components = {
+  AuthImage
+}
 
 // 获取商品详情
 const fetchProductDetail = async () => {
@@ -123,21 +141,31 @@ const fetchProductDetail = async () => {
       tags: tagsData,
       option_categories: productData.option_categories || []
     }
-    } catch (tagsError) {
-      console.error('获取商品标签失败:', tagsError)
-      product.value.tags = []
-    }
+  } catch (error) {
+    console.error('获取商品详情失败:', error)
+    ElMessage.error('获取商品详情失败')
+  }
   loading.value = false
 }
 
 // 获取图片URL
 const getImageUrl = (path) => {
   if (!path) return ''
+  
   // 如果path已经是完整URL，直接返回
   if (path.startsWith('http')) return path
+  
   // 如果path以/开头，去掉开头的/
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
+  
   return `${API_BASE_URL}${API_PREFIX}/admin/product/image?path=${cleanPath}`
+}
+
+// 图片预览功能
+const handlePreview = () => {
+  if (product.value.image_url) {
+    dialogVisible.value = true
+  }
 }
 
 // 格式化时间
@@ -146,10 +174,9 @@ const formatTime = (time) => {
   return new Date(time).toLocaleString()
 }
 
-// 处理图片预览
-const handlePreview = () => {
-  // Element Plus的el-image组件会自动处理预览
-  console.log('预览图片:', getImageUrl(product.value.image_url))
+// 处理图片加载错误
+const handleImageError = () => {
+  ElMessage.error('图片加载失败')
 }
 
 onMounted(() => {
@@ -176,10 +203,23 @@ onMounted(() => {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
+.image-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
 .product-image {
   position: relative;
   width: 100%;
-  max-width: 100px;
+  max-width: 200px;
   aspect-ratio: 1;
   border-radius: 8px;
   overflow: hidden;

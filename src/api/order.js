@@ -7,7 +7,7 @@ export function getOrderList(params) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/list`,
         method: 'get',
-        params: { ...params, shop_id: getCurrentShopId() }
+        params
     })
 }
 
@@ -16,7 +16,7 @@ export function getOrderDetail(id) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/detail`,
         method: 'get',
-        params: { id, shop_id: getCurrentShopId()}
+        params: { id }
     })
 }
 
@@ -25,7 +25,7 @@ export function createOrder(data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/create`,
         method: 'post',
-        data: {...data, shop_id: getCurrentShopId()}
+        data
     })
 }
 
@@ -34,7 +34,7 @@ export function updateOrder(id, data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/update`,
         method: 'put',
-        params: { id, shop_id: getCurrentShopId()},
+        params: { id },
         data
     })
 }
@@ -44,7 +44,7 @@ export function deleteOrder(id) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/delete`,
         method: 'delete',
-        params: { id, shop_id: getCurrentShopId()}
+        params: { id }
     })
 }
 

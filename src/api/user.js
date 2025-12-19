@@ -7,7 +7,7 @@ export const getSimpleUserList = (params) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shopOwner'}/user/simple-list`,
     method: 'get',
-    params: { ...params, shop_id: getCurrentShopId() }
+    params
   })
 }
 
@@ -23,7 +23,7 @@ export const getUserList = (params) => {
   return request({
     url: '/admin/user/list',
     method: 'get',
-    params: {...params, shop_id: getCurrentShopId()}
+    params
   })
 }
 
@@ -31,7 +31,7 @@ export const deleteUser = (params) => {
   return request({
     url: '/admin/user/delete',
     method: 'delete',
-    params: {...params, shop_id: getCurrentShopId()}
+    params
   })
 }
 

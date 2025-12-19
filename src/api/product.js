@@ -10,7 +10,7 @@ export function getProductList(params) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/list`,
         method: 'get',
-        params: { ...params, shop_id: getCurrentShopId()}
+        params
     })
 }
 
@@ -19,7 +19,7 @@ export function getProductDetail(id) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/detail`,
         method: 'get',
-        params: { id, shop_id: getCurrentShopId()}
+        params: { id }
     })
 }
 
@@ -28,7 +28,7 @@ export function createProduct(data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/create`,
         method: 'post',
-        data: { ...data, shop_id: getCurrentShopId()}
+        data
     })
 }
 
@@ -37,7 +37,7 @@ export function updateProduct(id, data) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/update`,
         method: 'put',
-        params: { id, shop_id: getCurrentShopId()},
+        params: { id },
         data
     })
 }
@@ -58,7 +58,7 @@ export function uploadProductImage(id, file) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/upload-image`,
         method: 'post',
-        params: { id, shop_id: getCurrentShopId()},
+        params: { id },
         data: formData,
         headers: {
             'Content-Type': 'multipart/form-data'
@@ -83,6 +83,6 @@ export const updateProductStatus = (id, status) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/toggle-status`,
     method: 'put',
-    data: { id, status, shop_id: getCurrentShopId()}
+    data: { id, status }
   })
 }

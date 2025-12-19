@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-image-container">
+  <div class="smart-image-container">
     <!-- 加载状态 -->
     <div v-if="isLoading" class="loading-placeholder" :style="style">
       加载中...
@@ -26,11 +26,10 @@
 </template>
 
 <script>
-import { getToken } from '@/utils/auth'
-import axios from 'axios'
+import request from '@/utils/request'
 
 export default {
-  name: 'AuthImage',
+  name: 'SmartImage',
   props: {
     src: {
       type: String,
@@ -100,22 +99,17 @@ export default {
       this.hasError = false
 
       try {
-        const token = getToken()
-        
         // 创建取消令牌
-        const CancelToken = axios.CancelToken
+        const CancelToken = request.CancelToken
         const source = CancelToken.source()
         this.currentRequest = source
         
-        const response = await axios({
+        const response = await request({
           method: 'get',
           url: this.src,
           responseType: 'blob',
           cancelToken: source.token,
-          headers: token ? {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'image/*'
-          } : { 'Accept': 'image/*' },
+          headers: { 'Accept': 'image/*' },
           timeout: 15000 // 15秒超时
         })
 
@@ -138,7 +132,7 @@ export default {
         
       } catch (error) {
         // 如果是取消请求，不视为错误
-        if (axios.isCancel(error)) {
+        if (request.isCancel(error)) {
           console.log('请求被取消:', error.message)
           return
         }
@@ -213,7 +207,7 @@ export default {
 </script>
 
 <style scoped>
-.auth-image-container {
+.smart-image-container {
   position: relative;
   display: inline-block;
 }

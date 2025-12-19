@@ -11,13 +11,13 @@
         <el-col :span="3">
           <!-- 商品图片展示区 -->
           <div class="product-image" v-if="product.image_url">
-            <AuthImage
-              :src="getImageUrl(product.image_url)"
-              :alt="product.name"
-              class="thumbnail"
-              @click="handlePreview"
-              @error="handleImageError"
-            />
+            <SmartImage
+          :src="getImageUrl(product.image_url)"
+          :alt="product.name"
+          class="thumbnail"
+          @click="handlePreview"
+          @error="handleImageError"
+        />
             <div class="image-hint">
               <el-icon><ZoomIn /></el-icon>
               <span>点击查看大图</span>
@@ -90,7 +90,7 @@
       append-to-body
     >
       <div class="image-preview-container">
-        <AuthImage
+        <SmartImage
           :src="getImageUrl(product.image_url)"
           :alt="product.name"
           class="preview-image"
@@ -108,7 +108,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
 import { getProductDetail, deleteProduct, getProductImageUrl } from '@/api/product'
 import { getProductTags } from '@/api/tag'
-import AuthImage from '@/components/AuthImage.vue'
+import SmartImage from '@/components/SmartImage.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -120,7 +120,7 @@ const dialogVisible = ref(false)
 
 // 注册组件
 const components = {
-  AuthImage
+  SmartImage
 }
 
 // 获取商品详情

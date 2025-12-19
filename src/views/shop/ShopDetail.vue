@@ -11,13 +11,13 @@
         <el-col :span="8">
           <!-- 店铺图片展示区 -->
           <div class="shop-image" v-if="shopInfo.image_url">
-            <AuthImage
-              :src="getImageUrl(shopInfo.image_url)"
-              alt="店铺图片"
-              class="thumbnail"
-              @click="handlePreview"
-              @error="handleImageError"
-            />
+            <SmartImage
+          :src="getImageUrl(shopInfo.image_url)"
+          alt="店铺图片"
+          class="thumbnail"
+          @click="handlePreview"
+          @error="handleImageError"
+        />
             <div class="image-hint">
               <el-icon><ZoomIn /></el-icon>
               <span>点击查看大图</span>
@@ -70,7 +70,7 @@
       append-to-body
     >
       <div class="image-preview-container">
-        <AuthImage
+        <SmartImage
           :src="getImageUrl(shopInfo.image_url)"
           :alt="shopInfo.name"
           class="preview-image"
@@ -85,7 +85,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { getShopDetail, getShopImageUrl } from '@/api/shop'
-import AuthImage from '@/components/AuthImage.vue'
+import SmartImage from '@/components/SmartImage.vue'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
 
 const route = useRoute()

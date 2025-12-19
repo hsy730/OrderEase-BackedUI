@@ -64,7 +64,7 @@ export function uploadShopImage(id, file) {
     return request({
         url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/upload-image`,
         method: 'post',
-        params: { id, shop_id: getCurrentShopId()},
+        params: { id },
         data: formData,
         headers: {
             'Content-Type': 'multipart/form-data'

@@ -43,6 +43,10 @@ async function handleRefreshToken(storedRefreshToken, adminInfo) {
   }
 }
 
+// 导入所需工具函数
+import { isAdminRole } from '@/utils/auth'
+import { getCurrentShopId } from '@/api/shop'
+
 // 请求拦截器
 request.interceptors.request.use(
   async (config) => {
@@ -61,6 +65,8 @@ request.interceptors.request.use(
       return new Promise((resolve) => {
         requests.push((newToken) => {
           config.headers.Authorization = `Bearer ${newToken}`
+          // 在这里也需要添加shop_id，确保队列中的请求也能正确处理
+          addShopIdToRequest(config)
           resolve(config)
         })
       })
@@ -92,6 +98,8 @@ request.interceptors.request.use(
       return new Promise((resolve) => {
         requests.push((newToken) => {
           config.headers.Authorization = `Bearer ${newToken}`
+          // 在这里也需要添加shop_id，确保队列中的请求也能正确处理
+          addShopIdToRequest(config)
           resolve(config)
         })
       })
@@ -99,12 +107,30 @@ request.interceptors.request.use(
 
     // 设置token
     config.headers.Authorization = `Bearer ${token}`
+    
+    // 添加shop_id到请求中
+    addShopIdToRequest(config)
+    
     return config
   },
   (error) => {
     return Promise.reject(error)
   }
 )
+
+// 添加shop_id到请求的函数
+function addShopIdToRequest(config) {
+  // 获取当前店铺ID
+  const shopId = getCurrentShopId()
+  if (shopId) {
+    // 根据请求方法，将shop_id添加到params或data中
+    if (['get', 'delete'].includes(config.method.toLowerCase())) {
+      config.params = { ...config.params, shop_id: shopId }
+    } else {
+      config.data = { ...config.data, shop_id: shopId }
+    }
+  }
+}
 
 // 响应拦截器
 request.interceptors.response.use(

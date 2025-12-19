@@ -58,7 +58,7 @@
         :show-file-list="false"
         accept="image/*"
       >
-        <AuthImage 
+        <SmartImage 
           v-if="formData.image_url" 
           :src="getImageUrl(formData.image_url)" 
           alt="店铺图片"
@@ -78,7 +78,7 @@ import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { createShop, updateShop, getShopDetail, uploadShopImage, getShopImageUrl } from '@/api/shop'  // 新增API引用
 import { API_BASE_URL, API_PREFIX } from '@/config'
-import AuthImage from '@/components/AuthImage.vue'
+import SmartImage from '@/components/SmartImage.vue'
 
 // 修改props接收方式
 const props = defineProps({

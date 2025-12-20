@@ -2,7 +2,10 @@
   <div class="shop-detail">
     <div class="header">
       <h2>{{ shopInfo.name }} 详情</h2>
-      <el-button @click="$router.back()">返回</el-button>
+      <div class="header-actions">
+        <el-button type="primary" @click="handleGetTempToken">获取令牌</el-button>
+        <el-button @click="$router.back()">返回</el-button>
+      </div>
     </div>
 
     <div class="detail-content" v-loading="loading">
@@ -78,15 +81,36 @@
         />
       </div>
     </el-dialog>
+    
+    <!-- 令牌显示对话框 -->
+    <el-dialog
+      v-model="tokenDialogVisible"
+      title="店铺临时令牌"
+      width="500px"
+      center
+      append-to-body
+    >
+      <div class="token-content">
+        <el-descriptions :column="1" border>
+          <el-descriptions-item label="店铺ID">{{ tokenInfo.shop_id }}</el-descriptions-item>
+          <el-descriptions-item label="临时令牌">{{ tokenInfo.token }}</el-descriptions-item>
+          <el-descriptions-item label="过期时间">{{ formatTime(tokenInfo.expires_at) }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <template #footer>
+        <el-button @click="tokenDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { getShopDetail, getShopImageUrl } from '@/api/shop'
+import { getShopDetail, getShopImageUrl, getShopTempToken } from '@/api/shop'
 import SmartImage from '@/components/SmartImage.vue'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const loading = ref(false)
@@ -94,6 +118,9 @@ const shopInfo = ref({
   tags: []
 })
 const dialogVisible = ref(false)
+const tokenDialogVisible = ref(false)
+const tokenInfo = ref({})
+const tokenLoading = ref(false)
 
 // 获取店铺详情
 const fetchShopDetail = async () => {
@@ -149,6 +176,21 @@ const isValid = computed(() => {
   return validUntil > new Date()
 })
 
+// 获取店铺临时令牌
+const handleGetTempToken = async () => {
+  tokenLoading.value = true
+  try {
+    const result = await getShopTempToken(route.params.id)
+    tokenInfo.value = result
+    tokenDialogVisible.value = true
+  } catch (error) {
+    console.error('获取令牌失败:', error)
+    ElMessage.error('获取令牌失败，请稍后重试')
+  } finally {
+    tokenLoading.value = false
+  }
+}
+
 onMounted(() => {
   fetchShopDetail()
 })
@@ -164,6 +206,15 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.token-content {
+  margin: 20px 0;
 }
 
 .detail-content {

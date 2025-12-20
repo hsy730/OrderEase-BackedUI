@@ -56,13 +56,6 @@
           </el-button>
         </el-form-item>
       </el-form>
-
-      <!-- 首次登录提示 -->
-      <!-- <div class="login-tips">
-        <p>初始账号：admin</p>
-        <p>初始密码：Admin@123456</p>
-        <p class="warning">请在首次登录后立即修改密码！</p>
-      </div> -->
     </div>
   </div>
 </template>
@@ -189,10 +182,6 @@ const handleLogin = async () => {
     localStorage.setItem('admin', JSON.stringify(adminInfo))
     
     ElMessage.success(response.message || '登录成功')
-    
-    if (loginForm.value.password === 'Admin@123456') {
-      ElMessage.warning('您正在使用初始密码，请及时修改！')
-    }
     
     router.push('/')
   } catch (error) {

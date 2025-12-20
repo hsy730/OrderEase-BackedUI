@@ -75,3 +75,14 @@ export function uploadShopImage(id, file) {
 export function getShopImageUrl(path) {
     return `${API_BASE_URL}${API_PREFIX}${isAdminRole() ? '/admin' : '/shopOwner'}/shop/image?path=${path}`
 }
+
+// 获取店铺临时令牌
+export function getShopTempToken(shopId) {
+    return request({
+        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/temp-token`,
+        method: 'get',
+        params: {
+            shop_id: shopId
+        }
+    })
+}

@@ -2,20 +2,15 @@
   <div class="order-manage">
     <div class="content-wrapper">
       <div class="header">
-        <h2>订单管理</h2>
+        <h2>全部订单</h2>
         <div>
           <el-button type="primary" @click="handleAdd">新建</el-button>
           <el-button @click="handleRefresh" :icon="Refresh" title="刷新"></el-button>
         </div>
       </div>
 
-      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="当前订单" name="current"></el-tab-pane>
-        <el-tab-pane label="全部订单" name="all"></el-tab-pane>
-      </el-tabs>
-
-      <!-- 高级查询条件 - 仅在全部订单页面显示 -->
-      <el-card v-show="activeTab === 'all'" class="search-card" shadow="never" style="padding: 10px;">
+      <!-- 高级查询条件 -->
+      <el-card class="search-card" shadow="never" style="padding: 10px;">
         <el-form :model="searchParams" label-width="80px">
           <el-row :gutter="20">
             <el-col :span="5">
@@ -45,7 +40,7 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="8">
+            <el-col :span="9">
               <el-form-item label="创建时间">
                 <el-date-picker
                   v-model="searchParams.create_time_range"
@@ -90,7 +85,7 @@
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="6">
+            <el-col :span="5">
               <el-form-item>
                 <el-button type="primary" @click="handleSearch" style="margin-right: 10px;">查询</el-button>
                 <el-button @click="handleReset">重置</el-button>
@@ -123,11 +118,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <!-- <el-table-column label="商品数量" width="80">
-          <template #default="{ row }">
-            <span class="quantity">{{ row.items.length }}件</span>
-          </template>
-        </el-table-column> -->
         <el-table-column label="创建时间" min-width="140">
           <template #default="{ row }">
             {{ formatTime(row.created_at) }}
@@ -197,18 +187,15 @@ const orderList = ref([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formData = ref({})
-const formRef = ref(null)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 const orderFormRef = ref(null)
-const activeTab = ref('current') // 当前激活的标签页
 const searchParams = reactive({
   user_id: null,
   status: [],
   create_time_range: []
 }) // 查询参数
-// const eventSource = ref(null) // SSE 连接实例 - 已移至App.vue
 
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
@@ -238,8 +225,6 @@ const getStatusType = (status) => {
 
 // 获取订单列表
 const fetchOrderList = async () => {
-    // if (activeTab.value === 'current') {
-
   loading.value = true
   try {
     // 处理时间范围参数
@@ -253,19 +238,14 @@ const fetchOrderList = async () => {
     const params = {
       page: currentPage.value,
       pageSize: pageSize.value,
-      tag_id: router.currentRoute.value.query.tag_id
+      tag_id: router.currentRoute.value.query.tag_id,
+      user_id: searchParams.user_id,
+      status: searchParams.status.length > 0 ? searchParams.status.join(',') : null,
+      start_time: startTime,
+      end_time: endTime
     }
-    let response = null
-    // 仅在全部订单页面添加查询参数
-    if (activeTab.value === 'all') {
-      params.user_id = searchParams.user_id
-      params.status = searchParams.status.length > 0 ? searchParams.status.join(',') : null
-      params.start_time = startTime
-      params.end_time = endTime
-      response = await advanceSearchOrderList(params)
-    } else {
-      response = await getOrderList(params)
-    }
+    
+    const response = await advanceSearchOrderList(params)
         
     // 处理新的返回格式
     if (response.data) {
@@ -334,7 +314,6 @@ const handleDelete = (row) => {
 }
 
 // 提交表单
-// 在submitForm方法中添加
 const submitForm = async () => {
   try {
     loading.value = true; // 添加加载状态
@@ -349,20 +328,6 @@ const submitForm = async () => {
 // 表单提交成功
 const handleSubmit = () => {
   dialogVisible.value = false
-  fetchOrderList()
-}
-
-// 标签页切换处理
-const handleTabChange = () => {
-  // 重置分页参数并重新获取数据
-  currentPage.value = 1
-  // 重置查询条件
-  if (activeTab.value === 'current') {
-    // 切换到当前订单时，清空查询条件
-    searchParams.user_id = null
-    searchParams.status = []
-    searchParams.create_time_range = []
-  }
   fetchOrderList()
 }
 

@@ -2,103 +2,12 @@
   <div class="order-manage">
     <div class="content-wrapper">
       <div class="header">
-        <h2>订单管理</h2>
+        <h2>当前订单</h2>
         <div>
           <el-button type="primary" @click="handleAdd">新建</el-button>
           <el-button @click="handleRefresh" :icon="Refresh" title="刷新"></el-button>
         </div>
       </div>
-
-      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="当前订单" name="current"></el-tab-pane>
-        <el-tab-pane label="全部订单" name="all"></el-tab-pane>
-      </el-tabs>
-
-      <!-- 高级查询条件 - 仅在全部订单页面显示 -->
-      <el-card v-show="activeTab === 'all'" class="search-card" shadow="never" style="padding: 10px;">
-        <el-form :model="searchParams" label-width="80px">
-          <el-row :gutter="20">
-            <el-col :span="5">
-              <el-form-item label="用户">
-                <UserSelect 
-                  v-model="searchParams.user_id" 
-                  placeholder="请选择用户" 
-                  style="width: 150px;"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col :span="5">
-              <el-form-item label="订单状态">
-                <el-select 
-                  v-model="searchParams.status" 
-                  placeholder="请选择订单状态" 
-                  clearable
-                  multiple
-                  style="width: 150px;"
-                >
-                  <el-option label="待处理" value="1" />
-                  <el-option label="已接单" value="2" />
-                  <el-option label="已备货" value="3" />
-                  <el-option label="已发货" value="4" />
-                  <el-option label="已完成" value="10" />
-                  <el-option label="已取消" value="-1" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="8">
-              <el-form-item label="创建时间">
-                <el-date-picker
-                  v-model="searchParams.create_time_range"
-                  type="datetimerange"
-                  range-separator="至"
-                  start-placeholder="开始时间"
-                  end-placeholder="结束时间"
-                  value-format="YYYY-MM-DD HH:mm:ss"
-                  style="width: 300px;"
-                  format="YYYY-MM-DD HH:mm:ss"
-                  shortcuts-remove-other-values
-                  unlink-panels
-                  :shortcuts="[
-                    {
-                      text: '最近一周',
-                      value: () => {
-                        const end = new Date()
-                        const start = new Date()
-                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
-                        return [start, end]
-                      }
-                    },
-                    {
-                      text: '最近一个月',
-                      value: () => {
-                        const end = new Date()
-                        const start = new Date()
-                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
-                        return [start, end]
-                      }
-                    },
-                    {
-                      text: '最近三个月',
-                      value: () => {
-                        const end = new Date()
-                        const start = new Date()
-                        start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
-                        return [start, end]
-                      }
-                    }
-                  ]"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col :span="6">
-              <el-form-item>
-                <el-button type="primary" @click="handleSearch" style="margin-right: 10px;">查询</el-button>
-                <el-button @click="handleReset">重置</el-button>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-form>
-      </el-card>
 
       <el-table
         v-loading="loading"
@@ -123,11 +32,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <!-- <el-table-column label="商品数量" width="80">
-          <template #default="{ row }">
-            <span class="quantity">{{ row.items.length }}件</span>
-          </template>
-        </el-table-column> -->
         <el-table-column label="创建时间" min-width="140">
           <template #default="{ row }">
             {{ formatTime(row.created_at) }}
@@ -183,13 +87,12 @@
 
 <script setup>
 import '@/assets/table-global.css'
-import { ref, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
-import { getOrderList, deleteOrder, advanceSearchOrderList } from '@/api/order'
+import { getOrderList, deleteOrder } from '@/api/order'
 import OrderForm from '@/components/order/OrderForm.vue'
-import UserSelect from '@/components/UserSelect.vue'
 
 const router = useRouter()
 const loading = ref(false)
@@ -197,18 +100,10 @@ const orderList = ref([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formData = ref({})
-const formRef = ref(null)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 const orderFormRef = ref(null)
-const activeTab = ref('current') // 当前激活的标签页
-const searchParams = reactive({
-  user_id: null,
-  status: [],
-  create_time_range: []
-}) // 查询参数
-// const eventSource = ref(null) // SSE 连接实例 - 已移至App.vue
 
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
@@ -238,34 +133,15 @@ const getStatusType = (status) => {
 
 // 获取订单列表
 const fetchOrderList = async () => {
-    // if (activeTab.value === 'current') {
-
   loading.value = true
   try {
-    // 处理时间范围参数
-    let startTime = null
-    let endTime = null
-    if (searchParams.create_time_range && searchParams.create_time_range.length === 2) {
-      startTime = searchParams.create_time_range[0]
-      endTime = searchParams.create_time_range[1]
-    }
-    
     const params = {
       page: currentPage.value,
       pageSize: pageSize.value,
       tag_id: router.currentRoute.value.query.tag_id
     }
-    let response = null
-    // 仅在全部订单页面添加查询参数
-    if (activeTab.value === 'all') {
-      params.user_id = searchParams.user_id
-      params.status = searchParams.status.length > 0 ? searchParams.status.join(',') : null
-      params.start_time = startTime
-      params.end_time = endTime
-      response = await advanceSearchOrderList(params)
-    } else {
-      response = await getOrderList(params)
-    }
+    
+    const response = await getOrderList(params)
         
     // 处理新的返回格式
     if (response.data) {
@@ -334,7 +210,6 @@ const handleDelete = (row) => {
 }
 
 // 提交表单
-// 在submitForm方法中添加
 const submitForm = async () => {
   try {
     loading.value = true; // 添加加载状态
@@ -349,20 +224,6 @@ const submitForm = async () => {
 // 表单提交成功
 const handleSubmit = () => {
   dialogVisible.value = false
-  fetchOrderList()
-}
-
-// 标签页切换处理
-const handleTabChange = () => {
-  // 重置分页参数并重新获取数据
-  currentPage.value = 1
-  // 重置查询条件
-  if (activeTab.value === 'current') {
-    // 切换到当前订单时，清空查询条件
-    searchParams.user_id = null
-    searchParams.status = []
-    searchParams.create_time_range = []
-  }
   fetchOrderList()
 }
 
@@ -396,21 +257,6 @@ onUnmounted(() => {
 // 处理新订单事件
 const handleNewOrder = (event) => {
   // 刷新订单列表
-  fetchOrderList()
-}
-
-// 查询按钮点击事件
-const handleSearch = () => {
-  currentPage.value = 1
-  fetchOrderList()
-}
-
-// 重置按钮点击事件
-const handleReset = () => {
-  searchParams.user_id = null
-  searchParams.status = []
-  searchParams.create_time_range = []
-  currentPage.value = 1
   fetchOrderList()
 }
 
@@ -450,9 +296,5 @@ const handleRefresh = () => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
-}
-
-.search-card {
-  margin-bottom: 20px;
 }
 </style>

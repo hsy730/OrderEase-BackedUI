@@ -11,6 +11,14 @@ export function getOrderList(params) {
     })
 }
 
+export function advanceSearchOrderList(data) {
+    return request({
+        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/advance-search`,
+        method: 'post',
+        data
+    })
+}
+
 // 获取订单详情 
 export function getOrderDetail(id) {
     return request({

@@ -12,16 +12,19 @@
           <!-- 商品图片展示区 -->
           <div class="product-image" v-if="product.image_url">
             <SmartImage
-          :src="getImageUrl(product.image_url)"
-          :alt="product.name"
-          class="thumbnail"
-          @click="handlePreview"
-          @error="handleImageError"
-        />
+              :src="getImageUrl(product.image_url)"
+              :alt="product.name"
+              class="thumbnail"
+              @click="handlePreview"
+              @error="handleImageError"
+            />
             <div class="image-hint">
               <el-icon><ZoomIn /></el-icon>
               <span>点击查看大图</span>
             </div>
+          </div>
+          <div v-else class="image-placeholder">
+            <el-icon><Picture /></el-icon>
           </div>
         </el-col>
 
@@ -91,11 +94,15 @@
     >
       <div class="image-preview-container">
         <SmartImage
+          v-if="product.image_url"
           :src="getImageUrl(product.image_url)"
           :alt="product.name"
           class="preview-image"
           @error="handleImageError"
         />
+        <div v-else class="preview-placeholder">
+          <el-icon><Picture /></el-icon>
+        </div>
       </div>
     </el-dialog>
   </div>
@@ -210,6 +217,21 @@ onMounted(() => {
   object-fit: contain;
 }
 
+.preview-placeholder {
+  width: 100%;
+  height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #909399;
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+.preview-placeholder .el-icon {
+  font-size: 72px;
+}
+
 .product-image {
   position: relative;
   width: 100%;
@@ -234,6 +256,23 @@ onMounted(() => {
 .thumbnail {
   width: 100%;
   height: 100%;
+}
+
+.image-placeholder {
+  width: 100%;
+  max-width: 200px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #909399;
+  background: #f5f7fa;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.image-placeholder .el-icon {
+  font-size: 48px;
 }
 
 .image-error {

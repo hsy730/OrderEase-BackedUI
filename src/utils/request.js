@@ -123,11 +123,23 @@ function addShopIdToRequest(config) {
   // 获取当前店铺ID
   const shopId = getCurrentShopId()
   if (shopId) {
-    // 根据请求方法，将shop_id添加到params或data中
-    if (['get', 'delete'].includes(config.method.toLowerCase())) {
+    // 检查是否为FormData类型（通常用于文件上传）
+    const isFormData = config.data instanceof FormData
+    
+    if (isFormData) {
+      // FormData类型（文件上传）：将shop_id添加到query参数中
       config.params = { ...config.params, shop_id: shopId }
     } else {
-      config.data = { ...config.data, shop_id: shopId }
+      // 检查是否有body数据
+      const hasBodyData = config.data && config.data !== ''
+      
+      if (hasBodyData) {
+        // 有body数据且非FormData：将shop_id添加到body中
+        config.data = { ...config.data, shop_id: shopId }
+      } 
+      // 无body数据：将shop_id添加到query参数中
+      config.params = { ...config.params, shop_id: shopId }
+      
     }
   }
 }
@@ -135,6 +147,10 @@ function addShopIdToRequest(config) {
 // 响应拦截器
 request.interceptors.response.use(
   response => {
+    // 对于 blob 类型请求，保留原始响应，因为 304 Not Modified 状态码可能没有 response.data
+    if (response.config.responseType === 'blob') {
+      return response
+    }
     return response.data
   },
   async error => {

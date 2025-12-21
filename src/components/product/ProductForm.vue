@@ -137,7 +137,7 @@
         :show-file-list="false"
         accept="image/*"
       >
-        <img v-if="form.image_url" :src="getImageUrl(form.image_url)" class="preview-image">
+        <smart-image v-if="form.image_url" :src="getImageUrl(form.image_url)" :class-name="'preview-image'"></smart-image>
         <el-icon v-else class="upload-icon"><Plus /></el-icon>
       </el-upload>
       <div v-else class="upload-tip">请先保存商品信息后再上传图片</div>
@@ -151,6 +151,7 @@ import { Plus, Close } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { createProduct, updateProduct, uploadProductImage, getProductDetail } from '@/api/product'
 import { API_BASE_URL, API_PREFIX } from '@/config'
+import SmartImage from '@/components/SmartImage.vue'
 
 const props = defineProps({
   productId: {

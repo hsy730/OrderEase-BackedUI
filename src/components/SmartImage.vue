@@ -7,7 +7,7 @@
     
     <!-- 错误状态 -->
     <div v-else-if="hasError" class="error-placeholder" :style="style" @click="retryLoad">
-      图片加载失败，点击重试
+      <WarningFilled class="error-icon" />
     </div>
     
     <!-- 正常显示 -->
@@ -27,9 +27,14 @@
 
 <script>
 import request from '@/utils/request'
+import axios from 'axios'
+import { WarningFilled } from '@element-plus/icons-vue'
 
 export default {
   name: 'SmartImage',
+  components: {
+    WarningFilled
+  },
   props: {
     src: {
       type: String,
@@ -47,19 +52,14 @@ export default {
       type: Object,
       default: () => ({})
     },
-    // 添加重试次数配置
-    maxRetries: {
-      type: Number,
-      default: 3
-    }
+
   },
   data() {
     return { 
       imageUrl: '',
       isLoading: false,
       hasError: false,
-      retryCount: 0,
-      currentRequest: null // 跟踪当前请求
+      abortController: null // 跟踪当前请求的AbortController
     }
   },
   watch: {
@@ -67,12 +67,11 @@ export default {
       immediate: true,
       handler: function(newVal) {
         // 取消之前的请求
-        if (this.currentRequest) {
-          this.currentRequest.cancel && this.currentRequest.cancel()
+        if (this.abortController) {
+          this.abortController.abort()
         }
         
         // 重置状态
-        this.retryCount = 0
         this.hasError = false
         
         // 释放之前的URL
@@ -99,21 +98,20 @@ export default {
       this.hasError = false
 
       try {
-        // 创建取消令牌
-        const CancelToken = request.CancelToken
-        const source = CancelToken.source()
-        this.currentRequest = source
+        // 创建AbortController
+        this.abortController = new AbortController()
         
         const response = await request({
           method: 'get',
           url: this.src,
           responseType: 'blob',
-          cancelToken: source.token,
+          signal: this.abortController.signal,
           headers: { 'Accept': 'image/*' },
           timeout: 15000 // 15秒超时
         })
 
         // 验证返回的数据确实是图片
+        // 现在 response 是完整的响应对象，需要从 response.data 获取 blob 数据
         if (!response.data || !response.data.type.startsWith('image/')) {
           throw new Error('返回的数据不是有效的图片')
         }
@@ -128,11 +126,11 @@ export default {
         this.imageUrl = blobUrl
         
         // 清除当前请求引用
-        this.currentRequest = null
+        this.abortController = null
         
       } catch (error) {
         // 如果是取消请求，不视为错误
-        if (request.isCancel(error)) {
+        if (error.name === 'AbortError') {
           console.log('请求被取消:', error.message)
           return
         }
@@ -148,15 +146,7 @@ export default {
         this.imageUrl = ''
         this.$emit('error', error)
         
-        // 自动重试逻辑
-        if (this.retryCount < this.maxRetries) {
-          this.retryCount++
-          setTimeout(() => {
-            if (this.$el && this.$el.isConnected) {
-              this.loadImage()
-            }
-          }, 1000 * this.retryCount) // 指数退避
-        }
+
       } finally {
         this.isLoading = false
       }
@@ -164,10 +154,7 @@ export default {
     
     // 手动重试
     retryLoad() {
-      if (this.retryCount < this.maxRetries) {
-        this.retryCount++
-        this.loadImage()
-      }
+      this.loadImage()
     },
     
     handleClick() {
@@ -194,8 +181,8 @@ export default {
   
   beforeDestroy() {
     // 取消未完成的请求
-    if (this.currentRequest) {
-      this.currentRequest.cancel && this.currentRequest.cancel('组件销毁')
+    if (this.abortController) {
+      this.abortController.abort('组件销毁')
     }
     
     // 释放Blob URL
@@ -221,17 +208,19 @@ img {
 }
 
 .loading-placeholder,
-.error-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 50px;
-  min-width: 50px;
-  background-color: #f5f5f5;
-  border: 1px dashed #ddd;
-  color: #999;
-  font-size: 12px;
-}
+  .error-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 20px;
+    min-width: 20px;
+    background-color: #f5f5f5;
+    border: 1px dashed #ddd;
+    color: #999;
+    font-size: 12px;
+  }
 
 .error-placeholder {
   cursor: pointer;
@@ -240,5 +229,10 @@ img {
 
 .error-placeholder:hover {
   background-color: #fff2f0;
+}
+
+.error-icon {
+  font-size: 24px;
+  color: #ff4d4f;
 }
 </style>

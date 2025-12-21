@@ -25,19 +25,16 @@
         <el-table-column label="商品信息" min-width="150">
           <template #default="{ row }">
             <div class="product-info">
-              <el-image
-                v-if="row.image_url"
-                :src="getImageUrl(row.image_url)"
-                class="product-image"
-                :preview-teleported="false"
-                :preview-disabled="true"
-              >
-                <template #error>
-                  <div class="image-placeholder">
-                    <el-icon><Picture /></el-icon>
-                  </div>
-                </template>
-              </el-image>
+              <div v-if="row.image_url" class="product-image-container">
+                <SmartImage
+                  :src="getImageUrl(row.image_url)"
+                  :alt="row.name"
+                  :style="{ width: '20px', height: '20px', objectFit: 'cover' }"
+                />
+              </div>
+              <div v-else class="image-placeholder">
+                <el-icon><Picture /></el-icon>
+              </div>
               <div class="product-detail">
                 <div class="product-name">{{ row.name }}</div>
                 <div class="product-desc">{{ row.description || '暂无描述' }}</div>
@@ -145,9 +142,11 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Picture, ArrowDown, Refresh } from '@element-plus/icons-vue'
+import SmartImage from '@/components/SmartImage.vue'
 import ProductForm from '@/components/product/ProductForm.vue'
 import TagManageDialog from '@/components/product/TagManageDialog.vue'
-import { getProductList, deleteProduct, updateProductStatus } from '@/api/product'
+import { getProductList, deleteProduct, updateProductStatus, getProductImageUrl } from '@/api/product'
+import { isAdminRole } from '@/utils/auth'
 import { API_BASE_URL, API_PREFIX } from '@/config'
 
 const router = useRouter()
@@ -198,9 +197,7 @@ const fetchProductList = async () => {
 
 // 获取图片URL
 const getImageUrl = (path) => {
-  if (!path) return ''
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path
-  return `${API_BASE_URL}${API_PREFIX}/product/image?path=${cleanPath}`
+  return getProductImageUrl(path)
 }
 
 // 格式化时间
@@ -314,6 +311,19 @@ const handleStatusChange = async (row, newStatus) => {
   }
 }
 
+// 处理分页变化
+const handleSizeChange = (newSize) => {
+  pageSize.value = newSize
+  currentPage.value = 1
+  fetchProductList()
+}
+
+// 处理当前页变化
+const handleCurrentChange = (newPage) => {
+  currentPage.value = newPage
+  fetchProductList()
+}
+
 // 刷新数据
 const handleRefresh = () => {
   loading.value = true
@@ -363,17 +373,17 @@ onMounted(() => {
   padding: 4px 0;
 }
 
-.product-image {
-  width: 24px;
-  height: 24px;
+.product-image-container {
+  width: 20px;
+  height: 20px;
   border-radius: 4px;
-  object-fit: cover;
+  overflow: hidden;
   border: 1px solid #ebeef5;
 }
 
 .image-placeholder {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -381,6 +391,7 @@ onMounted(() => {
   border-radius: 4px;
   color: #909399;
   border: 1px solid #ebeef5;
+  font-size: 10px;
 }
 
 .product-detail {

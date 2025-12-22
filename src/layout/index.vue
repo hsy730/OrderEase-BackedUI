@@ -72,6 +72,9 @@
               :value="shop.id"
             />
           </el-select>
+          <div v-else style="width: 120px; margin-right: 16px; line-height: 32px; text-align: center; color: #606266;">
+            {{ currentShop.name || '店铺名称' }}
+          </div>
 
           <!-- 获取登录令牌按钮 -->
           <el-button 
@@ -183,7 +186,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Document, Goods, Fold, Upload, Collection, User, Shop } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { changePassword, logout } from '@/api/auth'
-import { getShopList, getCurrentShopId, getShopTempToken } from '@/api/shop'
+import { getShopList, getCurrentShopId, getShopTempToken, getShopDetail } from '@/api/shop'
 
 import { debounce } from 'lodash-es'
 
@@ -196,6 +199,7 @@ const isAdmin = ref(JSON.parse(localStorage.getItem('admin') || '{}').role === '
 const shopList = ref([])
 const shopId = ref(null)
 const searchLoading = ref(false)
+const currentShop = ref({})
 
 // 添加搜索处理方法
 const handleShopSearch = debounce(async (query) => {
@@ -217,22 +221,33 @@ const handleShopSearch = debounce(async (query) => {
 
 // 获取店铺列表
 onMounted(async () => {
-  if (!isAdmin.value) {
-    return;
-  }
-  try {
-    const { data } = await getShopList( { page : 1, page_size : 50 })
-    shopList.value = data
-    const curShopId = getCurrentShopId()
-    if (curShopId > 0) { // 如果有当前店铺ID，直接使用该ID
-      shopId.value = curShopId
-    } else {
-      shopId.value = data[0]?.id || null
-      localStorage.setItem('currentShopId', shopId.value)
+  if (isAdmin.value) {
+    try {
+      const { data } = await getShopList( { page : 1, page_size : 50 })
+      shopList.value = data
+      const curShopId = getCurrentShopId()
+      if (curShopId > 0) { // 如果有当前店铺ID，直接使用该ID
+        shopId.value = curShopId
+      } else {
+        shopId.value = data[0]?.id || null
+        localStorage.setItem('currentShopId', shopId.value)
+      }
+    } catch (error) {
+      console.error('获取店铺列表失败:', error)
+      ElMessage.error('店铺列表加载失败')
     }
-  } catch (error) {
-    console.error('获取店铺列表失败:', error)
-    ElMessage.error('店铺列表加载失败')
+  } else {
+    // 非admin用户，获取当前店铺信息
+    const curShopId = getCurrentShopId()
+    if (curShopId > 0) {
+      try {
+        // 获取当前店铺详情
+        const result = await getShopDetail(curShopId)
+        currentShop.value = result || {}
+      } catch (error) {
+        console.error('获取当前店铺信息失败:', error)
+      }
+    }
   }
   showMigration.value = localStorage.getItem('migration_switch') === '1'
 })

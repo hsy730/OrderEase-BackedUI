@@ -50,7 +50,7 @@ export function deleteShop(shopId) {
 // 修改获取店铺详情接口
 export function getShopDetail(shopId) {
   return request({
-    url: `/admin/shop/detail`,
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/detail`,
     method: 'get',
     params: {
       shop_id: shopId

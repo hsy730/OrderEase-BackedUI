@@ -62,7 +62,7 @@
             remote
             :remote-method="handleShopSearch"
             :loading="searchLoading"
-            style="width: 120px; margin-right: 0"
+            style="width: 120px; margin-right: 16px"
             @change="handleShopChange"
           >
             <el-option
@@ -72,6 +72,16 @@
               :value="shop.id"
             />
           </el-select>
+
+          <!-- 获取登录令牌按钮 -->
+          <el-button 
+            type="primary"
+            size="small"
+            @click="handleGetToken"
+            style="margin-right: 16px"
+          >
+            登录令牌
+          </el-button>
 
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="avatar-wrapper">
@@ -144,6 +154,26 @@
         </el-button>
       </template>
     </el-dialog>
+    
+    <!-- 令牌显示对话框 -->
+    <el-dialog
+      v-model="tokenDialogVisible"
+      title="店铺临时令牌"
+      width="500px"
+      center
+      append-to-body
+    >
+      <div class="token-content">
+        <el-descriptions :column="1" border>
+          <el-descriptions-item label="店铺ID">{{ tokenInfo.shop_id }}</el-descriptions-item>
+          <el-descriptions-item label="临时令牌">{{ tokenInfo.token }}</el-descriptions-item>
+          <el-descriptions-item label="过期时间">{{ formatTime(tokenInfo.expires_at) }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <template #footer>
+        <el-button @click="tokenDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -153,7 +183,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Document, Goods, Fold, Upload, Collection, User, Shop } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { changePassword, logout } from '@/api/auth'
-import { getShopList, getCurrentShopId } from '@/api/shop'
+import { getShopList, getCurrentShopId, getShopTempToken } from '@/api/shop'
 
 import { debounce } from 'lodash-es'
 
@@ -217,6 +247,10 @@ const toggleSidebar = () => {
 const showPasswordDialog = ref(false)
 const changing = ref(false)
 const passwordFormRef = ref(null)
+
+// 令牌对话框相关状态
+const tokenDialogVisible = ref(false)
+const tokenInfo = ref({})
 
 const passwordForm = reactive({
   old_password: '',
@@ -289,6 +323,12 @@ const passwordRules = {
       trigger: 'blur'
     }
   ]
+}
+
+// 格式化时间
+const formatTime = (time) => {
+  if (!time) return '暂无'
+  return new Date(time).toLocaleString()
 }
 
 // 处理下拉菜单命令
@@ -378,6 +418,19 @@ const handleShopChange = async (shopId) => {
   ElMessage.success('店铺切换成功')
   if (refresh) {
     router.go(0) // 添加页面刷新
+  }
+}   
+
+// 获取登录令牌
+const handleGetToken = async () => {
+  try {
+    const result = await getShopTempToken(shopId.value || 0)
+    console.log('获取店铺临时令牌成功:', result)
+    tokenInfo.value = result
+    tokenDialogVisible.value = true
+  } catch (error) {
+    console.error('获取登录令牌失败:', error)
+    ElMessage.error(error.response?.data?.error || '获取登录令牌失败')
   }
 }
 </script>
@@ -541,5 +594,18 @@ const handleShopChange = async (shopId) => {
 :deep(.el-menu-item.is-active) {
   font-weight: normal;
   border: none;
+}
+
+/* 令牌对话框样式 */
+.token-content {
+  margin: 20px 0;
+}
+
+:deep(.el-descriptions) {
+  padding: 0;
+}
+
+:deep(.el-descriptions__body) {
+  background-color: transparent;
 }
 </style>

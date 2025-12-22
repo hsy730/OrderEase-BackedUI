@@ -11,7 +11,7 @@
     <div class="detail-content" v-loading="loading">
       <el-row :gutter="20">
         <!-- 左侧店铺信息 -->
-        <el-col :span="8">
+        <el-col :span="6">
           <!-- 店铺图片展示区 -->
           <div class="shop-image" v-if="shopInfo.image_url">
             <SmartImage
@@ -33,7 +33,7 @@
 
         <!-- 右侧店铺详情 -->
 
-        <el-col :span="16">
+        <el-col :span="18">
           <el-descriptions :column="1" border>
             <el-descriptions-item label="店铺ID">{{ shopInfo.id }}</el-descriptions-item>
             <el-descriptions-item label="店铺名称">
@@ -261,7 +261,7 @@ onMounted(() => {
 .shop-image {
   position: relative;
   width: 100%;
-  max-width: 300px;
+  max-width: 200px;
   aspect-ratio: 1;
   border-radius: 8px;
   overflow: hidden;
@@ -322,7 +322,7 @@ onMounted(() => {
 
 .no-image {
   width: 100%;
-  max-width: 300px;
+  max-width: 200px;
   height: 200px;
   display: flex;
   flex-direction: column;

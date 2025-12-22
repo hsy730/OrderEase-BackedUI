@@ -260,7 +260,7 @@ onMounted(() => {
 
 .image-placeholder {
   width: 100%;
-  max-width: 200px;
+  max-width: 150px;
   aspect-ratio: 1;
   border-radius: 8px;
   display: flex;

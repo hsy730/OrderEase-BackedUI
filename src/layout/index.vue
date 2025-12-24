@@ -4,22 +4,28 @@
     <div class="sidebar" :style="{ width: sidebarWidth + 'px' }">
       <div class="logo">订单管理系统</div>
       <el-menu
-        :default-active="route.path"
-        router
-        :collapse="isCollapse"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
-      >
-        <el-menu-item index="/shop" v-if="isAdmin">
-          <el-icon><Shop /></el-icon>
-          <span>店铺管理</span>
-        </el-menu-item>
+          :default-active="route.path"
+          router
+          :collapse="isCollapse"
+          background-color="#304156"
+          text-color="#bfcbd9"
+          active-text-color="#409EFF"
+        >
+          <el-menu-item index="/shop" v-if="isAdmin">
+            <el-icon><Shop /></el-icon>
+            <span>店铺管理</span>
+          </el-menu-item>
+          
+          <!-- 非管理员用户显示我的店铺菜单 -->
+          <el-menu-item :index="'/shop/' + currentShop.id" v-if="!isAdmin && currentShop.id">
+            <el-icon><Shop /></el-icon>
+            <span>我的店铺</span>
+          </el-menu-item>
 
-        <el-menu-item index="/order">
-          <el-icon><Document /></el-icon>
-          <span>订单管理</span>
-        </el-menu-item>
+          <el-menu-item index="/order">
+            <el-icon><Document /></el-icon>
+            <span>订单管理</span>
+          </el-menu-item>
         <el-menu-item index="/product">
           <el-icon><Goods /></el-icon>
           <span>商品管理</span>

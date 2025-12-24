@@ -3,10 +3,29 @@
     <div class="header">
       <h2>{{ shopInfo.name }} 详情</h2>
       <div class="header-actions">
-        <el-button type="primary" @click="handleGetTempToken">获取令牌</el-button>
+        <el-button  @click="handleGetTempToken">获取令牌</el-button>
+        <el-button  @click="handleEdit">修改店铺</el-button>
         <el-button @click="$router.back()">返回</el-button>
       </div>
     </div>
+
+    <!-- 编辑店铺对话框 -->
+    <el-dialog
+      v-model="editDialogVisible"
+      :title="dialogTitle"
+      width="600px"
+      center
+      append-to-body
+    >
+      <ShopForm
+        ref="shopFormRef"
+        :shop-id="currentShopId"
+      />
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">确定</el-button>
+      </template>
+    </el-dialog>
 
     <div class="detail-content" v-loading="loading">
       <el-row :gutter="20">
@@ -109,6 +128,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { getShopDetail, getShopImageUrl, getShopTempToken } from '@/api/shop'
 import SmartImage from '@/components/SmartImage.vue'
+import ShopForm from '@/components/shop/ShopForm.vue'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
@@ -121,6 +141,12 @@ const dialogVisible = ref(false)
 const tokenDialogVisible = ref(false)
 const tokenInfo = ref({})
 const tokenLoading = ref(false)
+
+// 编辑店铺相关状态
+const editDialogVisible = ref(false)
+const dialogTitle = ref('')
+const currentShopId = ref(null)
+const shopFormRef = ref(null)
 
 // 获取店铺详情
 const fetchShopDetail = async () => {
@@ -188,6 +214,26 @@ const handleGetTempToken = async () => {
     ElMessage.error('获取令牌失败，请稍后重试')
   } finally {
     tokenLoading.value = false
+  }
+}
+
+// 编辑店铺
+const handleEdit = () => {
+  dialogTitle.value = '修改店铺'
+  currentShopId.value = route.params.id
+  editDialogVisible.value = true
+}
+
+// 提交编辑表单
+const handleSubmit = async () => {
+  try {
+    await shopFormRef.value.submit()
+    editDialogVisible.value = false
+    ElMessage.success('店铺更新成功')
+    // 刷新店铺详情
+    fetchShopDetail()
+  } catch (error) {
+    console.error('更新店铺失败:', error)
   }
 }
 

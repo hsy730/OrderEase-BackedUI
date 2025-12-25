@@ -37,7 +37,12 @@
         type="datetime"
         value-format="YYYY-MM-DDTHH:mm:ssZ"
         placeholder="选择有效期"
+        :disabled="!isAdminRole()"
       />
+      <!-- <div v-if="!isAdminRole()" class="permission-tip">
+        <el-icon><InfoFilled /></el-icon>
+        <span>仅管理员可修改有效期</span>
+      </div> -->
     </el-form-item>
 
     <el-form-item label="店铺描述" prop="description">
@@ -79,6 +84,7 @@ import { Plus } from '@element-plus/icons-vue'
 import { createShop, updateShop, getShopDetail, uploadShopImage, getShopImageUrl } from '@/api/shop'  // 新增API引用
 import { API_BASE_URL, API_PREFIX } from '@/config'
 import SmartImage from '@/components/SmartImage.vue'
+import { isAdminRole } from '@/utils/auth'
 
 // 修改props接收方式
 const props = defineProps({

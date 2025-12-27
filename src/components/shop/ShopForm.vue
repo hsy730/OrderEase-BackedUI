@@ -46,11 +46,11 @@
     </el-form-item>
 
     <el-form-item label="店铺描述" prop="description">
-      <el-input v-model="formData.description" type="textarea" :rows="3" />
+      <el-input v-model="formData.description" />
     </el-form-item>
 
-    <el-form-item label="店铺设置" prop="settings">
-      <el-input v-model="settingsStr" type="textarea" :rows="3" @input="handleSettingsInput" />
+    <el-form-item v-if="isAdminRole()" label="店铺设置" prop="settings">
+      <el-input v-model="settingsStr" type="textarea" :rows="5" @input="handleSettingsInput" />
       <div v-if="settingsError" class="settings-error">{{ settingsError }}</div>
     </el-form-item>
 
@@ -340,8 +340,8 @@ defineExpose({
 
 <style scoped>
 .shop-image-upload {
-  width: 200px;
-  height: 200px;
+  width: 100px;
+  height: 100px;
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
   cursor: pointer;

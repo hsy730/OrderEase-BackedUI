@@ -6,7 +6,7 @@
         <el-button  @click="handleGetTempToken">获取令牌</el-button>
         <el-button  @click="handleEdit">修改店铺</el-button>
         <el-button  @click="handleEditStatusFlow">状态流转</el-button>
-        <el-button @click="$router.back()">返回</el-button>
+        <el-button v-if="isAdminRole()" @click="$router.back()">返回</el-button>
       </div>
     </div>
 
@@ -60,11 +60,16 @@
               {{ shopInfo.name }}
                <span class="shop-status" :class="isValid ? 'valid' : 'invalid'">{{ isValid ? '营业中' : '已过期' }}</span>
             </el-descriptions-item>
+            <el-descriptions-item label="店主账号">{{ shopInfo.owner_username }}</el-descriptions-item>
             <el-descriptions-item label="联系方式">{{ shopInfo.contact_phone }}</el-descriptions-item>
             <el-descriptions-item label="邮箱">{{ shopInfo.contact_email }}</el-descriptions-item>
+            <el-descriptions-item label="店铺地址">{{ shopInfo.address || '暂无地址' }}</el-descriptions-item>
             <el-descriptions-item label="有效期至">{{ formatTime(shopInfo.valid_until) }}</el-descriptions-item>
             <el-descriptions-item label="店铺描述">
               {{ shopInfo.description || '暂无描述' }}
+            </el-descriptions-item>
+            <el-descriptions-item v-if="isAdminRole()" label="店铺设置">
+              <pre class="settings-content">{{ JSON.stringify(shopInfo.settings, null, 2) || '暂无设置' }}</pre>
             </el-descriptions-item>
             <el-descriptions-item label="店铺标签">
               <div class="tags-container">
@@ -153,6 +158,7 @@ import OrderStatusFlow from '@/components/shop/OrderStatusFlow.vue'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getDefaultOrderStatusFlow } from '@/utils/orderStatus'
+import { isAdminRole } from '@/utils/auth'
 
 const route = useRoute()
 const loading = ref(false)
@@ -474,6 +480,20 @@ onMounted(() => {
 .shop-tag:hover {
   transform: translateY(-2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.settings-content {
+  background: #f5f7fa;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #e4e7ed;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 :deep(.el-descriptions) {

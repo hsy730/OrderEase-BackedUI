@@ -2,7 +2,11 @@
   <div class="product-detail">
     <div class="header">
       <h2>商品详情</h2>
-      <el-button @click="$router.back()">返回</el-button>
+      <div class="header-actions">
+        <el-button type="primary" @click="handleUpdate">更新</el-button>
+        <el-button @click="handleManageTags">管理标签</el-button>
+        <el-button @click="$router.back()">返回</el-button>
+      </div>
     </div>
 
     <div class="detail-content" v-loading="loading">
@@ -105,6 +109,27 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- 编辑商品对话框 -->
+    <el-dialog
+      v-model="editDialogVisible"
+      :title="editDialogTitle"
+      width="600px"
+      center
+      append-to-body
+    >
+      <ProductForm
+        ref="productFormRef"
+        :product-id="currentProductId"
+      />
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 标签管理对话框 -->
+    <tag-manage-dialog ref="tagManageDialogRef" />
   </div>
 </template>
 
@@ -113,9 +138,11 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
-import { getProductDetail, deleteProduct, getProductImageUrl } from '@/api/product'
+import { getProductDetail, deleteProduct, getProductImageUrl, updateProduct } from '@/api/product'
 import { getProductTags } from '@/api/tag'
 import SmartImage from '@/components/SmartImage.vue'
+import ProductForm from '@/components/product/ProductForm.vue'
+import TagManageDialog from '@/components/product/TagManageDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -124,6 +151,15 @@ const product = ref({})
 const tags = ref([])
 const loading = ref(false)
 const dialogVisible = ref(false)
+
+// 编辑商品相关状态
+const editDialogVisible = ref(false)
+const editDialogTitle = ref('编辑商品')
+const currentProductId = ref(null)
+const productFormRef = ref(null)
+
+// 标签管理相关状态
+const tagManageDialogRef = ref(null)
 
 // 注册组件
 const components = {
@@ -180,6 +216,35 @@ const handleImageError = () => {
   ElMessage.error('图片加载失败')
 }
 
+// 处理更新商品
+const handleUpdate = () => {
+  editDialogTitle.value = '编辑商品'
+  currentProductId.value = product.value.id
+  editDialogVisible.value = true
+}
+
+// 提交编辑表单
+const handleSubmit = async () => {
+  try {
+    await productFormRef.value.submit()
+    editDialogVisible.value = false
+    ElMessage.success('商品更新成功')
+    // 刷新商品详情
+    fetchProductDetail()
+  } catch (error) {
+    console.error('更新商品失败:', error)
+    ElMessage.error('更新商品失败')
+  }
+}
+
+// 管理标签
+const handleManageTags = () => {
+  tagManageDialogRef.value?.open({
+    productId: product.value.id,
+    productName: product.value.name
+  })
+}
+
 onMounted(() => {
   fetchProductDetail()
 })
@@ -195,6 +260,11 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
 }
 
 .detail-content {

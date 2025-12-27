@@ -138,8 +138,9 @@ function addShopIdToRequest(config) {
         config.data = { ...config.data, shop_id: shopId }
       } 
       // 无body数据：将shop_id添加到query参数中
-      config.params = { ...config.params, shop_id: shopId }
-      
+      if (config.params && config.params.shop_id == null) {
+          config.params = { ...config.params, shop_id: shopId }
+      }
     }
   }
 }

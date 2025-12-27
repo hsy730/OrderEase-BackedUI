@@ -5,6 +5,7 @@
       <div class="header-actions">
         <el-button  @click="handleGetTempToken">获取令牌</el-button>
         <el-button  @click="handleEdit">修改店铺</el-button>
+        <el-button  @click="handleEditStatusFlow">状态流转</el-button>
         <el-button @click="$router.back()">返回</el-button>
       </div>
     </div>
@@ -120,17 +121,38 @@
         <el-button @click="tokenDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+
+    <!-- 状态流转编辑对话框 -->
+    <el-dialog
+      v-model="statusFlowDialogVisible"
+      title="编辑订单状态流转"
+      width="800px"
+      center
+      append-to-body
+    >
+      <OrderStatusFlow
+        ref="orderStatusFlowRef"
+        :initial-status-flow="statusFlowData"
+        @update:status-flow="handleStatusFlowUpdate"
+      />
+      <template #footer>
+        <el-button @click="statusFlowDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSaveStatusFlow">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { getShopDetail, getShopImageUrl, getShopTempToken } from '@/api/shop'
+import { getShopDetail, getShopImageUrl, getShopTempToken, updateShop, updateOrderStatusFlow } from '@/api/shop'
 import SmartImage from '@/components/SmartImage.vue'
 import ShopForm from '@/components/shop/ShopForm.vue'
+import OrderStatusFlow from '@/components/shop/OrderStatusFlow.vue'
 import { Picture, ZoomIn } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { getDefaultOrderStatusFlow } from '@/utils/orderStatus'
 
 const route = useRoute()
 const loading = ref(false)
@@ -148,6 +170,11 @@ const dialogTitle = ref('')
 const currentShopId = ref(null)
 const shopFormRef = ref(null)
 
+// 状态流转编辑相关状态
+const statusFlowDialogVisible = ref(false)
+const statusFlowData = ref(getDefaultOrderStatusFlow())
+const orderStatusFlowRef = ref(null)
+
 // 获取店铺详情
 const fetchShopDetail = async () => {
   loading.value = true
@@ -164,9 +191,14 @@ const fetchShopDetail = async () => {
       ...shopData,
       tags: tagsData
     }
+    
+    // 初始化状态流转数据
+    statusFlowData.value = shopData.order_status_flow || getDefaultOrderStatusFlow()
   } catch (tagsError) {
     console.error('获取店铺标签失败:', tagsError)
     shopInfo.value.tags = []
+    // 初始化状态流转数据
+    statusFlowData.value = getDefaultOrderStatusFlow()
   }
   loading.value = false
 }
@@ -234,6 +266,41 @@ const handleSubmit = async () => {
     fetchShopDetail()
   } catch (error) {
     console.error('更新店铺失败:', error)
+  }
+}
+
+// 打开状态流转编辑对话框
+const handleEditStatusFlow = () => {
+  // 深拷贝状态流转数据，避免直接修改原始数据
+  statusFlowData.value = JSON.parse(JSON.stringify(shopInfo.value.order_status_flow || getDefaultOrderStatusFlow()))
+  statusFlowDialogVisible.value = true
+}
+
+// 处理状态流转数据更新
+const handleStatusFlowUpdate = (newStatusFlow) => {
+  statusFlowData.value = newStatusFlow
+}
+
+// 保存状态流转数据
+const handleSaveStatusFlow = async () => {
+  try {
+    // 构建更新数据
+    const updateData = {
+      id: shopInfo.value.id,
+      order_status_flow: statusFlowData.value
+    }
+    
+    // 调用更新接口
+    await updateOrderStatusFlow(updateData)
+    
+    ElMessage.success('状态流转更新成功')
+    statusFlowDialogVisible.value = false
+    
+    // 刷新店铺详情
+    fetchShopDetail()
+  } catch (error) {
+    console.error('更新状态流转失败:', error)
+    ElMessage.error(error.response?.data?.message || '更新状态流转失败')
   }
 }
 

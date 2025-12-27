@@ -7,12 +7,13 @@
       </div>
       <div class="header-actions">
         <el-button
-          v-if="canToggleStatus"
+          v-for="action in availableActions"
+          :key="action.name"
           type="primary"
           :loading="toggleLoading"
-          @click="handleToggleStatus"
+          @click="handleToggleStatus(action)"
         >
-          {{ getNextStatusText }}
+          {{ action.name }}
         </el-button>
         <el-button @click="$router.back()">返回</el-button>
       </div>
@@ -114,69 +115,94 @@ import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import { getOrderDetail, toggleOrderStatus } from '@/api/order'
+import { getShopDetail } from '@/api/shop'
 import { API_BASE_URL, API_PREFIX } from '@/config'
 
 const route = useRoute()
 const loading = ref(false)
 const order = ref({})
 const toggleLoading = ref(false)
+const shop = ref({})
+const shopLoading = ref(false)
 
-// 状态转换映射
-const statusTransitions = {
-  1: { next: 2, text: '接单' },     // OrderStatusPending -> OrderStatusAccepted
-  2: { next: 4, text: '发货' },     // OrderStatusAccepted -> OrderStatusShipped
-  4: { next: 10, text: '完成' },    // OrderStatusShipped -> OrderStatusComplete
-  10: null,  // 终态 - OrderStatusComplete
-  3: null,   // 终态 - OrderStatusRejected
-  '-1': null // 终态 - OrderStatusCanceled
+// 获取店铺详情
+const fetchShopDetail = async (shopId) => {
+  if (!shopId) return
+  shopLoading.value = true
+  try {
+    const data = await getShopDetail(shopId)
+    shop.value = data
+  } catch (error) {
+    console.error('获取店铺详情失败:', error)
+    ElMessage.error('获取店铺详情失败')
+  } finally {
+    shopLoading.value = false
+  }
 }
+
+// 获取订单的当前状态配置
+const getCurrentStatusConfig = computed(() => {
+  if (!order.value.status || !shop.value.order_status_flow) return null
+  return shop.value.order_status_flow.statuses.find(
+    status => status.value === order.value.status
+  ) || null
+})
 
 // 获取状态文本
 const getStatusText = (status) => {
-  const statusMap = {
-    1: '待处理',   // OrderStatusPending
-    2: '已接单',   // OrderStatusAccepted
-    3: '已拒绝',   // OrderStatusRejected
-    4: '已发货',   // OrderStatusShipped
-    10: '已完成',  // OrderStatusComplete
-    '-1': '已取消' // OrderStatusCanceled
+  if (!shop.value.order_status_flow) {
+    // 默认状态映射
+    const defaultStatusMap = {
+      1: '待处理',   // OrderStatusPending
+      2: '已接单',   // OrderStatusAccepted
+      3: '已拒绝',   // OrderStatusRejected
+      4: '已发货',   // OrderStatusShipped
+      10: '已完成',  // OrderStatusComplete
+      '-1': '已取消' // OrderStatusCanceled
+    }
+    return defaultStatusMap[status] || '未知状态'
   }
-  return statusMap[status] || '未知状态'
+  const statusConfig = shop.value.order_status_flow.statuses.find(s => s.value === status)
+  return statusConfig?.label || '未知状态'
 }
 
 // 获取状态类型（用于标签颜色）
 const getStatusType = (status) => {
-  const statusMap = {
-    1: 'warning',   // OrderStatusPending - 待处理
-    2: 'primary',   // OrderStatusAccepted - 已接单
-    3: 'danger',    // OrderStatusRejected - 已拒绝
-    4: 'info',      // OrderStatusShipped - 已发货
-    10: 'success',  // OrderStatusComplete - 已完成
-    '-1': 'info'    // OrderStatusCanceled - 已取消
+  if (!shop.value.order_status_flow) {
+    // 默认状态类型映射
+    const defaultStatusTypeMap = {
+      1: 'warning',   // OrderStatusPending - 待处理
+      2: 'primary',   // OrderStatusAccepted - 已接单
+      3: 'danger',    // OrderStatusRejected - 已拒绝
+      4: 'info',      // OrderStatusShipped - 已发货
+      10: 'success',  // OrderStatusComplete - 已完成
+      '-1': 'info'    // OrderStatusCanceled - 已取消
+    }
+    return defaultStatusTypeMap[status] || 'info'
   }
-  return statusMap[status] || 'info'
+  const statusConfig = shop.value.order_status_flow.statuses.find(s => s.value === status)
+  return statusConfig?.type || 'info'
 }
 
 // 是否可以切换状态
 const canToggleStatus = computed(() => {
-  const currentStatus = order.value.status
-  return currentStatus && statusTransitions[currentStatus] !== null
+  const currentStatusConfig = getCurrentStatusConfig.value
+  return currentStatusConfig && !currentStatusConfig.isFinal && currentStatusConfig.actions && currentStatusConfig.actions.length > 0
 })
 
-// 获取下一个状态的文本
-const getNextStatusText = computed(() => {
-  const currentStatus = order.value.status
-  if (!currentStatus || !statusTransitions[currentStatus]) return ''
-  return statusTransitions[currentStatus]?.text || ''
+// 获取可用的状态转换动作
+const availableActions = computed(() => {
+  const currentStatusConfig = getCurrentStatusConfig.value
+  return currentStatusConfig?.actions || []
 })
 
 // 处理状态翻转
-const handleToggleStatus = async () => {
+const handleToggleStatus = async (action) => {
   if (!order.value.id) return
 
   try {
     await ElMessageBox.confirm(
-      `确认${getNextStatusText.value}吗？`,
+      `确认${action.name}吗？`,
       '提示',
       {
         confirmButtonText: '确定',
@@ -207,6 +233,10 @@ const fetchOrderDetail = async () => {
   try {
     const data = await getOrderDetail(route.params.id)
     order.value = data
+    // 获取店铺详情
+    if (data.shop_id) {
+      await fetchShopDetail(data.shop_id)
+    }
   } catch (error) {
     console.error('获取订单详情失败:', error)
   } finally {

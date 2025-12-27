@@ -86,3 +86,12 @@ export function getShopTempToken(shopId) {
         }
     })
 }
+
+// 更新订单状态流转
+export function updateOrderStatusFlow(data) {
+    return request({
+        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/update-order-status-flow`,
+        method: 'put',
+        data: data,
+    })
+}

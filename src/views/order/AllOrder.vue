@@ -220,10 +220,10 @@ const fetchOrderStatusFlow = async () => {
   try {
     loadingStatusFlow.value = true
     const shopId = getCurrentShopId()
-    const response = await getOrderStatusFlow(shopId)
-    if (response && response.data) {
-      shopInfo.value = response.data
-      orderStatusFlow.value = response.data.order_status_flow?.statuses || []
+    const data = await getOrderStatusFlow(shopId)
+    if (data && data.order_status_flow) {
+      shopInfo.value = data
+      orderStatusFlow.value = data.order_status_flow?.statuses || []
     }
   } catch (error) {
     console.error('获取订单状态流转配置失败:', error)

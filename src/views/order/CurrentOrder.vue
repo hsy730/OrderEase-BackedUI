@@ -91,7 +91,9 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
-import { getOrderList, deleteOrder } from '@/api/order'
+import { getOrderList, deleteOrder, getOrderStatusFlow } from '@/api/order'
+import { getCurrentShopId } from '@/api/shop'
+import { getStatusText as getStatusTextUtil, getStatusType as getStatusTypeUtil } from '@/utils/orderStatus'
 import OrderForm from '@/components/order/OrderForm.vue'
 
 const router = useRouter()
@@ -105,30 +107,37 @@ const pageSize = ref(10)
 const total = ref(0)
 const orderFormRef = ref(null)
 
+// 店铺信息和订单状态流转配置
+const shopInfo = ref({})
+const orderStatusFlow = ref([])
+const loadingStatusFlow = ref(false)
+
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
-  const statusMap = {
-    1: '待处理',   // OrderStatusPending
-    2: '已接单',   // OrderStatusAccepted
-    3: '已备货',   // OrderStatusRejected
-    4: '已发货',   // OrderStatusShipped
-    10: '已完成',  // OrderStatusComplete
-    '-1': '已取消' // OrderStatusCanceled
-  }
-  return statusMap[status] || '未知状态'
+  return getStatusTextUtil(status, shopInfo.value)
 }
 
 // 获取订单状态对应的类型
 const getStatusType = (status) => {
-  const statusMap = {
-    1: 'warning',   // OrderStatusPending - 待处理
-    2: 'primary',   // OrderStatusAccepted - 已接单
-    3: 'danger',    // OrderStatusRejected - 已拒绝
-    4: 'info',      // OrderStatusShipped - 已发货
-    10: 'success',  // OrderStatusComplete - 已完成
-    '-1': 'info'    // OrderStatusCanceled - 已取消
+  return getStatusTypeUtil(status, shopInfo.value)
+}
+
+// 获取店铺订单状态流转配置
+const fetchOrderStatusFlow = async () => {
+  try {
+    loadingStatusFlow.value = true
+    const shopId = getCurrentShopId()
+    const data = await getOrderStatusFlow(shopId)
+    if (data && data.order_status_flow) {
+      shopInfo.value = data
+      orderStatusFlow.value = data.order_status_flow?.statuses || []
+    }
+  } catch (error) {
+    console.error('获取订单状态流转配置失败:', error)
+    ElMessage.error('获取订单状态流转配置失败')
+  } finally {
+    loadingStatusFlow.value = false
   }
-  return statusMap[status] || 'info'
 }
 
 // 获取订单列表
@@ -241,8 +250,9 @@ const formatTime = (time) => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 初始化订单列表
+  await fetchOrderStatusFlow()
   fetchOrderList()
   
   // 监听全局SSE事件
@@ -265,6 +275,21 @@ const handleRefresh = () => {
   loading.value = true
   fetchOrderList()
   ElMessage.success('数据已刷新')
+}
+
+// 处理每页大小变化
+const handleSizeChange = (val) => {
+  console.log('每页大小变化:', val)
+  pageSize.value = val
+  currentPage.value = 1 // 重置到第一页
+  fetchOrderList()
+}
+
+// 处理当前页变化
+const handleCurrentChange = (val) => {
+  console.log('当前页变化:', val)
+  currentPage.value = val
+  fetchOrderList()
 }
 </script>
 

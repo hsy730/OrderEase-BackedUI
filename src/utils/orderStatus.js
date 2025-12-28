@@ -24,7 +24,7 @@ export const getStatusText = (status, shop = null) => {
   }
   
   // 否则使用默认状态映射
-  return DEFAULT_STATUS_MAP[status]?.label || '未知状态'
+  return '未知状态'
 }
 
 /**
@@ -43,7 +43,7 @@ export const getStatusType = (status, shop = null) => {
   }
   
   // 否则使用默认状态映射
-  return DEFAULT_STATUS_MAP[status]?.type || 'info'
+  return 'info'
 }
 
 /**

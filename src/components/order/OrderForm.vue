@@ -137,7 +137,7 @@
       <el-input
         v-model="form.remark"
         type="textarea"
-        rows="3"
+        :rows="3"
         placeholder="请输入订单备注"
       />
     </el-form-item>

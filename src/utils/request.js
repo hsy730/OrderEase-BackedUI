@@ -135,7 +135,7 @@ function addShopIdToRequest(config) {
       
       if (hasBodyData) {
         // 有body数据且非FormData：将shop_id添加到body中
-        if (!config.data.shop_id == null) {
+        if (config.data.shop_id == null) {
           config.data = { ...config.data, shop_id: shopId }
         }
       } 

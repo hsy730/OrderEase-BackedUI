@@ -52,6 +52,13 @@
             <span :class="{ 'low-stock': row.stock < 10 }">{{ row.stock }}</span>
           </template>
         </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 'online' ? 'success' : 'info'" size="small">
+              {{ row.status === 'online' ? '已上架' : '已下架' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="创建时间" width="150">
           <template #default="{ row }">
             {{ formatTime(row.created_at) }}
@@ -62,35 +69,32 @@
             {{ formatTime(row.updated_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <div class="operation-buttons">
               <el-button type="info" link @click="handleView(row)">查看</el-button>
-              <!-- <el-divider direction="vertical" /> -->
-              <el-button 
-                v-if="row.status !== 'online'"
-                type="success" 
-                link 
-                @click="handleStatusChange(row, 'online')"
-              >
-                上架
-              </el-button>
-              <el-button 
-                v-if="row.status === 'online'"
-                type="warning" 
-                link 
-                @click="handleStatusChange(row, 'offline')"
-              >
-                下架
-              </el-button>
+              <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
               <!-- <el-divider direction="vertical" /> -->
               <el-dropdown>
-                <el-button type="primary" link>
+                <el-button type="warning" link>
                   更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="handleEdit(row)">编辑</el-dropdown-item>
+                    <el-dropdown-item 
+                      v-if="row.status !== 'online'"
+                      @click="handleStatusChange(row, 'online')"
+                      style="color: #67c23a;"
+                    >
+                      上架
+                    </el-dropdown-item>
+                    <el-dropdown-item 
+                      v-if="row.status === 'online'"
+                      @click="handleStatusChange(row, 'offline')"
+                      style="color: #e6a23c;"
+                    >
+                      下架
+                    </el-dropdown-item>
                     <el-dropdown-item @click="handleManageTags(row)">管理标签</el-dropdown-item>
                     <el-dropdown-item @click="handleDelete(row)" style="color: #f56c6c;">删除</el-dropdown-item>
                   </el-dropdown-menu>

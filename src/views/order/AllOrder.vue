@@ -3,10 +3,6 @@
     <div class="content-wrapper">
       <div class="header">
         <h2>全部订单</h2>
-        <div>
-          <el-button type="primary" @click="handleAdd">新建</el-button>
-          <el-button @click="handleRefresh" :icon="Refresh" title="刷新"></el-button>
-        </div>
       </div>
 
       <!-- 高级查询条件 -->
@@ -250,7 +246,7 @@ const fetchOrderList = async () => {
       pageSize: pageSize.value,
       tag_id: router.currentRoute.value.query.tag_id,
       user_id: searchParams.user_id,
-      status: searchParams.status.length > 0 ? searchParams.status.map(s => Number(s)).join(',') : null,
+      status: searchParams.status.length > 0 ? searchParams.status.map(s => Number(s)) : null,
       start_time: startTime,
       end_time: endTime
     }

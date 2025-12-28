@@ -3,10 +3,6 @@
     <div class="content-wrapper">
       <div class="header">
         <h2>当前订单</h2>
-        <div>
-          <el-button type="primary" @click="handleAdd">新建</el-button>
-          <el-button @click="handleRefresh" :icon="Refresh" title="刷新"></el-button>
-        </div>
       </div>
 
       <el-table

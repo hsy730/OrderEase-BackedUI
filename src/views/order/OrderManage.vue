@@ -36,12 +36,12 @@
                   multiple
                   style="width: 150px;"
                 >
-                  <el-option label="待处理" value="1" />
-                  <el-option label="已接单" value="2" />
-                  <el-option label="已备货" value="3" />
-                  <el-option label="已发货" value="4" />
-                  <el-option label="已完成" value="10" />
-                  <el-option label="已取消" value="-1" />
+                  <el-option 
+                    v-for="status in orderStatusOptions" 
+                    :key="status.value" 
+                    :label="status.label" 
+                    :value="status.value.toString()" 
+                  />
                 </el-select>
               </el-form-item>
             </el-col>
@@ -183,11 +183,11 @@
 
 <script setup>
 import '@/assets/table-global.css'
-import { ref, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, onMounted, onUnmounted, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
-import { getOrderList, deleteOrder, advanceSearchOrderList } from '@/api/order'
+import { getOrderList, deleteOrder, advanceSearchOrderList, getOrderStatusFlow } from '@/api/order'
 import OrderForm from '@/components/order/OrderForm.vue'
 import UserSelect from '@/components/UserSelect.vue'
 
@@ -203,6 +203,7 @@ const pageSize = ref(10)
 const total = ref(0)
 const orderFormRef = ref(null)
 const activeTab = ref('current') // 当前激活的标签页
+const orderStatusFlow = ref(null)
 const searchParams = reactive({
   user_id: null,
   status: [],
@@ -210,31 +211,67 @@ const searchParams = reactive({
 }) // 查询参数
 // const eventSource = ref(null) // SSE 连接实例 - 已移至App.vue
 
+// 获取订单状态流转配置
+const fetchOrderStatusFlow = async () => {
+  try {
+    // 假设从订单列表中获取第一个订单的shop_id
+    const shopId = orderList.value[0]?.shop_id
+    if (shopId) {
+      const data = await getOrderStatusFlow(shopId)
+      orderStatusFlow.value = data.order_status_flow
+    }
+  } catch (error) {
+    console.error('获取订单状态流转配置失败:', error)
+    // 不显示错误提示，避免影响用户体验
+  }
+}
+
 // 获取订单状态对应的文本
 const getStatusText = (status) => {
-  const statusMap = {
-    1: '待处理',   // OrderStatusPending
-    2: '已接单',   // OrderStatusAccepted
-    3: '已备货',   // OrderStatusRejected
-    4: '已发货',   // OrderStatusShipped
-    10: '已完成',  // OrderStatusComplete
-    '-1': '已取消' // OrderStatusCanceled
+  if (!orderStatusFlow.value) {
+    // 默认状态映射
+    return '未知状态';
   }
-  return statusMap[status] || '未知状态'
+  const statusConfig = orderStatusFlow.value.statuses.find(s => s.value === status)
+  return statusConfig?.label || '未知状态'
 }
 
 // 获取订单状态对应的类型
 const getStatusType = (status) => {
-  const statusMap = {
-    1: 'warning',   // OrderStatusPending - 待处理
-    2: 'primary',   // OrderStatusAccepted - 已接单
-    3: 'danger',    // OrderStatusRejected - 已拒绝
-    4: 'info',      // OrderStatusShipped - 已发货
-    10: 'success',  // OrderStatusComplete - 已完成
-    '-1': 'info'    // OrderStatusCanceled - 已取消
+  if (!orderStatusFlow.value) {
+    // 默认状态类型映射
+    const defaultStatusTypeMap = {
+      1: 'warning',   // OrderStatusPending - 待处理
+      2: 'primary',   // OrderStatusAccepted - 已接单
+      3: 'info',      // OrderStatusPrepared - 已备货
+      4: 'info',      // OrderStatusShipped - 已发货
+      10: 'success',  // OrderStatusComplete - 已完成
+      '-1': 'info'    // OrderStatusCanceled - 已取消
+    }
+    return defaultStatusTypeMap[status] || 'info'
   }
-  return statusMap[status] || 'info'
+  const statusConfig = orderStatusFlow.value.statuses.find(s => s.value === status)
+  return statusConfig?.type || 'info'
 }
+
+// 订单状态选项（用于搜索条件）
+const orderStatusOptions = computed(() => {
+  if (!orderStatusFlow.value) {
+    // 默认状态选项
+    return [
+      { label: '待处理', value: 1 },
+      { label: '已接单', value: 2 },
+      { label: '已备货', value: 3 },
+      { label: '已发货', value: 4 },
+      { label: '已完成', value: 10 },
+      { label: '已取消', value: -1 }
+    ]
+  }
+  return orderStatusFlow.value.statuses.map(status => ({
+    label: status.label,
+    value: status.value
+  }))
+})
 
 // 获取订单列表
 const fetchOrderList = async () => {
@@ -259,7 +296,9 @@ const fetchOrderList = async () => {
     // 仅在全部订单页面添加查询参数
     if (activeTab.value === 'all') {
       params.user_id = searchParams.user_id
-      params.status = searchParams.status.length > 0 ? searchParams.status.join(',') : null
+      // 确保状态值转换为数字类型（因为后端API期望数字类型）
+      const statusValues = searchParams.status.length > 0 ? searchParams.status.map(s => parseInt(s)) : []
+      params.status = statusValues.length > 0 ? statusValues.join(',') : null
       params.start_time = startTime
       params.end_time = endTime
       response = await advanceSearchOrderList(params)
@@ -290,6 +329,9 @@ const fetchOrderList = async () => {
     total.value = response.total || 0
     currentPage.value = response.page || 1
     pageSize.value = response.pageSize || 10
+    
+    // 获取订单状态流转配置
+    await fetchOrderStatusFlow()
   } catch (error) {
     console.error('获取订单列表失败:', error)
     ElMessage.error('获取订单列表失败')

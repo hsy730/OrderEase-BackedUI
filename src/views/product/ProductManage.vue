@@ -150,8 +150,6 @@ import SmartImage from '@/components/SmartImage.vue'
 import ProductForm from '@/components/product/ProductForm.vue'
 import TagManageDialog from '@/components/product/TagManageDialog.vue'
 import { getProductList, deleteProduct, updateProductStatus, getProductImageUrl } from '@/api/product'
-import { isAdminRole } from '@/utils/auth'
-import { API_BASE_URL, API_PREFIX } from '@/config'
 
 const router = useRouter()
 const loading = ref(false)
@@ -443,37 +441,39 @@ onMounted(() => {
 
 /* 表格样式已移至全局样式文件 table-global.css */
 
-:deep(.el-button--primary.is-link),
-:deep(.el-button--danger.is-link) {
-  padding: 4px 8px;
-  height: auto;
-  font-size: 13px;
-}
+  /* 调整操作列单元格内边距 */
+  :deep(.el-table__column--fixed-right .el-table__cell .cell) {
+    padding-left: 0;
+    padding-right: 10px;
+  }
 
-:deep(.el-button--primary.is-link) {
-  color: #409eff;
-}
+  :deep(.el-button--primary.is-link),
+  :deep(.el-button--danger.is-link),
+  :deep(.el-button--info.is-link),
+  :deep(.el-button--warning.is-link) {
+    padding: 4px 8px;
+    height: auto;
+    font-size: 13px;
+    margin: 0;
+    min-width: auto;
+  }
 
-:deep(.el-button--danger.is-link) {
-  color: #f56c6c;
-}
+  :deep(.el-button--primary.is-link) {
+    color: #409eff;
+  }
 
-.operation-buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  gap: 4px;
-}
+  :deep(.el-button--danger.is-link) {
+    color: #f56c6c;
+  }
 
-:deep(.el-button--primary.is-link),
-:deep(.el-button--danger.is-link) {
-  padding: 4px 8px;
-  height: auto;
-  font-size: 13px;
-  margin: 0;
-  min-width: auto;
-}
+  .operation-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    white-space: nowrap;
+    gap: 4px;
+    width: 100%;
+  }
 
 :deep(.el-divider--vertical) {
   height: 1em;

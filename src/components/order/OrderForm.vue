@@ -11,10 +11,12 @@
     
     <el-form-item label="订单状态" prop="status">
       <el-select v-model="form.status" placeholder="请选择订单状态">
-        <el-option label="待处理" value="pending" />
-        <el-option label="处理中" value="processing" />
-        <el-option label="已完成" value="completed" />
-        <el-option label="已取消" value="cancelled" />
+        <el-option 
+          v-for="status in orderStatusOptions" 
+          :key="status.value" 
+          :label="status.label" 
+          :value="status.value" 
+        />
       </el-select>
     </el-form-item>
 
@@ -143,9 +145,9 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { createOrder, updateOrder } from '@/api/order'
+import { createOrder, updateOrder, getOrderStatusFlow } from '@/api/order'
 import { getProductList } from '@/api/product'
 import UserSelect from '@/components/UserSelect.vue'
 
@@ -160,9 +162,10 @@ const emit = defineEmits(['submit'])
 
 const formRef = ref(null)
 const productList = ref([])
+const orderStatusFlow = ref(null)
 const form = ref({
   user_id: null,
-  status: 'pending',
+  status: 1, // 使用数字值，默认待处理
   items: [],
   remark: '',
   total_price: 0
@@ -171,6 +174,40 @@ const form = ref({
 // 添加加载状态和搜索相关变量
 const productLoading = ref({})
 const searchProductList = ref([]) // 用于存储搜索结果的商品列表
+
+// 获取订单状态流转配置
+const fetchOrderStatusFlow = async () => {
+  try {
+    // 注意：这里需要获取shop_id，暂时使用固定值或从props中获取
+    // 由于OrderForm可能在创建订单时使用，此时还没有shop_id，所以暂时使用null
+    // 实际项目中应该根据当前用户权限获取对应的shop_id
+    const shopId = null;
+    const data = await getOrderStatusFlow(shopId)
+    orderStatusFlow.value = data.order_status_flow
+  } catch (error) {
+    console.error('获取订单状态流转配置失败:', error)
+    // 不显示错误提示，避免影响用户体验
+  }
+}
+
+// 订单状态选项
+const orderStatusOptions = computed(() => {
+  if (!orderStatusFlow.value) {
+    // 默认状态选项（与OrderManage.vue保持一致）
+    return [
+      { label: '待处理', value: 1 },
+      { label: '已接单', value: 2 },
+      { label: '已备货', value: 3 },
+      { label: '已发货', value: 4 },
+      { label: '已完成', value: 10 },
+      { label: '已取消', value: -1 }
+    ]
+  }
+  return orderStatusFlow.value.statuses.map(status => ({
+    label: status.label,
+    value: status.value
+  }))
+})
 
 // 初始化一个新的商品项
 const initOrderItem = () => ({
@@ -319,9 +356,12 @@ const remoteSearchProduct = async (query, index) => {
 // 监听表单数据变化
 watch(() => props.formData, async (newVal) => {
   if (newVal && Object.keys(newVal).length > 0) {
-    // 确保商品列表已加载
+    // 确保商品列表和状态流已加载
     if (productList.value.length === 0) {
       await fetchProductList();
+    }
+    if (!orderStatusFlow.value) {
+      await fetchOrderStatusFlow();
     }
     
     // 处理订单项
@@ -333,7 +373,7 @@ watch(() => props.formData, async (newVal) => {
           product_id: item.product_id,
           quantity: item.quantity || 1,
           price: item.price || 0,
-           selectedProduct: item.selectedProduct || null,
+          selectedProduct: item.selectedProduct || null,
           selectedOptions: {}
         };
         
@@ -367,12 +407,13 @@ watch(() => props.formData, async (newVal) => {
     form.value = {
       ...newVal,
       user_id: newVal.user_id || null,
+      status: newVal.status || 1, // 默认待处理
       items: processedItems
     };
   } else {
     form.value = {
       user_id: null,
-      status: 'pending',
+      status: 1, // 默认待处理
       items: [],
       remark: '',
       total_price: 0
@@ -431,8 +472,9 @@ defineExpose({
   submit
 })
 
-onMounted(() => {
-  fetchProductList()
+onMounted(async () => {
+  await fetchProductList()
+  await fetchOrderStatusFlow()
 })
 
 const rules = {

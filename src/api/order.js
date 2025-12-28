@@ -57,9 +57,19 @@ export function deleteOrder(id) {
 }
 
 // 翻转订单状态
-export const toggleOrderStatus = (id) => {
+export const toggleOrderStatus = (id, shop_id, next_status) => {
   return request({
     url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/toggle-status`,
-    method: 'put'
+    method: 'put',
+    data: { id, shop_id, next_status }
+  })
+}
+
+// 获取订单状态流转配置
+export const getOrderStatusFlow = (shopId) => {
+  return request({
+    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/status-flow`,
+    method: 'get',
+    params: { shop_id: shopId }
   })
 }

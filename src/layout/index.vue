@@ -83,14 +83,14 @@
           </div>
 
           <!-- 获取登录令牌按钮 -->
-          <el-button 
+          <!-- <el-button 
             type="primary"
             size="small"
             @click="handleGetToken"
             style="margin-right: 16px"
           >
             登录令牌
-          </el-button>
+          </el-button> -->
 
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="avatar-wrapper">

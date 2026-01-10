@@ -7,9 +7,9 @@
       </div>
       <div class="header-actions">
         <el-button type="primary" :icon="Plus" @click="handleCreate">
-          新建订单
+          新建
         </el-button>
-        <el-button :icon="Refresh" @click="handleRefresh" />
+        <el-button :icon="Refresh" @click="handleRefresh" style="margin-left: 0px;"/>
       </div>
     </div>
 

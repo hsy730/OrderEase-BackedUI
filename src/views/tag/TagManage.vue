@@ -3,7 +3,7 @@
     <div class="header">
       <h2>标签管理</h2>
       <div style="display: flex; align-items: center; gap: 10px;">
-        <el-button type="primary" @click="handleAdd">新建</el-button>
+        <el-button type="primary" :icon="Plus" @click="handleAdd">新建</el-button>
         <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
       </div>
     </div>
@@ -108,7 +108,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import '@/assets/table-global.css'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Refresh } from '@element-plus/icons-vue'
+import { Plus, Refresh } from '@element-plus/icons-vue'
 import { getTagList, createTag, updateTag, deleteTag, batchUpdateTags, getTagProducts } from '@/api/tag'
 import { useRouter } from 'vue-router'
 
@@ -277,7 +277,7 @@ const handleDelete = async (row) => {
 // 提交表单
 const handleSubmit = async () => {
   await formRef.value.validate()
-  
+
   submitting.value = true
   try {
     if (dialogType.value === 'add') {

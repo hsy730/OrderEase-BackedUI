@@ -86,7 +86,7 @@
         </el-col>
       </el-row>
     </div>
-    
+
     <!-- 图片预览对话框 -->
     <el-dialog
       v-model="dialogVisible"
@@ -114,7 +114,8 @@
     <el-dialog
       v-model="editDialogVisible"
       :title="editDialogTitle"
-      width="600px"
+      width="900px"
+      :close-on-click-modal="false"
       center
       append-to-body
     >
@@ -137,7 +138,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Picture, ZoomIn } from '@element-plus/icons-vue'
+import { Plus, Picture, ZoomIn } from '@element-plus/icons-vue'
 import { getProductDetail, deleteProduct, getProductImageUrl, updateProduct } from '@/api/product'
 import { getProductTags } from '@/api/tag'
 import SmartImage from '@/components/SmartImage.vue'
@@ -174,10 +175,10 @@ const fetchProductDetail = async () => {
       getProductDetail(route.params.id),
       getProductTags(route.params.id).then(res => res.tags? res.tags : [])
     ])
-    
+
     console.log('商品详情数据:', productData)
     console.log('商品标签数据:', tagsData)
-    
+
     product.value = {
       ...productData,
       tags: tagsData,
@@ -193,7 +194,7 @@ const fetchProductDetail = async () => {
 // 获取图片URL
 const getImageUrl = (path) => {
   if (!path) return ''
-  
+
   // 如果path已经是完整URL，直接返回
   return getProductImageUrl(path)
 }

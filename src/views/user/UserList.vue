@@ -10,7 +10,7 @@
           @input="handleSearchInput"
           style="width: 200px;"
         />
-        <el-button type="primary" @click="showCreateDialog" v-if="isAdmin">新建</el-button>
+        <el-button type="primary" :icon="Plus" @click="showCreateDialog" v-if="isAdmin">新建</el-button>
         <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
       </div>
     </div>
@@ -69,13 +69,13 @@
             <el-option label="自提" value="pickup" />
           </el-select>
         </el-form-item>
-      
+
         <el-form-item label="角色" prop="role">
           <el-select v-model="form.role">
             <el-option label="公共用户" value="public_user" />
             <el-option label="普通用户" value="private_user" />
           </el-select>
-        </el-form-item> 
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -89,7 +89,7 @@
 import { ref, onMounted } from 'vue'
 import '@/assets/table-global.css'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Refresh } from '@element-plus/icons-vue'
+import { Plus, Refresh } from '@element-plus/icons-vue'
 import { getUserList, createUser, deleteUser, updateUser } from '@/api/user'
 
 // 角色格式化函数
@@ -218,7 +218,7 @@ const validatePhone = (rule, value, callback) => {
 
 const submitForm = async () => {
   await formRef.value.validate()
-  
+
   submitting.value = true
   try {
     if (dialogType.value === 'add') {

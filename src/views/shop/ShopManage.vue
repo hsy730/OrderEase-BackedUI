@@ -11,7 +11,7 @@
             @input="handleSearchInput"
             style="width: 200px;"
           />
-          <el-button type="primary" @click="handleAdd">新建</el-button>
+          <el-button type="primary" :icon="Plus" @click="handleAdd">新建</el-button>
           <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
         </div>
       </div>
@@ -70,9 +70,9 @@
 import '@/assets/table-global.css'
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Refresh } from '@element-plus/icons-vue'
-import { 
-    getShopList, 
+import { Plus, Refresh } from '@element-plus/icons-vue'
+import {
+    getShopList,
     deleteShop,
     createShop,
     updateShop,
@@ -93,7 +93,7 @@ const shopList = ref([])
 const fetchData = async () => {
   try {
     loading.value = true
-    const response = await getShopList({ 
+    const response = await getShopList({
       page: currentPage.value,
       page_size: pageSize.value,
       search: searchText.value

@@ -11,7 +11,7 @@
             @input="handleSearchInput"
             style="width: 200px;"
           />
-          <el-button type="primary" @click="handleAdd">新建</el-button>
+          <el-button type="primary" :icon="Plus" @click="handleAdd">新建</el-button>
           <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
         </div>
       </div>
@@ -81,14 +81,14 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item 
+                    <el-dropdown-item
                       v-if="row.status !== 'online'"
                       @click="handleStatusChange(row, 'online')"
                       style="color: #67c23a;"
                     >
                       上架
                     </el-dropdown-item>
-                    <el-dropdown-item 
+                    <el-dropdown-item
                       v-if="row.status === 'online'"
                       @click="handleStatusChange(row, 'offline')"
                       style="color: #e6a23c;"
@@ -121,7 +121,9 @@
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="500px"
+      width="900px"
+      :close-on-click-modal="false"
+      class="product-dialog"
     >
       <product-form
         ref="productFormRef"
@@ -145,7 +147,7 @@ import '@/assets/table-global.css'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Picture, ArrowDown, Refresh } from '@element-plus/icons-vue'
+import { Plus, Picture, ArrowDown, Refresh } from '@element-plus/icons-vue'
 import SmartImage from '@/components/SmartImage.vue'
 import ProductForm from '@/components/product/ProductForm.vue'
 import TagManageDialog from '@/components/product/TagManageDialog.vue'
@@ -264,7 +266,7 @@ const handleDelete = async (row) => {
 // 提交表单
 const handleSubmit = async () => {
   if (!productFormRef.value) return
-  
+
   try {
     await productFormRef.value.submit()
     dialogVisible.value = false
@@ -290,7 +292,7 @@ const handleSubmitSuccess = () => {
 
 // 处理状态变更
 const handleStatusChange = async (row, newStatus) => {
-  const confirmMessage = newStatus === 'online' 
+  const confirmMessage = newStatus === 'online'
     ? '商品上架后，才能购买，确认上架？'
     : '商品下架后，不能购买，确认下架？'
 

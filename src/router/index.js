@@ -16,13 +16,14 @@ const routes = [
     {
         path: '/',
         component: () => import('@/layout/index.vue'),
-        redirect: (to) => {
-            // 从本地存储获取用户信息
-            const userInfo = JSON.parse(localStorage.getItem('admin') || '{}')
-            // 根据角色返回不同路径
-            return userInfo.role === 'admin' ? '/shop' : '/order'
-        },
+        redirect: '/dashboard',
         children: [
+            {
+                path: 'dashboard',
+                name: 'Dashboard',
+                component: () => import('@/views/dashboard/index.vue'),
+                meta: { title: '数据概览' }
+            },
             {
                 path: 'user',
                 name: 'User',

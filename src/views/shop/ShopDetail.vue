@@ -31,7 +31,7 @@
     <div class="detail-content" v-loading="loading">
       <el-row :gutter="20">
         <!-- 左侧店铺信息 -->
-        <el-col :span="6">
+        <el-col :span="3">
           <!-- 店铺图片展示区 -->
           <div class="shop-image" v-if="shopInfo.image_url">
             <SmartImage
@@ -53,7 +53,7 @@
 
         <!-- 右侧店铺详情 -->
 
-        <el-col :span="18">
+        <el-col :span="21">
           <el-descriptions :column="1" border>
             <el-descriptions-item label="店铺ID">{{ shopInfo.id }}</el-descriptions-item>
             <el-descriptions-item label="店铺名称">
@@ -497,10 +497,15 @@ onMounted(() => {
 }
 
 :deep(.el-descriptions) {
-  padding: 0;
-}
+    padding: 0;
+  }
 
-:deep(.el-descriptions__body) {
-  background-color: transparent;
-}
+  :deep(.el-descriptions__body) {
+    background-color: transparent;
+  }
+
+  :deep(.el-descriptions__label) {
+    width: 120px;
+    min-width: 120px;
+  }
 </style>

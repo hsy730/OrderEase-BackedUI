@@ -75,7 +75,7 @@ export const getProductImageUrl = (path) => {
   // 如果path以/开头，去掉开头的/
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
   
-  return `${API_BASE_URL}${API_PREFIX}/${isAdminRole() ? 'admin' : 'shopOwner'}/product/image?path=${cleanPath}`
+  return `/${isAdminRole() ? 'admin' : 'shopOwner'}/product/image?path=${cleanPath}` // 返回相对路径
 }
 
 // 更新商品状态

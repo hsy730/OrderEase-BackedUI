@@ -73,7 +73,7 @@ export function uploadShopImage(id, file) {
 }
 
 export function getShopImageUrl(path) {
-    return `${API_BASE_URL}${API_PREFIX}${isAdminRole() ? '/admin' : '/shopOwner'}/shop/image?path=${path}`
+    return `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/image?path=${path}` // 返回相对路径
 }
 
 // 获取店铺临时令牌

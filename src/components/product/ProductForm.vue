@@ -420,7 +420,7 @@ const handleUpload = async ({ file }) => {
 }
 
 const getImageUrl = (path) => {
-  return path ? `${API_BASE_URL}${API_PREFIX}/admin/product/image?path=${path}` : ''
+  return path ? `/admin/product/image?path=${path}` : "" // 返回相对路径，因为 SmartImage 组件使用 axios request 加载图片
 }
 
 const submit = async () => {

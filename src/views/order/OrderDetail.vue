@@ -311,7 +311,8 @@ const formatTime = (time) => {
 const getImageUrl = (path) => {
   if (!path) return ''
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
-  return `${API_BASE_URL}${API_PREFIX}/admin/product/image?path=${cleanPath}`
+  return `/admin/product/image?path=${cleanPath}` // 返回相对路径
+  // SmartImage 组件使用 axios request 加载图片，baseURL 已包含完整路径
 }
 
 // 按类别分组选项

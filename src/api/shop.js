@@ -3,8 +3,7 @@ import { isAdminRole } from '@/utils/auth';
 import { API_BASE_URL, API_PREFIX } from '@/config'
 
 export function getCurrentShopId() {
-    const shopId = localStorage.getItem('currentShopId');
-    return shopId ? Number(shopId) : 0;
+    return localStorage.getItem('currentShopId') || '';
 }
 
 // 获取店铺列表

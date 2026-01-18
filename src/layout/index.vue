@@ -111,7 +111,7 @@
           <!-- 店铺选择器 -->
           <div class="shop-selector" v-if="isAdmin">
             <el-select
-              v-model.number="shopId"
+              v-model="shopId"
               placeholder="选择店铺"
               filterable
               remote
@@ -320,7 +320,7 @@ onMounted(async () => {
       const { data } = await getShopList({ page: 1, page_size: 50 })
       shopList.value = data
       const curShopId = getCurrentShopId()
-      if (curShopId > 0) {
+      if (curShopId) {
         shopId.value = curShopId
       } else {
         shopId.value = data[0]?.id || null
@@ -331,7 +331,7 @@ onMounted(async () => {
     }
   } else {
     const curShopId = getCurrentShopId()
-    if (curShopId > 0) {
+    if (curShopId) {
       try {
         const result = await getShopDetail(curShopId)
         currentShop.value = result || {}

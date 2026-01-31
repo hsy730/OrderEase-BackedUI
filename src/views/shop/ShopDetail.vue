@@ -122,14 +122,12 @@
             <div class="token-with-copy">
               <span class="token-text">{{ tokenInfo.token }}</span>
               <el-button
-                type="primary"
                 size="small"
                 :icon="CopyDocument"
                 @click="handleCopyToken(tokenInfo.token)"
                 class="copy-button"
-              >
-                复制
-              </el-button>
+                title="复制令牌"
+              />
             </div>
           </el-descriptions-item>
           <el-descriptions-item label="过期时间">{{ formatTime(tokenInfo.expires_at) }}</el-descriptions-item>

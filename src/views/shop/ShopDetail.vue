@@ -118,7 +118,20 @@
       <div class="token-content">
         <el-descriptions :column="1" border>
           <el-descriptions-item label="店铺ID">{{ tokenInfo.shop_id }}</el-descriptions-item>
-          <el-descriptions-item label="临时令牌">{{ tokenInfo.token }}</el-descriptions-item>
+          <el-descriptions-item label="临时令牌">
+            <div class="token-with-copy">
+              <span class="token-text">{{ tokenInfo.token }}</span>
+              <el-button
+                type="primary"
+                size="small"
+                :icon="CopyDocument"
+                @click="handleCopyToken(tokenInfo.token)"
+                class="copy-button"
+              >
+                复制
+              </el-button>
+            </div>
+          </el-descriptions-item>
           <el-descriptions-item label="过期时间">{{ formatTime(tokenInfo.expires_at) }}</el-descriptions-item>
         </el-descriptions>
       </div>
@@ -155,7 +168,7 @@ import { getShopDetail, getShopImageUrl, getShopTempToken, updateShop, updateOrd
 import SmartImage from '@/components/SmartImage.vue'
 import ShopForm from '@/components/shop/ShopForm.vue'
 import OrderStatusFlow from '@/components/shop/OrderStatusFlow.vue'
-import { Picture, ZoomIn } from '@element-plus/icons-vue'
+import { Picture, ZoomIn, CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getDefaultOrderStatusFlow } from '@/utils/orderStatus'
 import { isAdminRole } from '@/utils/auth'
@@ -255,6 +268,30 @@ const handleGetTempToken = async () => {
   }
 }
 
+// 复制令牌到剪贴板
+const handleCopyToken = async (token) => {
+  try {
+    await navigator.clipboard.writeText(token)
+    ElMessage.success('令牌已复制到剪贴板')
+  } catch (error) {
+    // 降级方案：使用传统方法
+    try {
+      const textArea = document.createElement('textarea')
+      textArea.value = token
+      textArea.style.position = 'fixed'
+      textArea.style.opacity = '0'
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      ElMessage.success('令牌已复制到剪贴板')
+    } catch (err) {
+      console.error('复制失败:', err)
+      ElMessage.error('复制失败，请手动复制')
+    }
+  }
+}
+
 // 编辑店铺
 const handleEdit = () => {
   dialogTitle.value = '修改店铺'
@@ -334,6 +371,25 @@ onMounted(() => {
 
 .token-content {
   margin: 20px 0;
+}
+
+.token-with-copy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.token-text {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  word-break: break-all;
+  color: #303133;
+}
+
+.copy-button {
+  flex-shrink: 0;
 }
 
 .detail-content {

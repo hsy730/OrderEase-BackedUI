@@ -164,12 +164,15 @@ const handleRefresh = () => {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 :deep(.el-tabs__header) {
   margin: 0;
   padding: 0 var(--spacing-lg);
   border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+  order: -1;
 }
 
 :deep(.el-tabs__nav-wrap) {
@@ -202,7 +205,7 @@ const handleRefresh = () => {
   flex: 1;
   overflow: hidden;
   padding: 0;
-  height: 100%;
+  min-height: 0;
 }
 
 :deep(.el-tab-pane) {

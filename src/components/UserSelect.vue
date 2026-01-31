@@ -50,11 +50,15 @@ const userLoading = ref(false)
 
 // 获取用户列表
 const fetchUserList = async () => {
+  userLoading.value = true
   try {
-    userList.value = await getSimpleUserList({ page: 1, pageSize: 100 })
+    const response = await getSimpleUserList({ page: 1, pageSize: 100 })
+    userList.value = response.data.list || response.data || []
   } catch (error) {
     console.error('获取用户列表失败:', error)
     ElMessage.error('获取用户列表失败')
+  } finally {
+    userLoading.value = false
   }
 }
 

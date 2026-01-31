@@ -17,13 +17,30 @@ const DEFAULT_STATUS_MAP = {
 export const getStatusText = (status, shop = null) => {
   // 如果有店铺配置且包含order_status_flow，使用店铺自定义状态
   if (shop && shop.order_status_flow) {
-    const statusConfig = shop.order_status_flow.statuses.find(s => s.value === status)
-    if (statusConfig) {
-      return statusConfig.label
+    try {
+      // 处理 order_status_flow 可能是字符串的情况
+      let statusFlow = shop.order_status_flow
+      if (typeof statusFlow === 'string') {
+        statusFlow = JSON.parse(statusFlow)
+      }
+
+      // 检查 statuses 是否存在且是数组
+      if (statusFlow && statusFlow.statuses && Array.isArray(statusFlow.statuses)) {
+        const statusConfig = statusFlow.statuses.find(s => s.value === status)
+        if (statusConfig) {
+          return statusConfig.label
+        }
+      }
+    } catch (e) {
+      console.warn('解析 order_status_flow 失败:', e)
     }
   }
-  
+
   // 否则使用默认状态映射
+  if (DEFAULT_STATUS_MAP[status] && DEFAULT_STATUS_MAP[status].label) {
+    return DEFAULT_STATUS_MAP[status].label
+  }
+
   return '未知状态'
 }
 
@@ -36,13 +53,30 @@ export const getStatusText = (status, shop = null) => {
 export const getStatusType = (status, shop = null) => {
   // 如果有店铺配置且包含order_status_flow，使用店铺自定义状态
   if (shop && shop.order_status_flow) {
-    const statusConfig = shop.order_status_flow.statuses.find(s => s.value === status)
-    if (statusConfig) {
-      return statusConfig.type
+    try {
+      // 处理 order_status_flow 可能是字符串的情况
+      let statusFlow = shop.order_status_flow
+      if (typeof statusFlow === 'string') {
+        statusFlow = JSON.parse(statusFlow)
+      }
+
+      // 检查 statuses 是否存在且是数组
+      if (statusFlow && statusFlow.statuses && Array.isArray(statusFlow.statuses)) {
+        const statusConfig = statusFlow.statuses.find(s => s.value === status)
+        if (statusConfig) {
+          return statusConfig.type
+        }
+      }
+    } catch (e) {
+      console.warn('解析 order_status_flow 失败:', e)
     }
   }
-  
+
   // 否则使用默认状态映射
+  if (DEFAULT_STATUS_MAP[status] && DEFAULT_STATUS_MAP[status].type) {
+    return DEFAULT_STATUS_MAP[status].type
+  }
+
   return 'info'
 }
 
@@ -55,12 +89,25 @@ export const getStatusType = (status, shop = null) => {
 export const getAvailableActions = (status, shop = null) => {
   // 如果有店铺配置且包含order_status_flow，使用店铺自定义状态
   if (shop && shop.order_status_flow) {
-    const statusConfig = shop.order_status_flow.statuses.find(s => s.value === status)
-    if (statusConfig && !statusConfig.isFinal) {
-      return statusConfig.actions || []
+    try {
+      // 处理 order_status_flow 可能是字符串的情况
+      let statusFlow = shop.order_status_flow
+      if (typeof statusFlow === 'string') {
+        statusFlow = JSON.parse(statusFlow)
+      }
+
+      // 检查 statuses 是否存在且是数组
+      if (statusFlow && statusFlow.statuses && Array.isArray(statusFlow.statuses)) {
+        const statusConfig = statusFlow.statuses.find(s => s.value === status)
+        if (statusConfig && !statusConfig.isFinal) {
+          return statusConfig.actions || []
+        }
+      }
+    } catch (e) {
+      console.warn('解析 order_status_flow 失败:', e)
     }
   }
-  
+
   // 否则返回空数组
   return []
 }

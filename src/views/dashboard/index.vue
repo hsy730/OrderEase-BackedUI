@@ -84,25 +84,47 @@
         </div>
       </div>
 
-      <!-- 订单状态分布 -->
+      <!-- 订单处理效率 -->
       <div class="chart-card">
         <div class="chart-header">
-          <h3>订单状态分布</h3>
-          <el-button text size="small">
+          <h3>订单处理效率</h3>
+          <el-button text size="small" @click="fetchStats" :loading="loading">
             <el-icon><Refresh /></el-icon>
           </el-button>
         </div>
         <div class="chart-body">
-          <div class="status-distribution">
-            <div class="status-item" v-for="item in orderStatus" :key="item.status">
-              <div class="status-info">
-                <div class="status-label">{{ item.label }}</div>
-                <div class="status-count">{{ item.count }} 单</div>
+          <div class="efficiency-stats">
+            <div class="efficiency-item">
+              <div class="efficiency-icon efficiency-icon-primary">
+                <el-icon><Timer /></el-icon>
               </div>
-              <div class="status-bar">
-                <div class="status-progress" :style="{ width: item.percent + '%', backgroundColor: item.color }"></div>
+              <div class="efficiency-content">
+                <div class="efficiency-label">平均接单时间</div>
+                <div class="efficiency-value">{{ orderEfficiency.avgAcceptTime }} <span class="efficiency-unit">分钟</span></div>
+                <div class="efficiency-desc">从下单到接单</div>
               </div>
-              <div class="status-percent">{{ item.percent }}%</div>
+            </div>
+
+            <div class="efficiency-item">
+              <div class="efficiency-icon efficiency-icon-success">
+                <el-icon><Odometer /></el-icon>
+              </div>
+              <div class="efficiency-content">
+                <div class="efficiency-label">平均完成时间</div>
+                <div class="efficiency-value">{{ orderEfficiency.avgCompleteTime }} <span class="efficiency-unit">分钟</span></div>
+                <div class="efficiency-desc">从接单到完成</div>
+              </div>
+            </div>
+
+            <div class="efficiency-item">
+              <div class="efficiency-icon efficiency-icon-warning">
+                <el-icon><CircleCheck /></el-icon>
+              </div>
+              <div class="efficiency-content">
+                <div class="efficiency-label">今日完成率</div>
+                <div class="efficiency-value">{{ orderEfficiency.todayCompletionRate }}<span class="efficiency-unit">%</span></div>
+                <div class="efficiency-desc">已完成订单占比</div>
+              </div>
             </div>
           </div>
         </div>
@@ -165,7 +187,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ShoppingCart, Money, Goods, User, TrendCharts, Refresh, Picture, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
+import { ShoppingCart, Money, Goods, User, TrendCharts, Refresh, Picture, ArrowUp, ArrowDown, Timer, Odometer, CircleCheck } from '@element-plus/icons-vue'
 import { getOrderList } from '@/api/order'
 import { getProductList, getProductImageUrl } from '@/api/product'
 import { getStatusText as getStatusTextUtil, getStatusType as getStatusTypeUtil } from '@/utils/orderStatus'
@@ -174,6 +196,7 @@ import SmartImage from '@/components/SmartImage.vue'
 
 const router = useRouter()
 const salesPeriod = ref('week')
+const loading = ref(false)
 
 // 统计数据
 const stats = ref({
@@ -187,13 +210,12 @@ const stats = ref({
   totalUsers: 0
 })
 
-// 订单状态分布
-const orderStatus = ref([
-  { status: 0, label: '待接单', count: 0, percent: 0, color: '#f59e0b' },
-  { status: 1, label: '制作中', count: 0, percent: 0, color: '#3b82f6' },
-  { status: 10, label: '已完成', count: 0, percent: 0, color: '#10b981' },
-  { status: 11, label: '已取消', count: 0, percent: 0, color: '#ef4444' }
-])
+// 订单处理效率
+const orderEfficiency = ref({
+  avgAcceptTime: 0,
+  avgCompleteTime: 0,
+  todayCompletionRate: 0
+})
 
 // 热销商品
 const hotProducts = ref([])
@@ -231,6 +253,7 @@ const getStatusType = (status) => {
 
 // 获取统计数据
 const fetchStats = async () => {
+  loading.value = true
   try {
     const [ordersRes, productsRes] = await Promise.all([
       getOrderList({ page: 1, pageSize: 100 }),
@@ -249,17 +272,22 @@ const fetchStats = async () => {
     stats.value.activeProducts = products.filter(p => p.status === 'online').length
     stats.value.totalProducts = products.length
 
-    // 订单状态分布
-    const total = ordersRes.data?.length || 0
-    const statusCounts = {}
-    ordersRes.data?.forEach(o => {
-      statusCounts[o.status] = (statusCounts[o.status] || 0) + 1
-    })
+    // 订单效率统计（今日数据）
+    const todayCompleted = todayOrders.filter(o => o.status === 10)  // 已完成
+    const todayCancelled = todayOrders.filter(o => o.status === 11)  // 已取消
+    const finishedTotal = todayCompleted.length + todayCancelled.length
 
-    orderStatus.value.forEach(item => {
-      item.count = statusCounts[item.status] || 0
-      item.percent = total > 0 ? Math.round((item.count / total) * 100) : 0
-    })
+    // 今日完成率
+    orderEfficiency.value.todayCompletionRate = finishedTotal > 0
+      ? ((todayCompleted.length / finishedTotal) * 100).toFixed(1)
+      : 0
+
+    // TODO: 需要后端提供订单状态变更时间戳
+    // avgAcceptTime: 需要订单从状态0变为状态1的时间
+    // avgCompleteTime: 需要订单从状态1变为状态10的时间
+    // 当前使用模拟数据
+    orderEfficiency.value.avgAcceptTime = (Math.random() * 5 + 1).toFixed(1)  // 1-6分钟
+    orderEfficiency.value.avgCompleteTime = (Math.random() * 15 + 10).toFixed(1)  // 10-25分钟
 
     // 热销商品（按销量排序）
     hotProducts.value = products
@@ -268,19 +296,21 @@ const fetchStats = async () => {
       .slice(0, 5)
       .map(p => ({
         ...p,
-        sales: Math.floor(Math.random() * 100) // 模拟销量
+        sales: Math.floor(Math.random() * 100) // 模拟销量，需要后端提供真实销量
       }))
 
     // 最新订单
     recentOrders.value = ordersRes.data?.slice(0, 5) || []
 
-    // 模拟变化数据
+    // 模拟变化数据（这些需要后端统计接口支持）
     stats.value.ordersChange = Math.floor(Math.random() * 40) - 10
     stats.value.revenueChange = Math.floor(Math.random() * 50) - 15
     stats.value.todayUsers = Math.floor(Math.random() * 50) + 10
     stats.value.totalUsers = Math.floor(Math.random() * 500) + 100
   } catch (error) {
     console.error('获取统计数据失败:', error)
+  } finally {
+    loading.value = false
   }
 }
 
@@ -490,55 +520,86 @@ onMounted(() => {
   font-size: 13px;
 }
 
-/* 订单状态分布 */
-.status-distribution {
+/* 订单处理效率 */
+.efficiency-stats {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
+  padding: var(--spacing-sm) 0;
 }
 
-.status-item {
+.efficiency-item {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-secondary);
+  transition: all var(--transition-base);
 }
 
-.status-info {
-  width: 80px;
+.efficiency-item:hover {
+  background: var(--color-bg-tertiary);
+  transform: translateX(4px);
+}
+
+.efficiency-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.status-label {
-  font-size: 14px;
+.efficiency-icon .el-icon {
+  font-size: 24px;
+}
+
+.efficiency-icon-primary {
+  background: var(--color-info-bg);
+  color: var(--color-primary);
+}
+
+.efficiency-icon-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.efficiency-icon-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.efficiency-content {
+  flex: 1;
+}
+
+.efficiency-label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.efficiency-value {
+  font-size: 24px;
+  font-weight: 700;
   color: var(--color-text-primary);
+  line-height: 1.2;
   margin-bottom: 2px;
 }
 
-.status-count {
+.efficiency-unit {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-left: 2px;
+}
+
+.efficiency-desc {
   font-size: 12px;
   color: var(--color-text-tertiary);
-}
-
-.status-bar {
-  flex: 1;
-  height: 8px;
-  background: var(--color-bg-tertiary);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.status-progress {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width var(--transition-slow);
-}
-
-.status-percent {
-  width: 40px;
-  text-align: right;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-primary);
 }
 
 /* 内容网格 */

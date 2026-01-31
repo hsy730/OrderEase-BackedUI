@@ -9,10 +9,8 @@
         <div class="stat-content">
           <div class="stat-label">今日订单</div>
           <div class="stat-value">{{ stats.todayOrders }}</div>
-          <div class="stat-change" :class="{ 'stat-change-positive': stats.ordersChange >= 0, 'stat-change-negative': stats.ordersChange < 0 }">
-            <el-icon><component :is="stats.ordersChange >= 0 ? 'ArrowUp' : 'ArrowDown'" /></el-icon>
-            <span>{{ Math.abs(stats.ordersChange) }}%</span>
-            <span class="stat-change-text">较昨日</span>
+          <div class="stat-change stat-change-neutral">
+            <span>昨日 {{ stats.yesterdayOrders }} 单</span>
           </div>
         </div>
       </div>
@@ -24,10 +22,8 @@
         <div class="stat-content">
           <div class="stat-label">今日销售额</div>
           <div class="stat-value">¥{{ stats.todayRevenue.toFixed(2) }}</div>
-          <div class="stat-change" :class="{ 'stat-change-positive': stats.revenueChange >= 0, 'stat-change-negative': stats.revenueChange < 0 }">
-            <el-icon><component :is="stats.revenueChange >= 0 ? 'ArrowUp' : 'ArrowDown'" /></el-icon>
-            <span>{{ Math.abs(stats.revenueChange) }}%</span>
-            <span class="stat-change-text">较昨日</span>
+          <div class="stat-change stat-change-neutral">
+            <span>昨日 ¥{{ stats.yesterdayRevenue.toFixed(2) }}</span>
           </div>
         </div>
       </div>
@@ -185,13 +181,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ShoppingCart, Money, Goods, User, TrendCharts, Refresh, Picture, ArrowUp, ArrowDown, Timer, Odometer, CircleCheck } from '@element-plus/icons-vue'
-import { getOrderList } from '@/api/order'
-import { getProductList, getProductImageUrl } from '@/api/product'
+import { ShoppingCart, Money, Goods, User, TrendCharts, Refresh, Picture, Timer, Odometer, CircleCheck } from '@element-plus/icons-vue'
+import { getDashboardStats } from '@/api/dashboard'
 import { getStatusText as getStatusTextUtil, getStatusType as getStatusTypeUtil } from '@/utils/orderStatus'
-import { getCurrentShopId } from '@/api/shop'
 import SmartImage from '@/components/SmartImage.vue'
 
 const router = useRouter()
@@ -201,9 +195,9 @@ const loading = ref(false)
 // 统计数据
 const stats = ref({
   todayOrders: 0,
-  ordersChange: 0,
+  yesterdayOrders: 0,
   todayRevenue: 0,
-  revenueChange: 0,
+  yesterdayRevenue: 0,
   activeProducts: 0,
   totalProducts: 0,
   todayUsers: 0,
@@ -251,68 +245,59 @@ const getStatusType = (status) => {
   return getStatusTypeUtil(status, shopInfo.value)
 }
 
+// 获取商品图片URL
+const getProductImageUrl = (imageUrl) => {
+  if (!imageUrl) return ''
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl
+  }
+  return import.meta.env.VITE_API_BASE_URL + imageUrl
+}
+
 // 获取统计数据
 const fetchStats = async () => {
   loading.value = true
   try {
-    const [ordersRes, productsRes] = await Promise.all([
-      getOrderList({ page: 1, pageSize: 100 }),
-      getProductList({ page: 1, pageSize: 100 })
-    ])
+    // 传递period参数获取对应周期的销售趋势
+    const response = await getDashboardStats({ period: salesPeriod.value })
+    const data = response.data
 
-    // 计算今日订单
-    const today = new Date().toDateString()
-    const todayOrders = ordersRes.data?.filter(o => new Date(o.created_at).toDateString() === today) || []
+    // 更新统计数据
+    stats.value = {
+      todayOrders: data.orderStats.todayOrders,
+      yesterdayOrders: data.orderStats.yesterdayOrders,
+      todayRevenue: data.orderStats.todayRevenue,
+      yesterdayRevenue: data.orderStats.yesterdayRevenue,
+      activeProducts: data.productStats.activeProducts,
+      totalProducts: data.productStats.totalProducts,
+      todayUsers: data.userStats.todayUsers,
+      totalUsers: data.userStats.totalUsers
+    }
 
-    stats.value.todayOrders = todayOrders.length
-    stats.value.todayRevenue = todayOrders.reduce((sum, o) => sum + (o.total_price || 0), 0)
+    // 更新订单效率
+    orderEfficiency.value = {
+      avgAcceptTime: data.orderEfficiency.avgAcceptTime.toFixed(1),
+      avgCompleteTime: data.orderEfficiency.avgCompleteTime.toFixed(1),
+      todayCompletionRate: data.orderEfficiency.todayCompletionRate.toFixed(1)
+    }
 
-    // 商品统计
-    const products = productsRes.data || []
-    stats.value.activeProducts = products.filter(p => p.status === 'online').length
-    stats.value.totalProducts = products.length
+    // 更新热销商品
+    hotProducts.value = data.hotProducts
 
-    // 订单效率统计（今日数据）
-    const todayCompleted = todayOrders.filter(o => o.status === 10)  // 已完成
-    const todayCancelled = todayOrders.filter(o => o.status === 11)  // 已取消
-    const finishedTotal = todayCompleted.length + todayCancelled.length
+    // 更新最新订单
+    recentOrders.value = data.recentOrders
 
-    // 今日完成率
-    orderEfficiency.value.todayCompletionRate = finishedTotal > 0
-      ? ((todayCompleted.length / finishedTotal) * 100).toFixed(1)
-      : 0
-
-    // TODO: 需要后端提供订单状态变更时间戳
-    // avgAcceptTime: 需要订单从状态0变为状态1的时间
-    // avgCompleteTime: 需要订单从状态1变为状态10的时间
-    // 当前使用模拟数据
-    orderEfficiency.value.avgAcceptTime = (Math.random() * 5 + 1).toFixed(1)  // 1-6分钟
-    orderEfficiency.value.avgCompleteTime = (Math.random() * 15 + 10).toFixed(1)  // 10-25分钟
-
-    // 热销商品（按销量排序）
-    hotProducts.value = products
-      .filter(p => p.status === 'online')
-      .sort((a, b) => (b.sales || 0) - (a.sales || 0))
-      .slice(0, 5)
-      .map(p => ({
-        ...p,
-        sales: Math.floor(Math.random() * 100) // 模拟销量，需要后端提供真实销量
-      }))
-
-    // 最新订单
-    recentOrders.value = ordersRes.data?.slice(0, 5) || []
-
-    // 模拟变化数据（这些需要后端统计接口支持）
-    stats.value.ordersChange = Math.floor(Math.random() * 40) - 10
-    stats.value.revenueChange = Math.floor(Math.random() * 50) - 15
-    stats.value.todayUsers = Math.floor(Math.random() * 50) + 10
-    stats.value.totalUsers = Math.floor(Math.random() * 500) + 100
   } catch (error) {
     console.error('获取统计数据失败:', error)
   } finally {
     loading.value = false
   }
 }
+
+// 监听销售趋势周期变化，重新获取数据
+watch(salesPeriod, () => {
+  fetchStats()
+})
 
 onMounted(() => {
   fetchStats()

@@ -269,7 +269,8 @@ const handleDelete = async (row) => {
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除标签失败:', error)
-      ElMessage.error('删除标签失败')
+      // 使用后端返回的具体错误信息
+      ElMessage.error(error.response?.data?.error || '删除标签失败')
     }
   }
 }

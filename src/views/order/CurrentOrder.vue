@@ -201,7 +201,8 @@ const handleDelete = async (row) => {
     fetchOrderList()
   } catch (error) {
     console.error(error)
-    ElMessage.error('删除失败')
+    // 使用后端返回的具体错误信息
+    ElMessage.error(error.response?.data?.error || '删除失败')
   }
 }
 

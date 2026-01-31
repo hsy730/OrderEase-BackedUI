@@ -137,7 +137,8 @@ const handleDelete = async (row) => {
     fetchData()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败')
+      // 使用后端返回的具体错误信息
+      ElMessage.error(error.response?.data?.error || '删除失败')
     }
   }
 }

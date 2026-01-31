@@ -233,11 +233,18 @@ const props = defineProps({
 const emit = defineEmits(['update:statusFlow'])
 
 // 订单状态流转数据
-const statusFlow = ref(JSON.parse(JSON.stringify(props.initialStatusFlow)))
+const statusFlow = ref({
+  statuses: [],
+  ...JSON.parse(JSON.stringify(props.initialStatusFlow || getDefaultOrderStatusFlow()))
+})
 
 // 监听初始状态变化
 watch(() => props.initialStatusFlow, (newVal) => {
-  statusFlow.value = JSON.parse(JSON.stringify(newVal))
+  if (newVal) {
+    statusFlow.value = JSON.parse(JSON.stringify(newVal))
+  } else {
+    statusFlow.value = { statuses: [], ...getDefaultOrderStatusFlow() }
+  }
 }, { deep: true })
 
 // 计算属性：按照status.value从小到大排列状态
@@ -267,7 +274,8 @@ const statusFormRules = {
     {
       validator: (rule, value, callback) => {
         // 检查状态值是否唯一
-        const isDuplicate = statusFlow.value.statuses.some((status, index) => {
+        const statuses = statusFlow.value?.statuses || []
+        const isDuplicate = statuses.some((status, index) => {
           return status.value === value && index !== editingStatusIndex.value
         })
         if (isDuplicate) {

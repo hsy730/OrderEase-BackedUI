@@ -148,7 +148,7 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createOrder, updateOrder, getOrderStatusFlow } from '@/api/order'
-import { getProductList } from '@/api/product'
+import { getProductList, getProductDetail } from '@/api/product'
 import UserSelect from '@/components/UserSelect.vue'
 
 const props = defineProps({
@@ -363,7 +363,7 @@ watch(() => props.formData, async (newVal) => {
     if (!orderStatusFlow.value) {
       await fetchOrderStatusFlow();
     }
-    
+
     // 处理订单项
     const processedItems = [];
     if (newVal.items) {
@@ -376,17 +376,29 @@ watch(() => props.formData, async (newVal) => {
           selectedProduct: item.selectedProduct || null,
           selectedOptions: {}
         };
-        
+
         // 如果有商品ID但没有selectedProduct，需要获取商品信息
         if (item.product_id && !item.selectedProduct) {
           // 从已有的商品列表中查找
-          const product = productList.value.find(p => p.id === item.product_id);
+          let product = productList.value.find(p => p.id === item.product_id);
+          if (!product) {
+            // 如果商品列表中没有，尝试获取商品详情
+            try {
+              product = await getProductDetail(item.product_id);
+              // 将获取到的商品添加到列表中，避免重复请求
+              if (product && !productList.value.find(p => p.id === product.id)) {
+                productList.value.push(product);
+              }
+            } catch (error) {
+              console.error(`获取商品 ${item.product_id} 详情失败:`, error);
+            }
+          }
           if (product) {
             orderItem.selectedProduct = product;
             orderItem.price = product.price;
           }
         }
-        
+
         // 使用订单详情接口返回的选项数据
         if (item.options && Array.isArray(item.options)) {
           // 按category_id分组选项
@@ -399,11 +411,11 @@ watch(() => props.formData, async (newVal) => {
           });
           orderItem.selectedOptions = groupedOptions;
         }
-        
+
         processedItems.push(orderItem);
       }
     }
-    
+
     form.value = {
       ...newVal,
       user_id: newVal.user_id || null,

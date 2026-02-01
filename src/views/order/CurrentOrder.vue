@@ -104,7 +104,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { View, Edit, Delete } from '@element-plus/icons-vue'
-import { getOrderList, deleteOrder, getOrderStatusFlow } from '@/api/order'
+import { getOrderList, deleteOrder, getOrderStatusFlow, getOrderDetail } from '@/api/order'
 import { getCurrentShopId } from '@/api/shop'
 import { getStatusText as getStatusTextUtil, getStatusType as getStatusTypeUtil } from '@/utils/orderStatus'
 import OrderForm from '@/components/order/OrderForm.vue'
@@ -184,10 +184,17 @@ const fetchOrderList = async () => {
   }
 }
 
-const handleEdit = (row) => {
-  dialogTitle.value = '编辑订单'
-  formData.value = { ...row }
-  dialogVisible.value = true
+const handleEdit = async (row) => {
+  try {
+    // 获取完整的订单详情，包含商品的 option_categories 等完整信息
+    const fullOrderData = await getOrderDetail(row.id)
+    dialogTitle.value = '编辑订单'
+    formData.value = fullOrderData
+    dialogVisible.value = true
+  } catch (error) {
+    console.error('获取订单详情失败:', error)
+    ElMessage.error('获取订单详情失败')
+  }
 }
 
 const handleView = (row) => {

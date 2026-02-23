@@ -17,7 +17,7 @@
 
       <nav class="sidebar-nav">
         <el-menu
-          :default-active="route.path"
+          :default-active="activeMenu"
           router
           :collapse="isCollapse"
           :collapse-transition="false"
@@ -268,6 +268,14 @@ const currentShop = ref({})
 const unreadCount = ref(0)
 const notificationDrawer = ref(false)
 const notifications = ref([])
+
+// 当前激活的菜单项 - 提取路径第一段用于匹配父菜单
+const activeMenu = computed(() => {
+  const path = route.path
+  const segments = path.split('/').filter(Boolean)
+  if (segments.length === 0) return '/dashboard'
+  return '/' + segments[0]
+})
 
 // 面包屑
 const breadcrumbList = computed(() => {

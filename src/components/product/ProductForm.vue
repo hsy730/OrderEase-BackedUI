@@ -308,7 +308,7 @@ const formRef = ref(null)
 const form = ref({
   name: '',
   price: 0,
-  stock: 0,
+  stock: 100,
   low_stock_threshold: 10,
   description: '',
   image_url: '',
@@ -455,7 +455,7 @@ const reset = () => {
   form.value = {
     name: '',
     price: 0,
-    stock: 0,
+    stock: 100,
     low_stock_threshold: 10,
     description: '',
     image_url: '',

@@ -72,7 +72,7 @@
             </template>
           </el-menu-item>
 
-          <el-menu-item index="/migration" v-if="isAdmin && showMigration">
+          <el-menu-item index="/migration" v-if="isAdmin">
             <template #title>
               <el-icon><Upload /></el-icon>
               <span>数据迁移</span>
@@ -256,7 +256,6 @@ import { debounce } from 'lodash-es'
 const route = useRoute()
 const router = useRouter()
 const isCollapse = ref(false)
-const showMigration = ref(false)
 const isAdmin = ref(JSON.parse(localStorage.getItem('admin') || '{}').role === 'admin')
 const userInfo = ref(JSON.parse(localStorage.getItem('admin') || '{}'))
 const shopList = ref([])
@@ -348,7 +347,6 @@ onMounted(async () => {
       }
     }
   }
-  showMigration.value = localStorage.getItem('migration_switch') === '1'
 })
 
 const toggleSidebar = () => {
@@ -472,12 +470,6 @@ const cancelChangePassword = () => {
   showPasswordDialog.value = false
   passwordFormRef.value?.resetFields()
 }
-
-window.addEventListener('storage', (e) => {
-  if (e.key === 'migration_switch') {
-    showMigration.value = e.newValue === '1'
-  }
-})
 
 const handleShopChange = async (shopId) => {
   let refresh = false

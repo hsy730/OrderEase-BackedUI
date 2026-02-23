@@ -1,147 +1,213 @@
 <template>
-  <el-form
-    ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-width="100px"
-  >
-    <el-form-item label="用户" prop="user_id">
-      <UserSelect v-model="form.user_id" />
-    </el-form-item>
-    
-    <el-form-item label="订单状态" prop="status">
-      <el-select v-model="form.status" placeholder="请选择订单状态">
-        <el-option 
-          v-for="status in orderStatusOptions" 
-          :key="status.value" 
-          :label="status.label" 
-          :value="status.value" 
-        />
-      </el-select>
-    </el-form-item>
-
-    <el-form-item label="订单商品" prop="items">
-      <div class="order-items">
-        <div v-for="(item, index) in form.items" :key="index" class="order-item">
-          <el-select
-            v-model="item.product_id"
-            placeholder="选择商品"
-            @change="handleProductChange($event, index)"
-            style="width: 200px"
-            filterable
-            remote
-            :remote-method="(query) => remoteSearchProduct(query, index)"
-            :loading="productLoading[index]"
-            clearable
-          >
-            <el-option
-              v-for="product in productList"
-              :key="product.id"
-              :label="product.name"
-              :value="product.id"
-            />
-          </el-select>
+  <div class="order-form">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-position="top"
+    >
+      <!-- 基本信息卡片 -->
+      <section class="form-section">
+        <div class="section-header">
+          <h3 class="section-title">基本信息</h3>
+        </div>
+        
+        <div class="form-row">
+          <el-form-item label="选择用户" prop="user_id" class="form-item-half">
+            <UserSelect v-model="form.user_id" />
+          </el-form-item>
           
-          <!-- 显示商品原价 -->
-          <span class="original-price" v-if="item.selectedProduct && item.selectedProduct.price !== undefined">
-            原价: ¥{{ item.selectedProduct.price.toFixed(2) }}
-          </span>
-          
-          <!-- 商品选项参数选择 -->
-          <div v-if="item.selectedProduct && item.selectedProduct.option_categories && item.selectedProduct.option_categories.length > 0" class="product-options">
-            <div 
-              v-for="(category, categoryIndex) in item.selectedProduct.option_categories" 
-              :key="category.id" 
-              class="option-category"
+          <el-form-item label="订单状态" prop="status" class="form-item-half">
+            <el-select 
+              v-model="form.status" 
+              placeholder="请选择订单状态"
+              class="status-select"
             >
-              <div class="category-header">
-                <span class="category-name">{{ category.name }}:</span>
-                <span v-if="category.is_required" class="required-tag">(必选)</span>
-                <span v-if="category.is_multiple" class="multiple-tag">(多选)</span>
+              <el-option 
+                v-for="status in orderStatusOptions" 
+                :key="status.value" 
+                :label="status.label" 
+                :value="status.value" 
+              />
+            </el-select>
+          </el-form-item>
+        </div>
+      </section>
+
+      <!-- 商品清单卡片 -->
+      <section class="form-section">
+        <div class="section-header">
+          <h3 class="section-title">商品清单</h3>
+          <span class="item-count">{{ form.items?.length || 0 }} 件商品</span>
+        </div>
+
+        <div class="order-items">
+          <div 
+            v-for="(item, index) in form.items" 
+            :key="index" 
+            class="order-item-card"
+          >
+            <div class="item-header">
+              <span class="item-number">商品 {{ index + 1 }}</span>
+              <button type="button" class="remove-btn" @click="removeItem(index)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="item-content">
+              <!-- 商品选择 -->
+              <div class="item-row">
+                <el-select
+                  v-model="item.product_id"
+                  placeholder="选择商品"
+                  @change="handleProductChange($event, index)"
+                  class="product-select"
+                  filterable
+                  remote
+                  :remote-method="(query) => remoteSearchProduct(query, index)"
+                  :loading="productLoading[index]"
+                  clearable
+                >
+                  <el-option
+                    v-for="product in productList"
+                    :key="product.id"
+                    :label="product.name"
+                    :value="product.id"
+                  />
+                </el-select>
+                
+                <el-input-number
+                  v-model="item.quantity"
+                  :min="1"
+                  :precision="0"
+                  :step="1"
+                  class="quantity-input"
+                  @change="calculateTotal"
+                />
+              </div>
+
+              <!-- 商品原价显示 -->
+              <div class="price-info" v-if="item.selectedProduct && item.selectedProduct.price !== undefined">
+                <span class="original-price">
+                  原价: ¥{{ item.selectedProduct.price.toFixed(2) }}
+                </span>
+                <span class="item-unit-price" v-if="item.price">
+                  单价: ¥{{ calculateItemPrice(item).toFixed(2) }}
+                </span>
+                <span class="item-subtotal" v-if="item.price && item.quantity">
+                  小计: ¥{{ (calculateItemPrice(item) * item.quantity).toFixed(2) }}
+                </span>
               </div>
               
-              <div class="options-container">
-                <template v-if="category.is_multiple">
-                  <!-- 多选 -->
-                  <el-checkbox-group 
-                    v-model="item.selectedOptions[category.id]" 
-                    @change="calculateTotal"
-                  >
-                    <el-checkbox
-                      v-for="option in category.options"
-                      :key="option.id"
-                      :label="option.id"
-                      :value="option.id"
-                    >
-                      {{ option.name }}
-                      <span v-if="option.price_adjustment !== 0">
-                        ({{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }})
-                      </span>
-                    </el-checkbox>
-                  </el-checkbox-group>
-                </template>
-                <template v-else>
-                  <!-- 单选 -->
-                  <el-radio-group 
-                    :model-value="item.selectedOptions[category.id] && item.selectedOptions[category.id].length > 0 ? item.selectedOptions[category.id][0] : null"
-                    @update:model-value="val => {
-                      item.selectedOptions[category.id] = val ? [val] : [];
-                      calculateTotal();
-                    }"
-                  >
-                    <el-radio
-                      v-for="option in category.options"
-                      :key="option.id"
-                      :label="option.id"
-                    >
-                      {{ option.name }}
-                      <span v-if="option.price_adjustment !== 0">
-                        ({{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }})
-                      </span>
-                    </el-radio>
-                  </el-radio-group>
-                </template>
+              <!-- 商品选项参数选择 -->
+              <div v-if="item.selectedProduct && item.selectedProduct.option_categories && item.selectedProduct.option_categories.length > 0" class="product-options">
+                <div 
+                  v-for="(category, categoryIndex) in item.selectedProduct.option_categories" 
+                  :key="category.id" 
+                  class="option-category"
+                >
+                  <div class="category-header">
+                    <span class="category-name">{{ category.name }}</span>
+                    <span v-if="category.is_required" class="tag required-tag">必选</span>
+                    <span v-if="category.is_multiple" class="tag multiple-tag">多选</span>
+                  </div>
+                  
+                  <div class="options-container">
+                    <template v-if="category.is_multiple">
+                      <!-- 多选 -->
+                      <el-checkbox-group 
+                        v-model="item.selectedOptions[category.id]" 
+                        @change="calculateTotal"
+                        class="option-group"
+                      >
+                        <el-checkbox
+                          v-for="option in category.options"
+                          :key="option.id"
+                          :label="option.id"
+                          :value="option.id"
+                          class="option-checkbox"
+                        >
+                          <span class="option-name">{{ option.name }}</span>
+                          <span v-if="option.price_adjustment !== 0" class="option-price">
+                            {{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }}
+                          </span>
+                        </el-checkbox>
+                      </el-checkbox-group>
+                    </template>
+                    <template v-else>
+                      <!-- 单选 -->
+                      <el-radio-group 
+                        :model-value="item.selectedOptions[category.id] && item.selectedOptions[category.id].length > 0 ? item.selectedOptions[category.id][0] : null"
+                        @update:model-value="val => {
+                          item.selectedOptions[category.id] = val ? [val] : [];
+                          calculateTotal();
+                        }"
+                        class="option-group"
+                      >
+                        <el-radio
+                          v-for="option in category.options"
+                          :key="option.id"
+                          :label="option.id"
+                          class="option-radio"
+                        >
+                          <span class="option-name">{{ option.name }}</span>
+                          <span v-if="option.price_adjustment !== 0" class="option-price">
+                            {{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }}
+                          </span>
+                        </el-radio>
+                      </el-radio-group>
+                    </template>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           
-          <el-input-number
-            v-model="item.quantity"
-            :min="1"
-            :precision="0"
-            :step="1"
-            style="width: 120px"
-            @change="calculateTotal"
-          />
-          <span class="item-price" v-if="item.price">
-            单价: ¥{{ calculateItemPrice(item).toFixed(2) }}
-          </span>
-          <span class="item-subtotal" v-if="item.price && item.quantity">
-            小计: ¥{{ (calculateItemPrice(item) * item.quantity).toFixed(2) }}
-          </span>
-          <el-button type="danger" link @click="removeItem(index)">
-            删除
-          </el-button>
+          <button type="button" class="add-item-btn" @click="addItem">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>添加商品</span>
+          </button>
         </div>
-        <el-button type="primary" link @click="addItem">
-          添加商品
-        </el-button>
-      </div>
-    </el-form-item>
+      </section>
 
-    <el-form-item label="订单总额">
-      <span class="total-amount">¥{{ calculateTotalAmount() }}</span>
-    </el-form-item>
+      <!-- 订单汇总卡片 -->
+      <section class="form-section summary-section">
+        <div class="section-header">
+          <h3 class="section-title">订单汇总</h3>
+        </div>
 
-    <el-form-item label="订单备注" prop="remark">
-      <el-input
-        v-model="form.remark"
-        type="textarea"
-        :rows="3"
-        placeholder="请输入订单备注"
-      />
-    </el-form-item>
-  </el-form>
+        <div class="summary-content">
+          <div class="summary-row">
+            <span class="summary-label">订单总额</span>
+            <span class="total-amount">¥{{ calculateTotalAmount() }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 备注卡片 -->
+      <section class="form-section">
+        <div class="section-header">
+          <h3 class="section-title">订单备注</h3>
+        </div>
+
+        <el-form-item prop="remark" class="remark-item">
+          <el-input
+            v-model="form.remark"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入订单备注信息..."
+            class="remark-input"
+          />
+        </el-form-item>
+      </section>
+    </el-form>
+  </div>
 </template>
 
 <script setup>
@@ -165,7 +231,7 @@ const productList = ref([])
 const orderStatusFlow = ref(null)
 const form = ref({
   user_id: null,
-  status: 1, // 使用数字值，默认待处理
+  status: 1,
   items: [],
   remark: '',
   total_price: 0
@@ -173,27 +239,22 @@ const form = ref({
 
 // 添加加载状态和搜索相关变量
 const productLoading = ref({})
-const searchProductList = ref([]) // 用于存储搜索结果的商品列表
+const searchProductList = ref([])
 
 // 获取订单状态流转配置
 const fetchOrderStatusFlow = async () => {
   try {
-    // 注意：这里需要获取shop_id，暂时使用固定值或从props中获取
-    // 由于OrderForm可能在创建订单时使用，此时还没有shop_id，所以暂时使用null
-    // 实际项目中应该根据当前用户权限获取对应的shop_id
     const shopId = null;
     const data = await getOrderStatusFlow(shopId)
     orderStatusFlow.value = data.order_status_flow
   } catch (error) {
     console.error('获取订单状态流转配置失败:', error)
-    // 不显示错误提示，避免影响用户体验
   }
 }
 
 // 订单状态选项
 const orderStatusOptions = computed(() => {
   if (!orderStatusFlow.value) {
-    // 默认状态选项（与OrderManage.vue保持一致）
     return [
       { label: '待处理', value: 1 },
       { label: '已接单', value: 2 },
@@ -214,14 +275,13 @@ const initOrderItem = () => ({
   product_id: '',
   quantity: 1,
   price: 0,
-  selectedProduct: null, // 添加选中的商品信息
-  selectedOptions: {} // 添加选中的选项
+  selectedProduct: null,
+  selectedOptions: {}
 })
 
 // 添加商品项
 const addItem = () => {
   form.value.items.push(initOrderItem())
-  // 初始化新添加项的加载状态
   const newIndex = form.value.items.length - 1
   productLoading.value[newIndex] = false
 }
@@ -230,7 +290,6 @@ const addItem = () => {
 const removeItem = (index) => {
   form.value.items.splice(index, 1)
   calculateTotal()
-  // 清理对应的加载状态
   const newLoadingState = {}
   Object.keys(productLoading.value).forEach(key => {
     const numKey = parseInt(key)
@@ -247,28 +306,20 @@ const removeItem = (index) => {
 const handleProductChange = async (productId, index) => {
   const product = productList.value.find(p => p.id === productId)
   if (product) {
-    // 保存选中的商品信息
     form.value.items[index].selectedProduct = product
     form.value.items[index].price = product.price
-    
-    // 初始化选项选择
     form.value.items[index].selectedOptions = {}
     
-    // 如果商品有选项参数，设置默认选项
     if (product.option_categories && product.option_categories.length > 0) {
       product.option_categories.forEach(category => {
-        // 设置默认选项
         const defaultOptions = category.options.filter(option => option.is_default)
         
         if (category.is_multiple) {
-          // 多选：可以选择多个默认选项
           form.value.items[index].selectedOptions[category.id] = defaultOptions.map(option => option.id)
         } else {
-          // 单选：也使用数组格式，只包含一个元素
           if (defaultOptions.length > 0) {
             form.value.items[index].selectedOptions[category.id] = [defaultOptions[0].id]
           } else {
-            // 如果没有默认选项，选择第一个选项
             form.value.items[index].selectedOptions[category.id] = category.options.length > 0 ? [category.options[0].id] : []
           }
         }
@@ -283,13 +334,11 @@ const handleProductChange = async (productId, index) => {
 const calculateItemPrice = (item) => {
   let price = item.price || 0
   
-  // 如果有选中的选项，计算价格调整
   if (item.selectedProduct && item.selectedProduct.option_categories && item.selectedOptions) {
     item.selectedProduct.option_categories.forEach(category => {
       const selectedOptionIds = item.selectedOptions[category.id]
       
       if (selectedOptionIds && Array.isArray(selectedOptionIds)) {
-        // 统一处理：无论是单选还是多选，都遍历数组
         selectedOptionIds.forEach(optionId => {
           const option = category.options.find(opt => opt.id === optionId)
           if (option) {
@@ -319,9 +368,8 @@ const calculateTotalAmount = () => {
 const fetchProductList = async () => {
   try {
     const response = await getProductList({ page: 1, pageSize: 100 })
-    console.log('商品列表数据:', response)
     productList.value = response.data || []
-    searchProductList.value = [...productList.value] // 保存原始商品列表
+    searchProductList.value = [...productList.value]
   } catch (error) {
     console.error('获取商品列表失败:', error)
     ElMessage.error('获取商品列表失败')
@@ -331,18 +379,15 @@ const fetchProductList = async () => {
 
 // 远程搜索商品
 const remoteSearchProduct = async (query, index) => {
-  // 设置当前索引的加载状态
   productLoading.value[index] = true
   
   try {
-    // 如果查询为空，使用原始商品列表
     if (query.trim() === '') {
       productList.value = [...searchProductList.value]
       productLoading.value[index] = false
       return
     }
     
-    // 调用API搜索商品
     const response = await getProductList({ page: 1, pageSize: 20, search: query })
     productList.value = response.data || []
   } catch (error) {
@@ -356,7 +401,6 @@ const remoteSearchProduct = async (query, index) => {
 // 监听表单数据变化
 watch(() => props.formData, async (newVal) => {
   if (newVal && Object.keys(newVal).length > 0) {
-    // 确保商品列表和状态流已加载
     if (productList.value.length === 0) {
       await fetchProductList();
     }
@@ -364,11 +408,9 @@ watch(() => props.formData, async (newVal) => {
       await fetchOrderStatusFlow();
     }
 
-    // 处理订单项
     const processedItems = [];
     if (newVal.items) {
       for (const item of newVal.items) {
-        // 初始化商品项
         const orderItem = {
           product_id: item.product_id,
           quantity: item.quantity || 1,
@@ -377,15 +419,11 @@ watch(() => props.formData, async (newVal) => {
           selectedOptions: {}
         };
 
-        // 如果有商品ID但没有selectedProduct，需要获取商品信息
         if (item.product_id && !item.selectedProduct) {
-          // 从已有的商品列表中查找
           let product = productList.value.find(p => p.id === item.product_id);
           if (!product) {
-            // 如果商品列表中没有，尝试获取商品详情
             try {
               product = await getProductDetail(item.product_id);
-              // 将获取到的商品添加到列表中，避免重复请求
               if (product && !productList.value.find(p => p.id === product.id)) {
                 productList.value.push(product);
               }
@@ -399,9 +437,7 @@ watch(() => props.formData, async (newVal) => {
           }
         }
 
-        // 使用订单详情接口返回的选项数据
         if (item.options && Array.isArray(item.options)) {
-          // 按category_id分组选项
           const groupedOptions = {};
           item.options.forEach(option => {
             if (!groupedOptions[option.category_id]) {
@@ -419,13 +455,13 @@ watch(() => props.formData, async (newVal) => {
     form.value = {
       ...newVal,
       user_id: newVal.user_id || null,
-      status: newVal.status || 1, // 默认待处理
+      status: newVal.status || 1,
       items: processedItems
     };
   } else {
     form.value = {
       user_id: null,
-      status: 1, // 默认待处理
+      status: 1,
       items: [],
       remark: '',
       total_price: 0
@@ -437,11 +473,9 @@ watch(() => props.formData, async (newVal) => {
 const submit = async () => {
   await formRef.value?.validate()
   try {
-    // 准备提交数据，包含选项信息
     const submitData = {
       ...form.value,
       items: form.value.items.map(item => {
-        // 格式化选项数据，使用订单详情接口返回的格式
         const formattedOptions = [];
         if (item.selectedOptions && typeof item.selectedOptions === 'object') {
           Object.keys(item.selectedOptions).forEach(categoryId => {
@@ -461,7 +495,6 @@ const submit = async () => {
           product_id: item.product_id,
           quantity: item.quantity,
           price: calculateItemPrice(item),
-          // 使用格式化后的选项数据
           options: formattedOptions
         };
       })
@@ -502,7 +535,6 @@ const rules = {
         if (!value || value.length === 0) {
           callback(new Error('请至少添加一个商品'))
         } else {
-          // 检查每个商品是否都选择了商品和数量
           const invalidItem = value.find(item => !item.product_id || !item.quantity)
           if (invalidItem) {
             callback(new Error('请完善商品信息'))
@@ -520,69 +552,190 @@ const rules = {
 </script>
 
 <style scoped>
+.order-form {
+  padding: 8px;
+}
+
+/* 表单区块样式 */
+.form-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+  flex: 1;
+}
+
+.item-count {
+  font-size: 13px;
+  color: #86868b;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* 表单项布局 */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+:deep(.el-form-item__label) {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+  padding-bottom: 8px;
+}
+
+:deep(.el-input__wrapper),
+:deep(.el-textarea__inner) {
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+:deep(.el-input__wrapper:hover),
+:deep(.el-textarea__inner:hover) {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+:deep(.el-input__wrapper.is-focus),
+:deep(.el-textarea__inner:focus) {
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3);
+}
+
+.status-select {
+  width: 100%;
+}
+
+/* 商品列表样式 */
 .order-items {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
 }
 
-.order-item {
+.order-item-card {
+  background: #fafafa;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.order-item-card:hover {
+  background: #f5f5f7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.item-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.remove-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+  background: rgba(255, 59, 48, 0.2);
+}
+
+.item-content {
+  padding: 16px;
+}
+
+.item-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.product-select {
+  flex: 1;
+}
+
+.quantity-input {
+  width: 120px;
+}
+
+:deep(.quantity-input .el-input__wrapper) {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.price-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  padding: 10px;
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
+  gap: 16px;
+  padding: 10px 14px;
+  background: rgba(0, 122, 255, 0.04);
+  border-radius: 8px;
+  margin-bottom: 12px;
 }
 
-.item-price,
-.item-subtotal,
-.original-price {
-  min-width: 100px;
-  color: #606266;
+.original-price,
+.item-unit-price {
+  font-size: 13px;
+  color: #86868b;
 }
 
-.total-amount {
-  font-size: 16px;
-  font-weight: bold;
-  color: #f56c6c;
-}
-
-.order-items {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.order-item {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.item-price,
-.item-subtotal,
-.original-price {
-  min-width: 100px;
-  color: #606266;
-}
-
-.total-amount {
-  font-size: 16px;
-  font-weight: bold;
-  color: #f56c6c;
+.item-subtotal {
+  font-size: 13px;
+  font-weight: 600;
+  color: #007aff;
 }
 
 /* 商品选项样式 */
 .product-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  width: 100%;
+  gap: 16px;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 10px;
+  margin-top: 12px;
 }
 
 .option-category {
@@ -594,39 +747,155 @@ const rules = {
 .category-header {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 }
 
 .category-name {
-  font-weight: bold;
-  color: #606266;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 .required-tag {
-  color: #f56c6c;
-  font-size: 12px;
+  color: #ff3b30;
+  background: rgba(255, 59, 48, 0.1);
 }
 
 .multiple-tag {
-  color: #409eff;
-  font-size: 12px;
+  color: #007aff;
+  background: rgba(0, 122, 255, 0.1);
 }
 
 .options-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
-:deep(.el-checkbox-group),
-:deep(.el-radio-group) {
+.option-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
-:deep(.el-checkbox),
-:deep(.el-radio) {
+:deep(.option-checkbox),
+:deep(.option-radio) {
   margin-right: 0;
+  padding: 8px 12px;
+  background: #f5f5f7;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+:deep(.option-checkbox:hover),
+:deep(.option-radio:hover) {
+  background: #e8e8ed;
+}
+
+:deep(.option-checkbox.is-checked),
+:deep(.option-radio.is-checked) {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.option-name {
+  font-size: 13px;
+  color: #1d1d1f;
+}
+
+.option-price {
+  font-size: 12px;
+  color: #ff3b30;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* 添加商品按钮 */
+.add-item-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: rgba(0, 122, 255, 0.06);
+  border: 2px dashed rgba(0, 122, 255, 0.2);
+  border-radius: 12px;
+  color: #007aff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-item-btn:hover {
+  background: rgba(0, 122, 255, 0.1);
+  border-color: rgba(0, 122, 255, 0.4);
+}
+
+/* 汇总区域 */
+.summary-section {
+  background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 100%);
+}
+
+.summary-content {
+  padding: 8px 0;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1d1d1f;
+}
+
+.total-amount {
+  font-size: 24px;
+  font-weight: 700;
+  color: #007aff;
+  letter-spacing: -0.5px;
+}
+
+/* 备注区域 */
+.remark-item {
+  margin-bottom: 0;
+}
+
+.remark-input :deep(.el-textarea__inner) {
+  border-radius: 10px;
+  resize: none;
+}
+
+/* 响应式 */
+@media screen and (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .item-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quantity-input {
+    width: 100%;
+  }
+  
+  .price-info {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
 </style>

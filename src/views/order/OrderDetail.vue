@@ -15,10 +15,6 @@
           </div>
         </div>
         <div class="status-section" v-if="!loading">
-          <div class="status-badge" :class="getStatusClass(order.status)">
-            <span class="status-dot"></span>
-            <span class="status-text">{{ getStatusText(order.status) }}</span>
-          </div>
           <div class="status-actions" v-if="canToggleStatus">
             <el-select
               v-model="selectedStatus"

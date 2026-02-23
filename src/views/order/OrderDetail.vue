@@ -1,126 +1,204 @@
 <template>
-  <div class="order-detail">
-    <div class="header">
-    <div class="header-left">
-      <h2>订单详情</h2>
-      <span class="order-id">订单号：{{ order.id }}</span>
-    </div>
-    <div class="header-actions">
-      <el-button @click="$router.back()">返回</el-button>
-    </div>
-  </div>
+  <div class="order-detail-page">
+    <div class="page-container">
+      <div class="page-header">
+        <div class="header-content">
+          <button class="back-btn" @click="$router.back()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>返回</span>
+          </button>
+          <div class="header-info">
+            <h1 class="page-title">订单详情</h1>
+            <p class="order-number">订单号 {{ order.id }}</p>
+          </div>
+        </div>
+        <div class="status-section" v-if="!loading">
+          <div class="status-badge" :class="getStatusClass(order.status)">
+            <span class="status-dot"></span>
+            <span class="status-text">{{ getStatusText(order.status) }}</span>
+          </div>
+          <div class="status-actions" v-if="canToggleStatus">
+            <el-select
+              v-model="selectedStatus"
+              :loading="toggleLoading"
+              @change="handleStatusChange"
+              class="status-select"
+              placeholder="更改状态"
+            >
+              <el-option
+                :key="order.status"
+                :label="`当前：${getStatusText(order.status)}`"
+                :value="order.status"
+                disabled
+              />
+              <el-option
+                v-for="action in availableActions"
+                :key="action.next_status || action.nextStatus"
+                :label="action.name || '未知状态'"
+                :value="action.next_status || action.nextStatus"
+                :disabled="!action.next_status && !action.nextStatus"
+              />
+            </el-select>
+          </div>
+        </div>
+      </div>
 
-    <div class="detail-content" v-loading="loading">
-      <!-- 基本信息 -->
-      <el-card class="detail-section">
-        <template #header>
-          <div class="card-header">
-            <span>基本信息</span>
-            <div v-if="canToggleStatus">
-              <el-select
-                v-model="selectedStatus"
-                :loading="toggleLoading"
-                @change="handleStatusChange"
-                style="width: 160px;"
-                placeholder="选择状态"
-              >
-                <!-- 当前状态选项 -->
-                <el-option
-                  :key="order.status"
-                  :label="`当前状态：${getStatusText(order.status)}`"
-                  :value="order.status"
-                  disabled
-                />
-                <!-- 可转换状态选项 -->
-                <el-option
-                  v-for="action in availableActions"
-                  :key="action.next_status || action.nextStatus"
-                  :label="action.name || '未知状态'"
-                  :value="action.next_status || action.nextStatus"
-                  :disabled="!action.next_status && !action.nextStatus"
-                />
-              </el-select>
+      <div class="detail-content" v-loading="loading">
+        <div class="main-content">
+          <section class="info-card customer-section">
+            <div class="section-header">
+              <h2 class="section-title">顾客信息</h2>
             </div>
-            <el-tag v-else :type="getStatusType(order.status)">
-              {{ getStatusText(order.status) }}
-            </el-tag>
-          </div>
-        </template>
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="订单号">{{ order.id }}</el-descriptions-item>
-          <el-descriptions-item label="订单金额">¥{{ Number(order.total_price || 0).toFixed(2) }}</el-descriptions-item>
-          <el-descriptions-item label="订单状态">{{ getStatusText(order.status) }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ formatTime(order.created_at) }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ formatTime(order.updated_at) }}</el-descriptions-item>
-          <el-descriptions-item label="订单备注" :span="2">
-            {{ order.remark || '暂无备注' }}
-          </el-descriptions-item>
-          <el-descriptions-item label="用户姓名">{{ order.user?.name || '未知' }}</el-descriptions-item>
-          <el-descriptions-item label="用户电话">{{ order.user?.phone || '未知' }}</el-descriptions-item>
-          <el-descriptions-item label="用户地址">{{ order.user?.address || '未知' }}</el-descriptions-item>
-          <el-descriptions-item label="配送方式">
-            {{ order.user?.type === 'delivery' ? '邮寄' : '自取' }}
-          </el-descriptions-item>
-        </el-descriptions>
-      </el-card>
-
-      <!-- 商品列表 -->
-      <el-card class="detail-section">
-        <template #header>
-          <div class="card-header">
-            <span>商品信息</span>
-            <span class="item-count">共 {{ order.items?.length || 0 }} 件商品</span>
-          </div>
-        </template>
-        <el-table :data="order.items || []" style="width: 100%" size="small">
-          <el-table-column label="商品信息" min-width="200">
-            <template #default="{ row }">
-              <div class="product-info">
-                <el-image
-                  v-if="row.product_image_url"
-                  :src="getImageUrl(row.product_image_url)"
-                  class="product-image"
-                  :preview-src-list="[getImageUrl(row.product_image_url)]"
-                >
-                  <template #error>
-                    <div class="image-placeholder">
-                      <el-icon><Picture /></el-icon>
-                    </div>
-                  </template>
-                </el-image>
-                <div class="product-detail">
-                  <div class="product-name">{{ row.product_name || '未知商品' }}</div>
-                  <div class="product-desc">{{ row.product_description || '暂无描述' }}</div>
-                  <!-- 显示商品选项标签 -->
-                  <div v-if="row.options && row.options.length > 0" class="product-options">
-                    <!-- 按类别分组选项 -->
-                    <div v-for="(options, category) in groupOptionsByCategory(row.options)" :key="category" class="option-tag">
-                      {{ category }}: {{ formatOptionNames(options) }}
-                      <span v-if="getTotalPriceAdjustment(options) !== 0">
-                        ({{ getTotalPriceAdjustment(options) > 0 ? '+' : '' }}{{ getTotalPriceAdjustment(options) }})
-                      </span>
-                    </div>
-                  </div>
+            <div class="customer-info">
+              <div class="customer-avatar">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M20 21a8 8 0 10-16 0"/>
+                </svg>
+              </div>
+              <div class="customer-details">
+                <div class="customer-name">{{ order.user?.name || '未知顾客' }}</div>
+                <div class="customer-contact">
+                  <span class="contact-item" v-if="order.user?.phone">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                    </svg>
+                    {{ order.user.phone }}
+                  </span>
+                  <span class="contact-item delivery-type">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="1" y="3" width="15" height="13" rx="2"/>
+                      <path d="M16 8h4l3 3v5h-7V8z"/>
+                      <circle cx="5.5" cy="18.5" r="2.5"/>
+                      <circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>
+                    {{ order.user?.type === 'delivery' ? '邮寄配送' : '到店自取' }}
+                  </span>
+                </div>
+                <div class="customer-address" v-if="order.user?.address && order.user?.type === 'delivery'">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  {{ order.user.address }}
                 </div>
               </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="单价" width="120" align="center">
-            <template #default="{ row }">
-              ¥{{ Number(row.price || 0).toFixed(2) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="quantity" label="数量" width="100" align="center" />
-          <el-table-column label="小计" width="120" align="center">
-            <template #default="{ row }">
-              ¥{{ Number((row.price || 0) * (row.quantity || 0)).toFixed(2) }}
-            </template>
-          </el-table-column>
-        </el-table>
-        <div class="order-total">
-          总计：<span class="total-price">¥{{ Number(order.total_price || 0).toFixed(2) }}</span>
+            </div>
+          </section>
+
+          <section class="info-card products-section">
+            <div class="section-header">
+              <h2 class="section-title">商品清单</h2>
+              <span class="item-count">{{ order.items?.length || 0 }} 件商品</span>
+            </div>
+            <div class="products-list">
+              <div 
+                class="product-item" 
+                v-for="(item, index) in order.items" 
+                :key="index"
+              >
+                <div class="product-image-wrapper">
+                  <el-image
+                    v-if="item.product_image_url"
+                    :src="getImageUrl(item.product_image_url)"
+                    class="product-image"
+                    :preview-src-list="[getImageUrl(item.product_image_url)]"
+                    fit="cover"
+                  >
+                    <template #error>
+                      <div class="image-placeholder">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <rect x="3" y="3" width="18" height="18" rx="2"/>
+                          <circle cx="8.5" cy="8.5" r="1.5"/>
+                          <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                      </div>
+                    </template>
+                  </el-image>
+                  <div class="image-placeholder" v-else>
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="product-content">
+                  <div class="product-header">
+                    <h3 class="product-name">{{ item.product_name || '未知商品' }}</h3>
+                    <span class="product-price">¥{{ Number(getItemUnitPrice(item)).toFixed(2) }}</span>
+                  </div>
+                  <p class="product-desc" v-if="item.product_description">{{ item.product_description }}</p>
+                  <div class="product-options" v-if="item.options && item.options.length > 0">
+                    <span 
+                      class="option-tag" 
+                      v-for="(options, category) in groupOptionsByCategory(item.options)" 
+                      :key="category"
+                    >
+                      {{ category }}: {{ formatOptionNames(options) }}
+                      <span v-if="getTotalPriceAdjustment(options) !== 0" class="option-price">
+                        ({{ getTotalPriceAdjustment(options) > 0 ? '+' : '' }}{{ getTotalPriceAdjustment(options) }})
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <div class="product-quantity">
+                  <span class="quantity-value">×{{ item.quantity }}</span>
+                  <span class="subtotal">¥{{ Number(getItemUnitPrice(item) * (item.quantity || 0)).toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="info-card remark-section" v-if="order.remark">
+            <div class="section-header">
+              <h2 class="section-title">订单备注</h2>
+            </div>
+            <div class="remark-content">
+              <p>{{ order.remark }}</p>
+            </div>
+          </section>
         </div>
-      </el-card>
+
+        <aside class="sidebar">
+          <div class="info-card order-summary">
+            <h2 class="section-title">订单摘要</h2>
+            <div class="summary-list">
+              <div class="summary-item">
+                <span class="summary-label">订单金额</span>
+                <span class="summary-value">¥{{ Number(order.total_price || 0).toFixed(2) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">创建时间</span>
+                <span class="summary-value">{{ formatTime(order.created_at) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">更新时间</span>
+                <span class="summary-value">{{ formatTime(order.updated_at) }}</span>
+              </div>
+            </div>
+            <div class="summary-total">
+              <span class="total-label">订单总额</span>
+              <span class="total-value">¥{{ Number(order.total_price || 0).toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div class="info-card timeline-section">
+            <h2 class="section-title">订单状态</h2>
+            <div class="timeline">
+              <div class="timeline-item" :class="{ active: true }">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="timeline-title">{{ getStatusText(order.status) }}</div>
+                  <div class="timeline-time">{{ formatTime(order.updated_at) }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   </div>
 </template>
@@ -129,36 +207,15 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Picture } from '@element-plus/icons-vue'
 import { getOrderDetail, toggleOrderStatus, getOrderStatusFlow } from '@/api/order'
-import { getShopDetail } from '@/api/shop'
-import { API_BASE_URL, API_PREFIX } from '@/config'
 
 const route = useRoute()
 const loading = ref(false)
 const order = ref({})
 const toggleLoading = ref(false)
-const shop = ref({})
-const shopLoading = ref(false)
 const orderStatusFlow = ref(null)
 const selectedStatus = ref(null)
 
-// 获取店铺详情
-const fetchShopDetail = async (shopId) => {
-  if (!shopId) return
-  shopLoading.value = true
-  try {
-    const data = await getShopDetail(shopId)
-    shop.value = data
-  } catch (error) {
-    console.error('获取店铺详情失败:', error)
-    ElMessage.error('获取店铺详情失败')
-  } finally {
-    shopLoading.value = false
-  }
-}
-
-// 获取订单状态流转配置
 const fetchOrderStatusFlow = async (shopId) => {
   if (!shopId) return
   try {
@@ -170,7 +227,6 @@ const fetchOrderStatusFlow = async (shopId) => {
   }
 }
 
-// 获取订单的当前状态配置
 const getCurrentStatusConfig = computed(() => {
   if (!order.value.status || !orderStatusFlow.value) return null
   return orderStatusFlow.value.statuses.find(
@@ -178,17 +234,15 @@ const getCurrentStatusConfig = computed(() => {
   ) || null
 })
 
-// 获取状态文本
 const getStatusText = (status) => {
   if (!orderStatusFlow.value) {
-    // 默认状态映射
     const defaultStatusMap = {
-      1: '待处理',   // OrderStatusPending
-      2: '已接单',   // OrderStatusAccepted
-      3: '已拒绝',   // OrderStatusRejected
-      4: '已发货',   // OrderStatusShipped
-      10: '已完成',  // OrderStatusComplete
-      '-1': '已取消' // OrderStatusCanceled
+      1: '待处理',
+      2: '已接单',
+      3: '已拒绝',
+      4: '已发货',
+      10: '已完成',
+      '-1': '已取消'
     }
     return defaultStatusMap[status] || '未知状态'
   }
@@ -196,41 +250,31 @@ const getStatusText = (status) => {
   return statusConfig?.label || '未知状态'
 }
 
-// 获取状态类型（用于标签颜色）
-const getStatusType = (status) => {
-  if (!orderStatusFlow.value) {
-    // 默认状态类型映射
-    const defaultStatusTypeMap = {
-      1: 'warning',   // OrderStatusPending - 待处理
-      2: 'primary',   // OrderStatusAccepted - 已接单
-      3: 'danger',    // OrderStatusRejected - 已拒绝
-      4: 'info',      // OrderStatusShipped - 已发货
-      10: 'success',  // OrderStatusComplete - 已完成
-      '-1': 'info'    // OrderStatusCanceled - 已取消
-    }
-    return defaultStatusTypeMap[status] || 'info'
+const getStatusClass = (status) => {
+  const classMap = {
+    1: 'status-pending',
+    2: 'status-accepted',
+    3: 'status-rejected',
+    4: 'status-shipped',
+    10: 'status-completed',
+    '-1': 'status-canceled'
   }
-  const statusConfig = orderStatusFlow.value.statuses.find(s => s.value === status)
-  return statusConfig?.type || 'info'
+  return classMap[status] || 'status-default'
 }
 
-// 是否可以切换状态
 const canToggleStatus = computed(() => {
   const currentStatusConfig = getCurrentStatusConfig.value
   return currentStatusConfig && !currentStatusConfig.isFinal && currentStatusConfig.actions && currentStatusConfig.actions.length > 0
 })
 
-// 获取可用的状态转换动作
 const availableActions = computed(() => {
   const currentStatusConfig = getCurrentStatusConfig.value
   return currentStatusConfig?.actions || []
 })
 
-// 处理状态下拉框变化
 const handleStatusChange = async (newStatus) => {
   if (!order.value.id || !newStatus) return
   
-  // 获取对应的动作配置
   const action = availableActions.value.find(a => (a.next_status === newStatus) || (a.nextStatus === newStatus))
   if (!action) return
 
@@ -249,41 +293,26 @@ const handleStatusChange = async (newStatus) => {
     const res = await toggleOrderStatus(order.value.id, order.value.shop_id, Number(newStatus))
     
     ElMessage.success(res.message || '状态更新成功')
-    // 更新订单信息
     order.value = res.order
-    // 设置选中状态为新的订单状态
     selectedStatus.value = res.order.status
   } catch (error) {
     if (error !== 'cancel') {
       console.error('更新订单状态失败:', error)
       ElMessage.error(error.response?.data?.error || '操作失败')
     }
-    // 操作失败或取消时，重置选中状态
     selectedStatus.value = null
   } finally {
     toggleLoading.value = false
   }
 }
 
-// 旧的状态翻转方法，保留作为兼容
-const handleToggleStatus = async (action) => {
-  if (!order.value.id || !action) return
-  selectedStatus.value = action.next_status
-  await handleStatusChange(action.next_status)
-}
-
-// 获取订单详情
 const fetchOrderDetail = async () => {
   loading.value = true
   try {
     const data = await getOrderDetail(route.params.id)
     order.value = data
-    // 设置初始选中状态为当前订单状态
     selectedStatus.value = data.status
-    // 获取店铺详情
     if (data.shop_id) {
-      // await fetchShopDetail(data.shop_id)
-      // 获取订单状态流转配置
       await fetchOrderStatusFlow(data.shop_id)
     }
   } catch (error) {
@@ -293,7 +322,6 @@ const fetchOrderDetail = async () => {
   }
 }
 
-// 格式化时间
 const formatTime = (time) => {
   if (!time) return '暂无'
   return new Date(time).toLocaleString('zh-CN', {
@@ -302,20 +330,16 @@ const formatTime = (time) => {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
     hour12: false
   })
 }
 
-// 获取图片URL
 const getImageUrl = (path) => {
   if (!path) return ''
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
-  return `/admin/product/image?path=${cleanPath}` // 返回相对路径
-  // SmartImage 组件使用 axios request 加载图片，baseURL 已包含完整路径
+  return `/admin/product/image?path=${cleanPath}`
 }
 
-// 按类别分组选项
 const groupOptionsByCategory = (options) => {
   if (!options || options.length === 0) return {}
   
@@ -331,16 +355,21 @@ const groupOptionsByCategory = (options) => {
   return grouped
 }
 
-// 格式化选项名称，将同一类别的多个选项名称合并
 const formatOptionNames = (options) => {
   if (!options || options.length === 0) return ''
   return options.map(option => option.option_name || '未知选项').join(', ')
 }
 
-// 计算同一类别选项的总价格调整
 const getTotalPriceAdjustment = (options) => {
   if (!options || options.length === 0) return 0
   return options.reduce((total, option) => total + (option.price_adjustment || 0), 0)
+}
+
+const getItemUnitPrice = (item) => {
+  if (!item) return 0
+  const basePrice = Number(item.price || 0)
+  const optionsAdjustment = item.options ? item.options.reduce((total, option) => total + (option.price_adjustment || 0), 0) : 0
+  return basePrice + optionsAdjustment
 }
 
 onMounted(() => {
@@ -349,165 +378,525 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.order-detail {
-  padding: 16px;
-  margin: 16px;
+.order-detail-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f5f5f7 0%, #ffffff 100%);
 }
 
-.header {
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.header-left {
+.header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.back-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.order-id {
-  color: #909399;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  border-radius: 10px;
+  color: #1d1d1f;
   font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.header h2 {
+.back-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.header-info {
+  padding-top: 4px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.order-number {
+  font-size: 14px;
+  color: #86868b;
   margin: 0;
-  font-size: 18px;
+}
+
+.status-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 500;
 }
 
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-pending {
+  background: rgba(255, 149, 0, 0.12);
+  color: #ff9500;
+}
+
+.status-pending .status-dot {
+  background: #ff9500;
+}
+
+.status-accepted {
+  background: rgba(0, 122, 255, 0.12);
+  color: #007aff;
+}
+
+.status-accepted .status-dot {
+  background: #007aff;
+}
+
+.status-rejected {
+  background: rgba(255, 59, 48, 0.12);
+  color: #ff3b30;
+}
+
+.status-rejected .status-dot {
+  background: #ff3b30;
+}
+
+.status-shipped {
+  background: rgba(90, 200, 250, 0.12);
+  color: #5ac8fa;
+}
+
+.status-shipped .status-dot {
+  background: #5ac8fa;
+}
+
+.status-completed {
+  background: rgba(52, 199, 89, 0.12);
+  color: #34c759;
+}
+
+.status-completed .status-dot {
+  background: #34c759;
+}
+
+.status-canceled {
+  background: rgba(142, 142, 147, 0.12);
+  color: #8e8e93;
+}
+
+.status-canceled .status-dot {
+  background: #8e8e93;
+}
+
+.status-select {
+  width: 160px;
+}
+
+.status-select :deep(.el-input__wrapper) {
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
 .detail-content {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+}
+
+.item-count {
+  font-size: 14px;
+  color: #86868b;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.customer-info {
+  display: flex;
+  gap: 16px;
+}
+
+.customer-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #86868b;
+  flex-shrink: 0;
+}
+
+.customer-details {
+  flex: 1;
+}
+
+.customer-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 6px;
+}
+
+.customer-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #86868b;
+}
+
+.contact-item svg {
+  opacity: 0.7;
+}
+
+.customer-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 14px;
+  color: #86868b;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
+.products-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.detail-section {
-  background: #fff;
-  border-radius: 8px;
+.product-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 12px;
+  transition: background 0.2s ease;
 }
 
-.card-header {
+.product-item:hover {
+  background: #f5f5f7;
+}
+
+.product-image-wrapper {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+  border-radius: 10px;
+  color: #86868b;
+}
+
+.product-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.product-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+  flex: 1;
+}
+
+.product-price {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d1d1f;
+  white-space: nowrap;
+}
+
+.product-desc {
+  font-size: 13px;
+  color: #86868b;
+  margin: 0 0 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.option-tag {
+  font-size: 12px;
+  color: #86868b;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.option-price {
+  color: #ff3b30;
+  font-weight: 500;
+}
+
+.product-quantity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.quantity-value {
+  font-size: 14px;
+  color: #86868b;
+}
+
+.subtotal {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.remark-content {
+  padding: 16px;
+  background: rgba(255, 204, 0, 0.08);
+  border-radius: 12px;
+  border-left: 3px solid #ffcc00;
+}
+
+.remark-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #1d1d1f;
+  line-height: 1.6;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-summary .section-title {
+  margin-bottom: 20px;
+}
+
+.summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.summary-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.item-count {
-  font-size: 13px;
-  color: #909399;
+.summary-label {
+  font-size: 14px;
+  color: #86868b;
 }
 
-.product-info {
+.summary-value {
+  font-size: 14px;
+  color: #1d1d1f;
+  font-weight: 500;
+}
+
+.summary-total {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 4px 0;
 }
 
-.product-image {
-  width: 48px;
-  height: 48px;
-  border-radius: 4px;
-  object-fit: cover;
+.total-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d1d1f;
 }
 
-.image-placeholder {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #f5f7fa;
-  border-radius: 4px;
-  color: #909399;
+.total-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1d1d1f;
+  letter-spacing: -0.5px;
 }
 
-.product-detail {
-  flex: 1;
+.timeline-section .section-title {
+  margin-bottom: 20px;
+}
+
+.timeline {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
 }
 
-.product-name {
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.product-desc {
-  font-size: 12px;
-  color: #909399;
-}
-
-.order-total {
-  margin-top: 16px;
-  text-align: right;
-  padding: 12px 20px;
-  border-top: 1px solid #ebeef5;
-  font-size: 14px;
-}
-
-.total-price {
-  font-size: 16px;
-  font-weight: bold;
-  color: #f56c6c;
-  margin-left: 8px;
-}
-
-/* 商品选项标签样式 */
-.product-options {
-  margin-top: 4px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.option-tag {
-  font-size: 12px;
-  background-color: #f0f2f5;
-  color: #606266;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.option-tag span {
-  color: #f56c6c;
-  font-weight: 500;
-}
-
-:deep(.el-descriptions__cell) {
-  padding: 12px 16px;
-}
-
-:deep(.el-descriptions__label) {
-  width: 120px;
-  color: #606266;
-}
-
-:deep(.el-table) {
-  font-size: 13px;
-}
-
-.header-actions {
+.timeline-item {
   display: flex;
   gap: 12px;
-  align-items: center;
+  position: relative;
 }
 
-/* 确保按钮在移动端也能正常显示 */
-@media screen and (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #34c759;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+  margin-bottom: 2px;
+}
+
+.timeline-time {
+  font-size: 12px;
+  color: #86868b;
+}
+
+@media screen and (max-width: 1024px) {
+  .detail-content {
+    grid-template-columns: 1fr;
   }
   
-  .header-actions {
+  .sidebar {
+    order: -1;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .status-section {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
+  }
+  
+  .product-item {
+    flex-direction: column;
+  }
+  
+  .product-image-wrapper {
+    width: 100%;
+    height: 160px;
+  }
+  
+  .product-quantity {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
   }
 }
 </style>

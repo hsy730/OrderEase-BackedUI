@@ -51,6 +51,9 @@
       v-model="dialogVisible"
       :title="dialogTitle"
       width="600px"
+      :close-on-click-modal="false"
+      destroy-on-close
+      class="shop-dialog"
       @close="handleDialogClose"
     >
       <shop-form
@@ -242,4 +245,16 @@ const handleRefresh = () => {
   justify-content: flex-end;
 }
 /* 表格样式已移至全局样式文件 table-global.css */
+</style>
+
+<style>
+/* 对话框样式 - 使用全局选择器覆盖 Element Plus 默认样式 */
+.shop-dialog .el-dialog__body {
+  padding: 20px 24px;
+}
+
+.shop-dialog .el-dialog__footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e4e7ed;
+}
 </style>

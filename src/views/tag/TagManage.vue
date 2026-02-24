@@ -23,69 +23,50 @@
         </div>
       </div>
 
-      <div class="table-card">
-        <el-table
-          v-loading="loading"
-          :data="tagList"
-          class="tag-table"
-        >
-          <el-table-column label="标签名称" min-width="140">
-            <template #default="{ row }">
-              <div class="tag-info">
-                <span class="tag-name">{{ row.name }}</span>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="描述" min-width="240">
-            <template #default="{ row }">
-              <span class="tag-desc">{{ row.description || '暂无描述' }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right">
-            <template #default="{ row }">
-              <div class="operation-buttons">
-                <button class="op-btn view" @click="handleViewDetails(row)">查看</button>
-                <button class="op-btn edit" @click="handleEdit(row)">编辑</button>
-                <button class="op-btn delete" @click="handleDelete(row)">删除</button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+      <!-- 使用 DataTable 组件 -->
+      <DataTable
+        :data="tagList"
+        :loading="loading"
+        :total="total"
+        v-model:current-page="page"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :show-header="false"
+        :show-operation="true"
+        operation-width="200"
+        @size-change="fetchTagList"
+        @current-change="fetchTagList"
+      >
+        <el-table-column label="标签名称" min-width="140">
+          <template #default="{ row }">
+            <div class="tag-info">
+              <span class="tag-name">{{ row.name }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="描述" min-width="240">
+          <template #default="{ row }">
+            <span class="tag-desc">{{ row.description || '暂无描述' }}</span>
+          </template>
+        </el-table-column>
 
-        <div class="pagination-wrapper">
-          <el-pagination
-            v-model:current-page="page"
-            v-model:page-size="pageSize"
-            :page-sizes="[10, 20, 50, 100]"
-            :total="total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
-      </div>
+        <template #operation="{ row }">
+          <div class="operation-buttons">
+            <button class="op-btn view" @click="handleViewDetails(row)">查看</button>
+            <button class="op-btn edit" @click="handleEdit(row)">编辑</button>
+            <button class="op-btn delete" @click="handleDelete(row)">删除</button>
+          </div>
+        </template>
+      </DataTable>
 
-      <el-dialog
+      <!-- 使用 AppDialog 组件 - 标签表单 -->
+      <AppDialog
         v-model="showDialog"
         :title="dialogType === 'add' ? '新增标签' : '编辑标签'"
         width="480px"
-        :close-on-click-modal="false"
-        class="apple-dialog tag-dialog"
-        destroy-on-close
-        :show-close="false"
+        :confirm-loading="submitting"
+        @confirm="handleSubmit"
       >
-        <template #header>
-          <div class="dialog-header">
-            <h3 class="dialog-title">{{ dialogType === 'add' ? '新增标签' : '编辑标签' }}</h3>
-            <button class="close-btn" @click="showDialog = false">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </template>
-
         <el-form
           ref="formRef"
           :model="form"
@@ -105,40 +86,15 @@
             />
           </el-form-item>
         </el-form>
+      </AppDialog>
 
-        <template #footer>
-          <div class="dialog-footer">
-            <button class="btn-cancel" @click="showDialog = false">取消</button>
-            <button class="btn-confirm" @click="handleSubmit" :disabled="submitting">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>{{ submitting ? '提交中...' : '确定' }}</span>
-            </button>
-          </div>
-        </template>
-      </el-dialog>
-
-      <el-dialog
+      <!-- 使用 AppDialog 组件 - 商品选择 -->
+      <AppDialog
         v-model="showProductDialog"
-        title=""
+        title="选择商品"
         width="560px"
-        class="apple-dialog product-dialog"
-        destroy-on-close
-        :show-close="false"
+        @confirm="handleBatchTag"
       >
-        <template #header>
-          <div class="dialog-header">
-            <h3 class="dialog-title">选择商品</h3>
-            <button class="close-btn" @click="showProductDialog = false">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </template>
-
         <el-select
           v-model="selectedProducts"
           multiple
@@ -157,19 +113,7 @@
             :value="item.id"
           />
         </el-select>
-
-        <template #footer>
-          <div class="dialog-footer">
-            <button class="btn-cancel" @click="showProductDialog = false">取消</button>
-            <button class="btn-confirm" @click="handleBatchTag">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>确定</span>
-            </button>
-          </div>
-        </template>
-      </el-dialog>
+      </AppDialog>
     </div>
   </div>
 </template>
@@ -177,8 +121,10 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getTagList, createTag, updateTag, deleteTag, batchUpdateTags, getTagProducts } from '@/api/tag'
 import { useRouter } from 'vue-router'
+import { getTagList, createTag, updateTag, deleteTag, batchUpdateTags, getTagProducts } from '@/api/tag'
+import DataTable from '@/components/common/DataTable.vue'
+import AppDialog from '@/components/common/AppDialog.vue'
 
 const router = useRouter()
 const loading = ref(false)
@@ -282,17 +228,6 @@ const fetchTagList = async () => {
   } finally {
     loading.value = false
   }
-}
-
-const handleSizeChange = (val) => {
-  pageSize.value = val
-  page.value = 1
-  fetchTagList()
-}
-
-const handleCurrentChange = (val) => {
-  page.value = val
-  fetchTagList()
 }
 
 const handleAdd = () => {
@@ -440,39 +375,6 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
-.table-card {
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-}
-
-.tag-table {
-  width: 100%;
-}
-
-.tag-table :deep(.el-table) {
-  border: none;
-}
-
-.tag-table :deep(.el-table__border) {
-  display: none;
-}
-
-.tag-table :deep(.el-table th.el-table__cell) {
-  background: rgba(0, 0, 0, 0.02);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.tag-table :deep(.el-table td.el-table__cell) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.tag-table :deep(.el-table tr:hover > td) {
-  background: rgba(0, 0, 0, 0.02) !important;
-}
-
 .tag-info {
   display: flex;
   align-items: center;
@@ -532,71 +434,6 @@ onMounted(() => {
   background: rgba(239, 68, 68, 0.1);
 }
 
-.pagination-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  padding: 16px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.tag-dialog :deep(.el-dialog),
-.product-dialog :deep(.el-dialog) {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-}
-
-.tag-dialog :deep(.el-dialog__header),
-.product-dialog :deep(.el-dialog__header) {
-  padding: 0;
-  margin: 0;
-}
-
-.tag-dialog :deep(.el-dialog__body),
-.product-dialog :deep(.el-dialog__body) {
-  padding: 0 24px 24px;
-}
-
-.tag-dialog :deep(.el-dialog__footer),
-.product-dialog :deep(.el-dialog__footer) {
-  padding: 0;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  margin-bottom: 24px;
-}
-
-.dialog-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin: 0;
-}
-
-.close-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #86868b;
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1d1d1f;
-}
-
 .apple-form :deep(.el-form-item__label) {
   font-size: 14px;
   font-weight: 500;
@@ -649,59 +486,6 @@ onMounted(() => {
 .full-width-select :deep(.el-input__wrapper.is-focus) {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(0, 0, 0, 0.01);
-}
-
-.btn-cancel {
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
-  border-radius: 10px;
-  color: #1d1d1f;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.btn-confirm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border: none;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.btn-confirm:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  transform: translateY(-1px);
-}
-
-.btn-confirm:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
 }
 
 @media screen and (max-width: 768px) {

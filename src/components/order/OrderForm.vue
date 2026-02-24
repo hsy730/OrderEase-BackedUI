@@ -9,180 +9,188 @@
       <!-- 基本信息卡片 -->
       <section class="form-section">
         <div class="section-header">
-          <h3 class="section-title">基本信息</h3>
+          <div class="section-title">
+            <el-icon><User /></el-icon>
+            <span>基本信息</span>
+          </div>
         </div>
         
-        <div class="form-row">
-          <el-form-item label="选择用户" prop="user_id" class="form-item-half">
-            <UserSelect v-model="form.user_id" />
-          </el-form-item>
-          
-          <el-form-item label="订单状态" prop="status" class="form-item-half">
-            <el-select 
-              v-model="form.status" 
-              placeholder="请选择订单状态"
-              class="status-select"
-            >
-              <el-option 
-                v-for="status in orderStatusOptions" 
-                :key="status.value" 
-                :label="status.label" 
-                :value="status.value" 
-              />
-            </el-select>
-          </el-form-item>
+        <div class="section-content">
+          <div class="form-row">
+            <el-form-item label="选择用户" prop="user_id" class="form-item-half">
+              <UserSelect v-model="form.user_id" />
+            </el-form-item>
+            
+            <el-form-item label="订单状态" prop="status" class="form-item-half">
+              <el-select 
+                v-model="form.status" 
+                placeholder="请选择订单状态"
+                class="status-select"
+              >
+                <el-option 
+                  v-for="status in orderStatusOptions" 
+                  :key="status.value" 
+                  :label="status.label" 
+                  :value="status.value" 
+                />
+              </el-select>
+            </el-form-item>
+          </div>
         </div>
       </section>
 
       <!-- 商品清单卡片 -->
       <section class="form-section">
         <div class="section-header">
-          <h3 class="section-title">商品清单</h3>
+          <div class="section-title">
+            <el-icon><ShoppingCart /></el-icon>
+            <span>商品清单</span>
+          </div>
           <span class="item-count">{{ form.items?.length || 0 }} 件商品</span>
         </div>
-
-        <div class="order-items">
-          <div 
-            v-for="(item, index) in form.items" 
-            :key="index" 
-            class="order-item-card"
-          >
-            <div class="item-header">
-              <span class="item-number">商品 {{ index + 1 }}</span>
-              <button type="button" class="remove-btn" @click="removeItem(index)">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
-            </div>
-
-            <div class="item-content">
-              <!-- 商品选择 -->
-              <div class="item-row">
-                <el-select
-                  v-model="item.product_id"
-                  placeholder="选择商品"
-                  @change="handleProductChange($event, index)"
-                  class="product-select"
-                  filterable
-                  remote
-                  :remote-method="(query) => remoteSearchProduct(query, index)"
-                  :loading="productLoading[index]"
-                  clearable
-                >
-                  <el-option
-                    v-for="product in productList"
-                    :key="product.id"
-                    :label="product.name"
-                    :value="product.id"
-                  />
-                </el-select>
-                
-                <el-input-number
-                  v-model="item.quantity"
-                  :min="1"
-                  :precision="0"
-                  :step="1"
-                  class="quantity-input"
-                  @change="calculateTotal"
-                />
+        
+        <div class="section-content">
+          <div class="order-items">
+            <div 
+              v-for="(item, index) in form.items" 
+              :key="index" 
+              class="order-item-card"
+            >
+              <div class="item-header">
+                <span class="item-number">商品 {{ index + 1 }}</span>
+                <button type="button" class="remove-btn" @click="removeItem(index)">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
               </div>
 
-              <!-- 商品原价显示 -->
-              <div class="price-info" v-if="item.selectedProduct && item.selectedProduct.price !== undefined">
-                <span class="original-price">
-                  原价: ¥{{ item.selectedProduct.price.toFixed(2) }}
-                </span>
-                <span class="item-unit-price" v-if="item.price">
-                  单价: ¥{{ calculateItemPrice(item).toFixed(2) }}
-                </span>
-                <span class="item-subtotal" v-if="item.price && item.quantity">
-                  小计: ¥{{ (calculateItemPrice(item) * item.quantity).toFixed(2) }}
-                </span>
-              </div>
-              
-              <!-- 商品选项参数选择 -->
-              <div v-if="item.selectedProduct && item.selectedProduct.option_categories && item.selectedProduct.option_categories.length > 0" class="product-options">
-                <div 
-                  v-for="(category, categoryIndex) in item.selectedProduct.option_categories" 
-                  :key="category.id" 
-                  class="option-category"
-                >
-                  <div class="category-header">
-                    <span class="category-name">{{ category.name }}</span>
-                    <span v-if="category.is_required" class="tag required-tag">必选</span>
-                    <span v-if="category.is_multiple" class="tag multiple-tag">多选</span>
-                  </div>
+              <div class="item-content">
+                <div class="item-row">
+                  <el-select
+                    v-model="item.product_id"
+                    placeholder="选择商品"
+                    @change="handleProductChange($event, index)"
+                    class="product-select"
+                    filterable
+                    remote
+                    :remote-method="(query) => remoteSearchProduct(query, index)"
+                    :loading="productLoading[index]"
+                    clearable
+                  >
+                    <el-option
+                      v-for="product in productList"
+                      :key="product.id"
+                      :label="product.name"
+                      :value="product.id"
+                    />
+                  </el-select>
                   
-                  <div class="options-container">
-                    <template v-if="category.is_multiple">
-                      <!-- 多选 -->
-                      <el-checkbox-group 
-                        v-model="item.selectedOptions[category.id]" 
-                        @change="calculateTotal"
-                        class="option-group"
-                      >
-                        <el-checkbox
-                          v-for="option in category.options"
-                          :key="option.id"
-                          :label="option.id"
-                          :value="option.id"
-                          class="option-checkbox"
+                  <el-input-number
+                    v-model="item.quantity"
+                    :min="1"
+                    :precision="0"
+                    :step="1"
+                    class="quantity-input"
+                    @change="calculateTotal"
+                  />
+                </div>
+
+                <div class="price-info" v-if="item.selectedProduct && item.selectedProduct.price !== undefined">
+                  <span class="original-price">
+                    原价: ¥{{ item.selectedProduct.price.toFixed(2) }}
+                  </span>
+                  <span class="item-unit-price" v-if="item.price">
+                    单价: ¥{{ calculateItemPrice(item).toFixed(2) }}
+                  </span>
+                  <span class="item-subtotal" v-if="item.price && item.quantity">
+                    小计: ¥{{ (calculateItemPrice(item) * item.quantity).toFixed(2) }}
+                  </span>
+                </div>
+                
+                <div v-if="item.selectedProduct && item.selectedProduct.option_categories && item.selectedProduct.option_categories.length > 0" class="product-options">
+                  <div 
+                    v-for="(category, categoryIndex) in item.selectedProduct.option_categories" 
+                    :key="category.id" 
+                    class="option-category"
+                  >
+                    <div class="category-header">
+                      <span class="category-name">{{ category.name }}</span>
+                      <span v-if="category.is_required" class="tag required-tag">必选</span>
+                      <span v-if="category.is_multiple" class="tag multiple-tag">多选</span>
+                    </div>
+                    
+                    <div class="options-container">
+                      <template v-if="category.is_multiple">
+                        <el-checkbox-group 
+                          v-model="item.selectedOptions[category.id]" 
+                          @change="calculateTotal"
+                          class="option-group"
                         >
-                          <span class="option-name">{{ option.name }}</span>
-                          <span v-if="option.price_adjustment !== 0" class="option-price">
-                            {{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }}
-                          </span>
-                        </el-checkbox>
-                      </el-checkbox-group>
-                    </template>
-                    <template v-else>
-                      <!-- 单选 -->
-                      <el-radio-group 
-                        :model-value="item.selectedOptions[category.id] && item.selectedOptions[category.id].length > 0 ? item.selectedOptions[category.id][0] : null"
-                        @update:model-value="val => {
-                          item.selectedOptions[category.id] = val ? [val] : [];
-                          calculateTotal();
-                        }"
-                        class="option-group"
-                      >
-                        <el-radio
-                          v-for="option in category.options"
-                          :key="option.id"
-                          :label="option.id"
-                          class="option-radio"
+                          <el-checkbox
+                            v-for="option in category.options"
+                            :key="option.id"
+                            :label="option.id"
+                            :value="option.id"
+                            class="option-checkbox"
+                          >
+                            <span class="option-name">{{ option.name }}</span>
+                            <span v-if="option.price_adjustment !== 0" class="option-price">
+                              {{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }}
+                            </span>
+                          </el-checkbox>
+                        </el-checkbox-group>
+                      </template>
+                      <template v-else>
+                        <el-radio-group 
+                          :model-value="item.selectedOptions[category.id] && item.selectedOptions[category.id].length > 0 ? item.selectedOptions[category.id][0] : null"
+                          @update:model-value="val => {
+                            item.selectedOptions[category.id] = val ? [val] : [];
+                            calculateTotal();
+                          }"
+                          class="option-group"
                         >
-                          <span class="option-name">{{ option.name }}</span>
-                          <span v-if="option.price_adjustment !== 0" class="option-price">
-                            {{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }}
-                          </span>
-                        </el-radio>
-                      </el-radio-group>
-                    </template>
+                          <el-radio
+                            v-for="option in category.options"
+                            :key="option.id"
+                            :label="option.id"
+                            class="option-radio"
+                          >
+                            <span class="option-name">{{ option.name }}</span>
+                            <span v-if="option.price_adjustment !== 0" class="option-price">
+                              {{ option.price_adjustment > 0 ? '+' : '' }}{{ option.price_adjustment }}
+                            </span>
+                          </el-radio>
+                        </el-radio-group>
+                      </template>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            
+            <button type="button" class="add-item-btn" @click="addItem">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>添加商品</span>
+            </button>
           </div>
-          
-          <button type="button" class="add-item-btn" @click="addItem">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            <span>添加商品</span>
-          </button>
         </div>
       </section>
 
       <!-- 订单汇总卡片 -->
       <section class="form-section summary-section">
         <div class="section-header">
-          <h3 class="section-title">订单汇总</h3>
+          <div class="section-title">
+            <el-icon><Money /></el-icon>
+            <span>订单汇总</span>
+          </div>
         </div>
 
-        <div class="summary-content">
+        <div class="section-content">
           <div class="summary-row">
             <span class="summary-label">订单总额</span>
             <span class="total-amount">¥{{ calculateTotalAmount() }}</span>
@@ -193,18 +201,23 @@
       <!-- 备注卡片 -->
       <section class="form-section">
         <div class="section-header">
-          <h3 class="section-title">订单备注</h3>
+          <div class="section-title">
+            <el-icon><EditPen /></el-icon>
+            <span>订单备注</span>
+          </div>
         </div>
 
-        <el-form-item prop="remark" class="remark-item">
-          <el-input
-            v-model="form.remark"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入订单备注信息..."
-            class="remark-input"
-          />
-        </el-form-item>
+        <div class="section-content">
+          <el-form-item prop="remark" class="remark-item">
+            <el-input
+              v-model="form.remark"
+              type="textarea"
+              :rows="4"
+              placeholder="请输入订单备注信息..."
+              class="remark-input"
+            />
+          </el-form-item>
+        </div>
       </section>
     </el-form>
   </div>
@@ -213,6 +226,7 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { User, ShoppingCart, Money, EditPen } from '@element-plus/icons-vue'
 import { createOrder, updateOrder, getOrderStatusFlow } from '@/api/order'
 import { getProductList, getProductDetail } from '@/api/product'
 import UserSelect from '@/components/UserSelect.vue'
@@ -553,16 +567,16 @@ const rules = {
 
 <style scoped>
 .order-form {
-  padding: 4px;
+  padding: 0;
 }
 
 .form-section {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 20px 24px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  background: white;
+  border-radius: 16px;
   border: 1px solid rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .form-section:last-child {
@@ -572,17 +586,29 @@ const rules = {
 .section-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .section-title {
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
   font-weight: 600;
   color: #1d1d1f;
-  margin: 0;
-  flex: 1;
   letter-spacing: -0.2px;
+}
+
+.section-title .el-icon {
+  font-size: 16px;
+  color: var(--color-primary);
+}
+
+.section-content {
+  padding: 16px 20px;
 }
 
 .item-count {
@@ -848,10 +874,6 @@ const rules = {
 
 .summary-section {
   background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 100%);
-}
-
-.summary-content {
-  padding: 6px 0;
 }
 
 .summary-row {

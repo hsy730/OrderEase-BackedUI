@@ -19,19 +19,19 @@
             <div class="status-actions">
               <el-button 
                 v-if="status.value !== 0" 
-                type="info" 
+                type="primary" 
+                link
                 size="small" 
                 @click="handleEditStatus(status.value)"
-                :icon="Edit"
               >
                 编辑
               </el-button>
               <el-button 
                 v-if="status.value !== 0" 
                 type="danger" 
+                link
                 size="small" 
                 @click="handleDeleteStatus(status.value)"
-                :icon="Delete"
               >
                 删除
               </el-button>
@@ -54,19 +54,19 @@
             <div class="status-actions">
               <el-button 
                 v-if="status.value !== 0" 
-                type="info" 
+                type="primary" 
+                link
                 size="small" 
                 @click="handleEditStatus(status.value)"
-                :icon="Edit"
               >
                 编辑
               </el-button>
               <el-button 
                 v-if="status.value !== 0" 
                 type="danger" 
+                link
                 size="small" 
                 @click="handleDeleteStatus(status.value)"
-                :icon="Delete"
               >
                 删除
               </el-button>
@@ -79,45 +79,45 @@
           <div class="actions-header">
             <el-button 
               type="primary" 
+              link
               size="small" 
               @click="handleAddAction(index)"
-              :icon="Plus"
             >
-              添加动作
+              + 添加动作
             </el-button>
           </div>
           <div class="action-list">
-            <el-card 
+            <div 
               v-for="(action, actionIndex) in status.actions" 
               :key="actionIndex"
-              class="action-card"
+              class="action-item"
             >
               <div class="action-content">
                 <span class="action-name">{{ action.name }}</span>
                 <span class="action-arrow">→</span>
-                <el-tag :type="getStatusType(action.nextStatus)">{{ action.nextStatusLabel }}</el-tag>
+                <el-tag :type="getStatusType(action.nextStatus)" size="small">{{ action.nextStatusLabel }}</el-tag>
               </div>
               <div class="action-actions">
                 <el-button 
-                  type="info" 
+                  type="primary" 
+                  link
                   size="small" 
                   @click="handleEditAction(index, actionIndex)"
-                  :icon="Edit"
                 >
                   编辑
                 </el-button>
                 <el-button 
                   type="danger" 
+                  link
                   size="small" 
                   @click="handleDeleteAction(index, actionIndex)"
-                  :icon="Delete"
                 >
                   删除
                 </el-button>
               </div>
-            </el-card>
+            </div>
             <div v-if="status.actions.length === 0" class="empty-actions">
-              <el-empty description="暂无转换动作" />
+              <span class="empty-text">暂无转换动作</span>
             </div>
           </div>
         </div>
@@ -127,8 +127,8 @@
 
     <!-- 添加状态按钮 -->
     <div class="add-status-section">
-      <el-button type="primary" size="small" @click="handleAddStatus">
-        <el-icon><Plus /></el-icon> 添加状态
+      <el-button type="primary" link size="small" @click="handleAddStatus">
+        + 添加状态
       </el-button>
     </div>
   </div>
@@ -138,12 +138,15 @@
     v-model="statusDialogVisible"
     :title="statusDialogTitle"
     width="500px"
+    class="apple-dialog"
+    :close-on-click-modal="false"
   >
     <el-form
       ref="statusFormRef"
       :model="statusForm"
       :rules="statusFormRules"
-      label-width="100px"
+      label-position="top"
+      class="apple-form"
     >
       <el-form-item label="状态值" prop="value" required>
         <el-input-number v-model="statusForm.value" :min="0" :max="10" />
@@ -165,8 +168,10 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="statusDialogVisible = false">取消</el-button>
-      <el-button type="primary" @click="handleSaveStatus">保存</el-button>
+      <div class="dialog-footer">
+        <el-button @click="statusDialogVisible = false" class="btn-cancel">取消</el-button>
+        <el-button type="primary" @click="handleSaveStatus" class="btn-confirm">保存</el-button>
+      </div>
     </template>
   </el-dialog>
 
@@ -175,12 +180,15 @@
     v-model="actionDialogVisible"
     :title="actionDialogTitle"
     width="500px"
+    class="apple-dialog"
+    :close-on-click-modal="false"
   >
     <el-form
       ref="actionFormRef"
       :model="actionForm"
       :rules="actionFormRules"
-      label-width="100px"
+      label-position="top"
+      class="apple-form"
     >
       <el-form-item label="动作名称" prop="name" required>
         <el-input v-model="actionForm.name" placeholder="请输入动作名称" />
@@ -209,8 +217,10 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="actionDialogVisible = false">取消</el-button>
-      <el-button type="primary" @click="handleSaveAction">保存</el-button>
+      <div class="dialog-footer">
+        <el-button @click="actionDialogVisible = false" class="btn-cancel">取消</el-button>
+        <el-button type="primary" @click="handleSaveAction" class="btn-confirm">保存</el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
@@ -218,7 +228,6 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { getDefaultOrderStatusFlow } from '@/utils/orderStatus'
 
 // Props
@@ -541,16 +550,21 @@ defineExpose({
 .status-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
 .status-simple-card {
-  padding: 8px 16px;
-  border-radius: 4px;
-  border-left: 4px solid #d9d9d9;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border-left: 3px solid #d9d9d9;
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.status-simple-card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .status-simple-content {
@@ -563,18 +577,24 @@ defineExpose({
 .status-simple-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .status-card {
   margin-bottom: 0;
-  border-left: 4px solid #d9d9d9;
-  padding: 12px 16px;
+  border-left: 3px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.status-card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .status-type-warning {
-  border-left-color: #e6a23c;
+  border-left-color: #f59e0b;
 }
 
 .status-type-primary {
@@ -586,11 +606,11 @@ defineExpose({
 }
 
 .status-type-info {
-  border-left-color: #909399;
+  border-left-color: #6b7280;
 }
 
 .status-type-success {
-  border-left-color: #67c23a;
+  border-left-color: #10b981;
 }
 
 .status-header {
@@ -604,22 +624,23 @@ defineExpose({
 .status-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .status-value {
   font-size: 12px;
-  color: #909399;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 .status-tip {
   font-size: 12px;
-  color: #909399;
+  color: #6b7280;
 }
 
 .status-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .actions-section {
@@ -637,38 +658,47 @@ defineExpose({
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
-.action-card {
-  margin-bottom: 0;
+.action-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 6px 10px;
-  background-color: #fafafa;
-  flex: 0 0 calc(33.333% - 7px);
+  background-color: #f9fafb;
+  border-radius: 6px;
+  flex: 0 0 calc(50% - 4px);
   box-sizing: border-box;
+  border: 1px solid #f3f4f6;
+  transition: all 0.2s ease;
+}
+
+.action-item:hover {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
 }
 
 .action-content {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 6px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .action-name {
   font-weight: 500;
+  color: #374151;
 }
 
 .action-arrow {
-  color: #909399;
-  font-size: 12px;
+  color: #9ca3af;
+  font-size: 11px;
 }
 
 .action-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
 }
 
 .final-status-tip {
@@ -676,15 +706,15 @@ defineExpose({
 }
 
 .empty-actions {
-  padding: 4px 0;
+  padding: 6px 0;
   text-align: center;
-  color: #909399;
-  height: auto;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #9ca3af;
   width: 100%;
+}
+
+.empty-text {
+  font-size: 12px;
+  color: #9ca3af;
 }
 
 .add-status-section {
@@ -693,44 +723,150 @@ defineExpose({
   margin-top: 16px;
 }
 
-/* 调整按钮大小和间距 */
-:deep(.el-button--small) {
-  padding: 4px 12px;
-  font-size: 12px;
+:deep(.el-button.is-link) {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 8px;
+  height: auto;
 }
 
-/* 调整卡片头部间距 */
+:deep(.el-button--primary.is-link) {
+  color: var(--color-primary);
+}
+
+:deep(.el-button--primary.is-link:hover) {
+  color: var(--color-primary-dark);
+}
+
+:deep(.el-button--danger.is-link) {
+  color: var(--color-danger);
+}
+
+:deep(.el-button--danger.is-link:hover) {
+  color: var(--color-danger-light);
+}
+
+:deep(.el-button--small) {
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
 :deep(.el-card__header) {
   padding: 0;
-  border-bottom: 1px solid #ebeef5;
-  margin-bottom: 12px;
+  border-bottom: none;
+  margin-bottom: 8px;
 }
 
-/* 调整alert组件 */
 :deep(.el-alert) {
   margin: 0;
-  padding: 8px 16px;
+  padding: 6px 12px;
+  border-radius: 6px;
 }
 
-/* 调整empty组件 */
-:deep(.el-empty) {
-  margin: 0;
-  padding: 0;
-}
-
-:deep(.el-empty__description) {
-  font-size: 12px;
-  margin: 0;
-}
-
-:deep(.el-empty__image) {
-  width: 40px;
-  height: 40px;
-  margin-bottom: 4px;
-}
-
-/* 调整tag组件间距 */
 :deep(.el-tag) {
   margin: 0;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 12px;
+  height: 22px;
+  padding: 0 6px;
+}
+
+:deep(.el-card__body) {
+  padding: 12px 16px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.dialog-footer .btn-cancel {
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  color: #1d1d1f;
+  border-radius: 10px;
+  height: 40px;
+  min-width: 80px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.dialog-footer .btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.dialog-footer .btn-confirm {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 10px;
+  height: 40px;
+  min-width: 80px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease;
+}
+
+.dialog-footer .btn-confirm:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
+}
+
+.apple-form :deep(.el-form-item__label) {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+  padding-bottom: 6px;
+}
+
+.apple-form :deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+.apple-form :deep(.el-input__wrapper),
+.apple-form :deep(.el-select .el-input__wrapper) {
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.apple-form :deep(.el-input__wrapper:hover),
+.apple-form :deep(.el-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.apple-form :deep(.el-input__wrapper.is-focus),
+.apple-form :deep(.el-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+.apple-form :deep(.el-input__inner) {
+  height: 36px;
+  line-height: 36px;
+}
+
+.apple-form :deep(.el-input__inner::placeholder) {
+  color: #86868b;
+}
+
+.apple-form :deep(.el-input-number) {
+  width: 100%;
+}
+
+.apple-form :deep(.el-input-number .el-input__wrapper) {
+  border-radius: 10px;
+}
+
+.apple-form :deep(.el-select) {
+  width: 100%;
+}
+
+.apple-form :deep(.el-switch) {
+  --el-switch-on-color: var(--color-primary);
 }
 </style>

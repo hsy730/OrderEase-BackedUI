@@ -204,6 +204,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOrderDetail, toggleOrderStatus, getOrderStatusFlow } from '@/api/order'
+import { formatTime } from '@/utils/date'
+import { getProductImageUrl } from '@/api/product'
 
 const route = useRoute()
 const loading = ref(false)
@@ -318,22 +320,8 @@ const fetchOrderDetail = async () => {
   }
 }
 
-const formatTime = (time) => {
-  if (!time) return '暂无'
-  return new Date(time).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  })
-}
-
 const getImageUrl = (path) => {
-  if (!path) return ''
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path
-  return `/admin/product/image?path=${cleanPath}`
+  return getProductImageUrl(path)
 }
 
 const groupOptionsByCategory = (options) => {

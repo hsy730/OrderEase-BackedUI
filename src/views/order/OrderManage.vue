@@ -58,45 +58,20 @@
         </div>
       </div>
 
-      <el-dialog
+      <!-- 使用 AppDialog 组件 -->
+      <AppDialog
         v-model="dialogVisible"
         :title="dialogTitle"
         width="860px"
-        :close-on-click-modal="false"
-        class="apple-dialog order-dialog"
-        destroy-on-close
-        :show-close="false"
+        :confirm-loading="submitting"
+        @confirm="submitForm"
       >
-        <template #header>
-          <div class="dialog-header">
-            <h3 class="dialog-title">{{ dialogTitle }}</h3>
-            <button class="close-btn" @click="dialogVisible = false">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </template>
-
         <order-form
           ref="orderFormRef"
           :form-data="formData"
           @submit="handleSubmit"
         />
-
-        <template #footer>
-          <div class="dialog-footer">
-            <button class="btn-cancel" @click="dialogVisible = false">取消</button>
-            <button class="btn-confirm" @click="submitForm">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>确定</span>
-            </button>
-          </div>
-        </template>
-      </el-dialog>
+      </AppDialog>
     </div>
   </div>
 </template>
@@ -107,6 +82,7 @@ import { ElMessage } from 'element-plus'
 import CurrentOrder from './CurrentOrder.vue'
 import AllOrder from './AllOrder.vue'
 import OrderForm from '@/components/order/OrderForm.vue'
+import AppDialog from '@/components/common/AppDialog.vue'
 
 const activeTab = ref('current')
 const currentOrderRef = ref(null)
@@ -117,6 +93,7 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formData = ref({})
 const orderFormRef = ref(null)
+const submitting = ref(false)
 
 const handleCreate = () => {
   dialogTitle.value = '新增订单'
@@ -126,9 +103,12 @@ const handleCreate = () => {
 
 const submitForm = async () => {
   try {
+    submitting.value = true
     await orderFormRef.value.submit()
   } catch (error) {
     console.error('提交表单失败:', error)
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -284,106 +264,6 @@ const handleRefresh = () => {
 
 .tabs-content {
   min-height: 400px;
-}
-
-.order-dialog :deep(.el-dialog) {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-}
-
-.order-dialog :deep(.el-dialog__header) {
-  padding: 0;
-  margin: 0;
-}
-
-.order-dialog :deep(.el-dialog__body) {
-  padding: 0;
-}
-
-.order-dialog :deep(.el-dialog__footer) {
-  padding: 0;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.dialog-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin: 0;
-}
-
-.close-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #86868b;
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1d1d1f;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(0, 0, 0, 0.01);
-}
-
-.btn-cancel {
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
-  border-radius: 10px;
-  color: #1d1d1f;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.btn-confirm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border: none;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.btn-confirm:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  transform: translateY(-1px);
 }
 
 @media screen and (max-width: 768px) {

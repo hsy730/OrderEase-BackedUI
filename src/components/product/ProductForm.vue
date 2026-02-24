@@ -595,31 +595,32 @@ defineExpose({
   padding: 0;
 }
 
-/* 表单区块 */
 .form-section {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 16px;
   background: white;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-light);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border-light);
+  padding: 14px 20px;
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .section-title {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #1d1d1f;
+  letter-spacing: -0.2px;
 }
 
 .section-title .el-icon {
@@ -628,15 +629,14 @@ defineExpose({
 }
 
 .section-tip {
-  font-size: 12px;
-  color: var(--color-text-tertiary);
+  font-size: 11px;
+  color: #86868b;
 }
 
 .section-content {
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 16px 20px;
 }
 
-/* 价格输入 */
 .price-input-wrapper {
   display: flex;
   align-items: center;
@@ -646,7 +646,7 @@ defineExpose({
 .price-prefix {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-secondary);
+  color: #86868b;
 }
 
 .price-input,
@@ -658,7 +658,6 @@ defineExpose({
   width: 100%;
 }
 
-/* 图片上传 */
 .image-upload-wrapper {
   display: flex;
 }
@@ -666,18 +665,18 @@ defineExpose({
 .product-image-upload {
   width: 100px;
   height: 100px;
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-md);
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: all var(--transition-base);
-  background: var(--color-bg-secondary);
+  transition: all 0.2s ease;
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .product-image-upload:hover {
   border-color: var(--color-primary);
-  background: var(--color-info-bg);
+  background: rgba(59, 130, 246, 0.04);
 }
 
 .image-preview {
@@ -705,7 +704,7 @@ defineExpose({
   justify-content: center;
   gap: 2px;
   opacity: 0;
-  transition: opacity var(--transition-base);
+  transition: opacity 0.2s ease;
 }
 
 .product-image-upload:hover .image-mask {
@@ -718,7 +717,7 @@ defineExpose({
 }
 
 .image-mask span {
-  font-size: 12px;
+  font-size: 11px;
   color: white;
 }
 
@@ -729,81 +728,80 @@ defineExpose({
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-xs);
-  color: var(--color-text-tertiary);
+  gap: 4px;
+  color: #86868b;
 }
 
 .upload-icon {
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .upload-placeholder span {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .upload-disabled {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-md);
-  color: var(--color-text-tertiary);
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 10px;
+  color: #86868b;
   font-size: 12px;
 }
 
-/* 选项参数 */
 .option-categories {
   width: 100%;
 }
 
 .empty-state {
   text-align: center;
-  padding: var(--spacing-xl) var(--spacing-lg);
+  padding: 28px 20px;
 }
 
 .empty-icon {
-  font-size: 40px;
-  color: var(--color-border);
-  margin-bottom: var(--spacing-sm);
+  font-size: 36px;
+  color: #d1d5db;
+  margin-bottom: 8px;
 }
 
 .empty-state p {
   font-size: 13px;
-  color: var(--color-text-secondary);
-  margin-bottom: var(--spacing-md);
+  color: #86868b;
+  margin-bottom: 12px;
 }
 
-/* 选项类别卡片 */
 .category-card {
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-sm);
-  margin-bottom: var(--spacing-sm);
-  border: 1px solid var(--color-border-light);
-  transition: all var(--transition-base);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
 }
 
 .category-card:hover {
-  border-color: var(--color-primary-light);
-  box-shadow: var(--shadow-sm);
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .category-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-sm);
-  padding-bottom: var(--spacing-xs);
-  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .category-title {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: 6px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #1d1d1f;
+  font-size: 13px;
 }
 
 .category-icon {
@@ -812,11 +810,11 @@ defineExpose({
 }
 
 .category-index {
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .category-config {
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: 10px;
 }
 
 .category-form :deep(.el-form-item) {
@@ -825,102 +823,98 @@ defineExpose({
 
 .checkbox-group {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: 12px;
   padding-top: 4px;
 }
 
 .checkbox-label {
-  font-size: 13px;
-  color: var(--color-text-secondary);
+  font-size: 12px;
+  color: #86868b;
 }
 
-/* 选项列表 */
 .options-list {
   background: white;
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-lg);
-  border: 1px solid var(--color-border-light);
-  margin-top: var(--spacing-md);
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  margin-top: 10px;
 }
 
 .options-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-xs);
-  padding: 0 var(--spacing-xs);
+  margin-bottom: 8px;
+  padding: 0 4px;
 }
 
 .options-title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: #86868b;
 }
 
 .options-items {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: 6px;
 }
 
 .option-item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  gap: 6px;
+  padding: 8px 10px;
   background: white;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-light);
-  transition: all var(--transition-base);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
 }
 
 .option-item:hover {
-  border-color: var(--color-primary-light);
-  box-shadow: var(--shadow-sm);
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-/* 拖拽手柄样式 */
 .drag-handle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   cursor: move;
   cursor: grab;
-  color: var(--color-text-tertiary);
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-base);
+  color: #86868b;
+  border-radius: 6px;
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .drag-handle:hover {
-  background: var(--color-border-light);
-  color: var(--color-text-secondary);
+  background: rgba(0, 0, 0, 0.04);
+  color: #1d1d1f;
 }
 
 .drag-handle:active {
   cursor: grabbing;
 }
 
-/* 拖拽时的样式 */
 .sortable-ghost {
   opacity: 0.5;
-  background: var(--color-info-bg);
+  background: rgba(59, 130, 246, 0.08);
   border: 2px dashed var(--color-primary);
 }
 
 .sortable-chosen {
-  background: var(--color-bg-secondary);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .sortable-drag {
   opacity: 0.9;
   background: white;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* 选项内容区域 */
 .option-content {
   flex: 1;
   min-width: 0;
@@ -929,49 +923,49 @@ defineExpose({
 .option-main-row {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 10px;
 }
 
 .option-index {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-sm);
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   flex-shrink: 0;
 }
 
 .option-name-input {
   flex: 1;
-  min-width: 120px;
-  max-width: 200px;
+  min-width: 100px;
+  max-width: 180px;
 }
 
 .option-price-group {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .field-label {
-  font-size: 12px;
-  color: var(--color-text-secondary);
+  font-size: 11px;
+  color: #86868b;
   white-space: nowrap;
 }
 
 .price-adjust-input {
-  width: 90px;
+  width: 80px;
 }
 
 .default-checkbox {
   flex-shrink: 0;
-  margin-left: var(--spacing-xs);
+  margin-left: 4px;
 }
 
 .remove-option-btn {
@@ -987,33 +981,66 @@ defineExpose({
 .add-category-section {
   display: flex;
   justify-content: center;
-  padding: var(--spacing-sm) 0;
+  padding: 8px 0;
 }
 
-/* 表单项样式优化 */
 :deep(.el-form-item__label) {
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: #1d1d1f;
+  font-size: 13px;
+  padding-bottom: 6px;
 }
 
 :deep(.el-input__wrapper) {
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+:deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+  background: #ffffff;
 }
 
 :deep(.el-textarea__inner) {
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+:deep(.el-textarea__inner:hover) {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.el-textarea__inner:focus) {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+  background: #ffffff;
 }
 
 :deep(.el-input-number .el-input__wrapper) {
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
 }
 
-/* 响应式 */
+:deep(.el-input__inner) {
+  height: 36px;
+  line-height: 36px;
+}
+
+:deep(.el-input__inner::placeholder) {
+  color: #86868b;
+}
+
 @media (max-width: 768px) {
   .section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--spacing-sm);
+    gap: 8px;
   }
 
   .option-fields {

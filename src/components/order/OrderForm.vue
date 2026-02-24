@@ -553,16 +553,15 @@ const rules = {
 
 <style scoped>
 .order-form {
-  padding: 8px;
+  padding: 4px;
 }
 
-/* 表单区块样式 */
 .form-section {
   background: #ffffff;
   border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
@@ -574,37 +573,37 @@ const rules = {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .section-title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   color: #1d1d1f;
   margin: 0;
   flex: 1;
+  letter-spacing: -0.2px;
 }
 
 .item-count {
-  font-size: 13px;
+  font-size: 12px;
   color: #86868b;
   background: rgba(0, 0, 0, 0.04);
-  padding: 4px 12px;
-  border-radius: 20px;
+  padding: 4px 10px;
+  border-radius: 12px;
 }
 
-/* 表单项布局 */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 16px;
 }
 
 :deep(.el-form-item__label) {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #1d1d1f;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 
 :deep(.el-input__wrapper),
@@ -612,32 +611,42 @@ const rules = {
   border-radius: 10px;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.8);
 }
 
 :deep(.el-input__wrapper:hover),
 :deep(.el-textarea__inner:hover) {
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 
 :deep(.el-input__wrapper.is-focus),
 :deep(.el-textarea__inner:focus) {
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+  background: #ffffff;
+}
+
+:deep(.el-input__inner) {
+  height: 36px;
+  line-height: 36px;
+}
+
+:deep(.el-input__inner::placeholder) {
+  color: #86868b;
 }
 
 .status-select {
   width: 100%;
 }
 
-/* 商品列表样式 */
 .order-items {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .order-item-card {
   background: #fafafa;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   transition: all 0.2s ease;
   border: 1px solid rgba(0, 0, 0, 0.04);
@@ -652,20 +661,20 @@ const rules = {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: rgba(0, 0, 0, 0.02);
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .item-number {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #1d1d1f;
 }
 
 .remove-btn {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 8px;
   border: none;
   background: rgba(239, 68, 68, 0.1);
@@ -682,14 +691,14 @@ const rules = {
 }
 
 .item-content {
-  padding: 16px;
+  padding: 14px;
 }
 
 .item-row {
   display: flex;
   gap: 12px;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .product-select {
@@ -697,7 +706,7 @@ const rules = {
 }
 
 .quantity-input {
-  width: 120px;
+  width: 110px;
 }
 
 :deep(.quantity-input .el-input__wrapper) {
@@ -708,40 +717,39 @@ const rules = {
 .price-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  padding: 10px 14px;
+  gap: 12px;
+  padding: 8px 12px;
   background: rgba(59, 130, 246, 0.04);
   border-radius: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .original-price,
 .item-unit-price {
-  font-size: 13px;
+  font-size: 12px;
   color: #86868b;
 }
 
 .item-subtotal {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--color-danger);
 }
 
-/* 商品选项样式 */
 .product-options {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
+  gap: 12px;
+  padding: 12px;
   background: #ffffff;
   border-radius: 10px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .option-category {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .category-header {
@@ -751,15 +759,15 @@ const rules = {
 }
 
 .category-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #1d1d1f;
 }
 
 .tag {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
-  padding: 2px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
 }
 
@@ -782,13 +790,13 @@ const rules = {
 .option-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 :deep(.option-checkbox),
 :deep(.option-radio) {
   margin-right: 0;
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: #f5f5f7;
   border-radius: 8px;
   transition: all 0.2s ease;
@@ -805,30 +813,29 @@ const rules = {
 }
 
 .option-name {
-  font-size: 13px;
+  font-size: 12px;
   color: #1d1d1f;
 }
 
 .option-price {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-danger);
   font-weight: 500;
   margin-left: 4px;
 }
 
-/* 添加商品按钮 */
 .add-item-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   background: rgba(59, 130, 246, 0.06);
   border: 2px dashed rgba(59, 130, 246, 0.2);
   border-radius: 12px;
   color: var(--color-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -839,13 +846,12 @@ const rules = {
   border-color: rgba(59, 130, 246, 0.4);
 }
 
-/* 汇总区域 */
 .summary-section {
   background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 100%);
 }
 
 .summary-content {
-  padding: 8px 0;
+  padding: 6px 0;
 }
 
 .summary-row {
@@ -855,19 +861,18 @@ const rules = {
 }
 
 .summary-label {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: #1d1d1f;
 }
 
 .total-amount {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--color-danger);
   letter-spacing: -0.5px;
 }
 
-/* 备注区域 */
 .remark-item {
   margin-bottom: 0;
 }
@@ -877,11 +882,10 @@ const rules = {
   resize: none;
 }
 
-/* 响应式 */
 @media screen and (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
   }
   
   .item-row {
@@ -895,7 +899,7 @@ const rules = {
   
   .price-info {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 }
 </style>

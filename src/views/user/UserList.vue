@@ -48,40 +48,54 @@
       />
     </div>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" :close-on-click-modal="false">
-      <el-form :model="form" :rules="rules" ref="formRef">
+    <el-dialog 
+      v-model="dialogVisible" 
+      :title="dialogTitle" 
+      width="520px" 
+      :close-on-click-modal="false"
+      class="apple-dialog"
+      destroy-on-close
+    >
+      <el-form :model="form" :rules="rules" ref="formRef" label-position="top" class="apple-form">
         <el-form-item label="用户名" prop="name" :rules="[{ required: true, message: '请输入用户名' }]">
-          <el-input v-model="form.name" :disabled="!!form.id" />
+          <el-input v-model="form.name" :disabled="!!form.id" placeholder="请输入用户名" />
         </el-form-item>
         <el-form-item v-if="!form.id" label="密码" prop="password" required :rules="[{ required: true, message: '请输入密码' }]">
-          <el-input v-model="form.password" type="password" show-password @input="formRef?.validateField('password')" />
+          <el-input v-model="form.password" type="password" show-password @input="formRef?.validateField('password')" placeholder="请输入密码" />
         </el-form-item>
         <el-form-item v-else label="密码" prop="password">
           <el-input v-model="form.password" type="password" show-password @input="formRef?.validateField('password')" placeholder="不填写则保持原密码不变" />
         </el-form-item>
-        <el-form-item label="电话" prop="phone" :rules="[{ validator: validatePhone, trigger: 'blur' }]">
-          <el-input v-model="form.phone" />
-        </el-form-item>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="电话" prop="phone" :rules="[{ validator: validatePhone, trigger: 'blur' }]">
+              <el-input v-model="form.phone" placeholder="请输入电话号码" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="类型" prop="type">
+              <el-select v-model="form.type" placeholder="请选择类型">
+                <el-option label="邮寄" value="delivery" />
+                <el-option label="自提" value="pickup" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="地址" prop="address">
-          <el-input v-model="form.address" />
+          <el-input v-model="form.address" placeholder="请输入地址" />
         </el-form-item>
-        <el-form-item label="类型" prop="type">
-          <el-select v-model="form.type">
-            <el-option label="邮寄" value="delivery" />
-            <el-option label="自提" value="pickup" />
-          </el-select>
-        </el-form-item>
-
         <el-form-item label="角色" prop="role">
-          <el-select v-model="form.role">
+          <el-select v-model="form.role" placeholder="请选择角色">
             <el-option label="公共用户" value="public_user" />
             <el-option label="普通用户" value="private_user" />
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确认</el-button>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false" class="btn-cancel">取消</el-button>
+          <el-button type="primary" @click="submitForm" class="btn-confirm">确认</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -320,6 +334,81 @@ onMounted(() => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+.apple-form :deep(.el-form-item__label) {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+  padding-bottom: 6px;
+}
+
+.apple-form :deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+.apple-form :deep(.el-input__wrapper),
+.apple-form :deep(.el-select .el-input__wrapper) {
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.apple-form :deep(.el-input__wrapper:hover),
+.apple-form :deep(.el-select .el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.apple-form :deep(.el-input__wrapper.is-focus),
+.apple-form :deep(.el-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+.apple-form :deep(.el-input__inner) {
+  height: 36px;
+  line-height: 36px;
+}
+
+.apple-form :deep(.el-input__inner::placeholder) {
+  color: #86868b;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.dialog-footer .btn-cancel {
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  color: #1d1d1f;
+  border-radius: 10px;
+  height: 40px;
+  min-width: 80px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.dialog-footer .btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.dialog-footer .btn-confirm {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 10px;
+  height: 40px;
+  min-width: 80px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease;
+}
+
+.dialog-footer .btn-confirm:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 640px) {

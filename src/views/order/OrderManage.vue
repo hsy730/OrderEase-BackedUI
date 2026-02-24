@@ -42,8 +42,10 @@
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="800px"
+      width="860px"
       :close-on-click-modal="false"
+      class="apple-dialog"
+      destroy-on-close
     >
       <order-form
         ref="orderFormRef"
@@ -51,10 +53,10 @@
         @submit="handleSubmit"
       />
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false" class="btn-cancel">取消</el-button>
+          <el-button type="primary" @click="submitForm" class="btn-confirm">确定</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -215,7 +217,39 @@ const handleRefresh = () => {
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
+  gap: 12px;
+}
+
+.dialog-footer .btn-cancel {
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  color: #1d1d1f;
+  border-radius: 10px;
+  height: 40px;
+  min-width: 80px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.dialog-footer .btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.dialog-footer .btn-confirm {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 10px;
+  height: 40px;
+  min-width: 80px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease;
+}
+
+.dialog-footer .btn-confirm:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
 }
 
 /* 响应式 */

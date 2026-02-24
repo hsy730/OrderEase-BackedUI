@@ -251,14 +251,17 @@ const submitForm = async () => {
 // 删除用户
 const handleDelete = async (id) => {
   try {
-    await ElMessageBox.confirm('确认删除该用户吗？删除后不可恢复', '提示', { type: 'warning' })
+    await ElMessageBox.confirm('确认删除该用户？删除后不可恢复', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
     await deleteUser({id: id})
     ElMessage.success('删除成功')
     loadUsers()
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除用户失败:', error)
-      // 使用后端返回的具体错误信息
       ElMessage.error(error.response?.data?.error || '删除失败')
     }
   }

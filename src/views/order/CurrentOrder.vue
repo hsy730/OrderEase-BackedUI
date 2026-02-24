@@ -41,16 +41,7 @@
           <template #default="{ row }">
             <el-button type="info" link @click="handleView(row)">查看</el-button>
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-popconfirm
-              title="确认删除该订单？"
-              confirm-button-text="确定"
-              cancel-button-text="取消"
-              @confirm="handleDelete(row)"
-            >
-              <template #reference>
-                <el-button type="danger" link>删除</el-button>
-              </template>
-            </el-popconfirm>
+            <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -95,7 +86,7 @@
 import '@/assets/table-global.css'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOrderList, deleteOrder, getOrderStatusFlow, getOrderDetail } from '@/api/order'
 import { getCurrentShopId } from '@/api/shop'
 import { getStatusText as getStatusTextUtil, getStatusType as getStatusTypeUtil } from '@/utils/orderStatus'
@@ -195,13 +186,19 @@ const handleView = (row) => {
 
 const handleDelete = async (row) => {
   try {
+    await ElMessageBox.confirm('确认删除该订单？删除后不可恢复', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
     await deleteOrder(row.id)
     ElMessage.success('删除成功')
     fetchOrderList()
   } catch (error) {
-    console.error(error)
-    // 使用后端返回的具体错误信息
-    ElMessage.error(error.response?.data?.error || '删除失败')
+    if (error !== 'cancel') {
+      console.error(error)
+      ElMessage.error(error.response?.data?.error || '删除失败')
+    }
   }
 }
 

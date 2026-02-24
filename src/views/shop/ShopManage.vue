@@ -131,7 +131,7 @@ const handleCurrentChange = (page) => {
 // 删除店铺
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确认删除该店铺？', '警告', {
+    await ElMessageBox.confirm('确认删除该店铺？删除后不可恢复', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'

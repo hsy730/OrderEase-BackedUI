@@ -248,7 +248,7 @@ const handleManageTags = (row) => {
 // 删除商品
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('商品删除后不可恢复，确认删除商品？', '提示', {
+    await ElMessageBox.confirm('确认删除该商品？删除后不可恢复', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'

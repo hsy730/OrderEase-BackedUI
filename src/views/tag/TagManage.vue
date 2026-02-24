@@ -262,7 +262,9 @@ const handleEdit = (row) => {
 // 删除标签
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确认删除该标签吗？删除后不可恢复', '提示', {
+    await ElMessageBox.confirm('确认删除该标签？删除后不可恢复', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning'
     })
     await deleteTag(row.id)
@@ -271,7 +273,6 @@ const handleDelete = async (row) => {
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除标签失败:', error)
-      // 使用后端返回的具体错误信息
       ElMessage.error(error.response?.data?.error || '删除标签失败')
     }
   }

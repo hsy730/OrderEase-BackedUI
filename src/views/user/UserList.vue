@@ -13,7 +13,7 @@
               <line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
             <input 
-              v-model="searchText"
+              v-model="searchKeyword"
               type="text"
               placeholder="搜索用户名..."
               @input="handleSearchInput"
@@ -35,81 +35,62 @@
         </div>
       </div>
 
-      <div class="table-card">
-        <el-table
-          v-loading="loading"
-          :data="userList"
-          class="user-table"
-        >
-          <el-table-column prop="name" label="用户名" min-width="180">
-            <template #default="{ row }">
-              <div class="user-info">
-                <div class="user-avatar">{{ row.name?.charAt(0)?.toUpperCase() || 'U' }}</div>
-                <el-tooltip :content="row.name" placement="top" :disabled="!isNameOverflow(row.name)">
-                  <span class="user-name">{{ row.name }}</span>
-                </el-tooltip>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="role" label="角色" min-width="100">
-            <template #default="{ row }">
-              <span class="role-badge" :class="row.role">{{ formatRole(row) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="phone" label="电话" min-width="120">
-            <template #default="{ row }">
-              <span class="phone-text">{{ row.phone || '-' }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="address" label="地址" min-width="200">
-            <template #default="{ row }">
-              <span class="address-text">{{ row.address || '-' }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="140" fixed="right">
-            <template #default="{ row }">
-              <div class="operation-buttons">
-                <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-                <el-button type="danger" link @click="handleDelete(row.id)">删除</el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <div class="pagination-wrapper">
-          <el-pagination
-            v-model:current-page="page"
-            v-model:page-size="pageSize"
-            :page-sizes="[10, 20, 50, 100]"
-            :total="total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
-      </div>
-
-      <el-dialog 
-        v-model="dialogVisible" 
-        :title="dialogTitle" 
-        width="520px" 
-        :close-on-click-modal="false"
-        class="apple-dialog user-dialog"
-        destroy-on-close
-        :show-close="false"
+      <!-- 使用 DataTable 组件 -->
+      <DataTable
+        :data="userList"
+        :loading="loading"
+        :total="total"
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :show-header="false"
+        :show-operation="true"
+        operation-width="140"
+        @size-change="loadUsers"
+        @current-change="loadUsers"
       >
-        <template #header>
-          <div class="dialog-header">
-            <h3 class="dialog-title">{{ dialogTitle }}</h3>
-            <button class="close-btn" @click="dialogVisible = false">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
+        <el-table-column prop="name" label="用户名" min-width="180">
+          <template #default="{ row }">
+            <div class="user-info">
+              <div class="user-avatar">{{ row.name?.charAt(0)?.toUpperCase() || 'U' }}</div>
+              <el-tooltip :content="row.name" placement="top" :disabled="!isNameOverflow(row.name)">
+                <span class="user-name">{{ row.name }}</span>
+              </el-tooltip>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="role" label="角色" min-width="100">
+          <template #default="{ row }">
+            <span class="role-badge" :class="row.role">{{ getUserRoleLabel(row.role) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="phone" label="电话" min-width="120">
+          <template #default="{ row }">
+            <span class="phone-text">{{ row.phone || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="address" label="地址" min-width="200">
+          <template #default="{ row }">
+            <span class="address-text">{{ row.address || '-' }}</span>
+          </template>
+        </el-table-column>
+
+        <template #operation="{ row }">
+          <div class="operation-buttons">
+            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="danger" link @click="handleDelete(row.id)">删除</el-button>
           </div>
         </template>
+      </DataTable>
 
+      <!-- 使用 AppDialog 组件 -->
+      <AppDialog
+        v-model="dialogVisible"
+        :title="dialogTitle"
+        width="520px"
+        :confirm-loading="submitting"
+        @confirm="submitForm"
+      >
         <el-form :model="form" :rules="rules" ref="formRef" label-position="top" class="apple-form">
           <el-form-item label="用户名" prop="name" :rules="[{ required: true, message: '请输入用户名' }]">
             <el-input v-model="form.name" :disabled="!!form.id" placeholder="请输入用户名" />
@@ -141,19 +122,7 @@
             </el-select>
           </el-form-item>
         </el-form>
-
-        <template #footer>
-          <div class="dialog-footer">
-            <button class="btn-cancel" @click="dialogVisible = false">取消</button>
-            <button class="btn-confirm" @click="submitForm">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>确认</span>
-            </button>
-          </div>
-        </template>
-      </el-dialog>
+      </AppDialog>
     </div>
   </div>
 </template>
@@ -162,14 +131,9 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserList, createUser, deleteUser, updateUser } from '@/api/user'
-
-const formatRole = (row) => {
-  const roleMap = {
-    'user': '普通用户',
-    'system': '公共用户'
-  }
-  return roleMap[row.role] || row.role;
-}
+import { getUserRoleLabel } from '@/utils/status'
+import DataTable from '@/components/common/DataTable.vue'
+import AppDialog from '@/components/common/AppDialog.vue'
 
 const isNameOverflow = (name) => {
   if (!name) return false
@@ -185,10 +149,10 @@ const submitting = ref(false)
 const formRef = ref(null)
 const isAdmin = JSON.parse(localStorage.getItem('admin') || '{}').role === 'admin'
 
-const page = ref(1)
+const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
-const searchText = ref('')
+const searchKeyword = ref('')
 let searchTimeout = null
 
 const form = ref({
@@ -202,10 +166,14 @@ const form = ref({
   type: 'delivery'
 })
 
+const rules = {
+  name: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
+}
+
 const handleSearchInput = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    page.value = 1
+    currentPage.value = 1
     loadUsers()
   }, 500)
 }
@@ -214,9 +182,9 @@ const loadUsers = async () => {
   loading.value = true
   try {
     const res = await getUserList({
-      page: page.value,
+      page: currentPage.value,
       page_size: pageSize.value,
-      search: searchText.value
+      search: searchKeyword.value
     })
     userList.value = res.data
     total.value = res.total || 0
@@ -226,17 +194,6 @@ const loadUsers = async () => {
   } finally {
     loading.value = false
   }
-}
-
-const handleSizeChange = (val) => {
-  pageSize.value = val
-  page.value = 1
-  loadUsers()
-}
-
-const handleCurrentChange = (val) => {
-  page.value = val
-  loadUsers()
 }
 
 const showCreateDialog = () => {
@@ -446,39 +403,6 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
-.table-card {
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-}
-
-.user-table {
-  width: 100%;
-}
-
-.user-table :deep(.el-table) {
-  border: none;
-}
-
-.user-table :deep(.el-table__border) {
-  display: none;
-}
-
-.user-table :deep(.el-table th.el-table__cell) {
-  background: rgba(0, 0, 0, 0.02);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.user-table :deep(.el-table td.el-table__cell) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.user-table :deep(.el-table tr:hover > td) {
-  background: rgba(0, 0, 0, 0.02) !important;
-}
-
 .user-info {
   display: flex;
   align-items: center;
@@ -540,67 +464,6 @@ onMounted(() => {
   gap: 4px;
 }
 
-.pagination-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  padding: 16px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.user-dialog :deep(.el-dialog) {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-}
-
-.user-dialog :deep(.el-dialog__header) {
-  padding: 0;
-  margin: 0;
-}
-
-.user-dialog :deep(.el-dialog__body) {
-  padding: 0 24px 24px;
-}
-
-.user-dialog :deep(.el-dialog__footer) {
-  padding: 0;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  margin-bottom: 24px;
-}
-
-.dialog-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin: 0;
-}
-
-.close-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #86868b;
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1d1d1f;
-}
-
 .apple-form :deep(.el-form-item__label) {
   font-size: 14px;
   font-weight: 500;
@@ -643,53 +506,6 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(0, 0, 0, 0.01);
-}
-
-.btn-cancel {
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
-  border-radius: 10px;
-  color: #1d1d1f;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.btn-confirm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border: none;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.btn-confirm:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  transform: translateY(-1px);
 }
 
 @media screen and (max-width: 768px) {

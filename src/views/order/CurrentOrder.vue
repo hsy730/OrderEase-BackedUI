@@ -1,104 +1,72 @@
 <template>
   <div class="current-order">
-    <div class="table-container">
-      <el-table
-        v-loading="loading"
-        :data="orderList"
-        class="order-table"
-        height="100%"
-      >
-        <el-table-column label="订单信息" min-width="200" fixed="left">
-          <template #default="{ row }">
-            <div class="order-info">
-              <div class="order-id">{{ row.id }}</div>
-              <div class="order-time">{{ formatTime(row.created_at) }}</div>
-            </div>
-          </template>
-        </el-table-column>
+    <!-- 使用 DataTable 组件 -->
+    <DataTable
+      :data="orderList"
+      :loading="loading"
+      :total="total"
+      v-model:current-page="currentPage"
+      v-model:page-size="pageSize"
+      :page-sizes="[10, 20, 50, 100]"
+      :show-header="false"
+      :show-operation="true"
+      operation-width="180"
+      class="order-table-wrapper"
+      @size-change="fetchOrderList"
+      @current-change="fetchOrderList"
+    >
+      <el-table-column label="订单信息" min-width="200" fixed="left">
+        <template #default="{ row }">
+          <div class="order-info">
+            <div class="order-id">{{ row.id }}</div>
+            <div class="order-time">{{ formatTime(row.created_at) }}</div>
+          </div>
+        </template>
+      </el-table-column>
 
-        <el-table-column label="订单金额" width="120" align="right">
-          <template #default="{ row }">
-            <div class="order-amount">¥{{ row.total_price?.toFixed(2) || '0.00' }}</div>
-          </template>
-        </el-table-column>
+      <el-table-column label="订单金额" width="120" align="right">
+        <template #default="{ row }">
+          <div class="order-amount">¥{{ row.total_price?.toFixed(2) || '0.00' }}</div>
+        </template>
+      </el-table-column>
 
-        <el-table-column label="订单状态" width="140" align="center">
-          <template #default="{ row }">
-            <span class="status-badge" :class="getStatusClass(row.status)">
-              {{ getStatusText(row.status) }}
-            </span>
-          </template>
-        </el-table-column>
+      <el-table-column label="订单状态" width="140" align="center">
+        <template #default="{ row }">
+          <span class="status-badge" :class="getStatusClass(row.status)">
+            {{ getStatusText(row.status) }}
+          </span>
+        </template>
+      </el-table-column>
 
-        <el-table-column label="更新时间" width="160">
-          <template #default="{ row }">
-            <span class="text-secondary">{{ formatTime(row.updated_at) }}</span>
-          </template>
-        </el-table-column>
+      <el-table-column label="更新时间" width="160">
+        <template #default="{ row }">
+          <span class="text-secondary">{{ formatTime(row.updated_at) }}</span>
+        </template>
+      </el-table-column>
 
-        <el-table-column label="操作" width="180" fixed="right">
-          <template #default="{ row }">
-            <div class="operation-buttons">
-              <button class="op-btn view" @click="handleView(row)">查看</button>
-              <button class="op-btn edit" @click="handleEdit(row)">编辑</button>
-              <button class="op-btn delete" @click="handleDelete(row)">删除</button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+      <template #operation="{ row }">
+        <div class="operation-buttons">
+          <button class="op-btn view" @click="handleView(row)">查看</button>
+          <button class="op-btn edit" @click="handleEdit(row)">编辑</button>
+          <button class="op-btn delete" @click="handleDelete(row)">删除</button>
+        </div>
+      </template>
+    </DataTable>
 
-    <div class="pagination-container">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total="total"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
-
-    <el-dialog
+    <!-- 使用 AppDialog 组件 -->
+    <AppDialog
       v-model="dialogVisible"
       :title="dialogTitle"
       width="860px"
-      :close-on-click-modal="false"
-      class="apple-dialog order-dialog"
-      destroy-on-close
-      :show-close="false"
+      :confirm-loading="submitting"
+      @confirm="submitForm"
     >
-      <template #header>
-        <div class="dialog-header">
-          <h3 class="dialog-title">{{ dialogTitle }}</h3>
-          <button class="close-btn" @click="dialogVisible = false">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-      </template>
-
       <order-form
         ref="orderFormRef"
         :form-data="formData"
         @submit="handleSubmit"
       />
-
-      <template #footer>
-        <div class="dialog-footer">
-          <button class="btn-cancel" @click="dialogVisible = false">取消</button>
-          <button class="btn-confirm" @click="submitForm">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span>确定</span>
-          </button>
-        </div>
-      </template>
-    </el-dialog>
+    </AppDialog>
   </div>
 </template>
 
@@ -109,10 +77,14 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOrderList, deleteOrder, getOrderStatusFlow, getOrderDetail } from '@/api/order'
 import { getCurrentShopId } from '@/api/shop'
 import { getStatusText as getStatusTextUtil, getStatusType as getStatusTypeUtil } from '@/utils/orderStatus'
+import { formatTime } from '@/utils/date'
 import OrderForm from '@/components/order/OrderForm.vue'
+import DataTable from '@/components/common/DataTable.vue'
+import AppDialog from '@/components/common/AppDialog.vue'
 
 const router = useRouter()
 const loading = ref(false)
+const submitting = ref(false)
 const orderList = ref([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
@@ -227,31 +199,18 @@ const handleDelete = async (row) => {
 
 const submitForm = async () => {
   try {
-    loading.value = true
+    submitting.value = true
     await orderFormRef.value.submit()
     await fetchOrderList()
     ElMessage.success('添加成功')
   } finally {
-    loading.value = false
+    submitting.value = false
   }
 }
 
 const handleSubmit = () => {
   dialogVisible.value = false
   fetchOrderList()
-}
-
-const formatTime = (time) => {
-  if (!time) return '暂无'
-  return new Date(time).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  })
 }
 
 onMounted(async () => {
@@ -267,21 +226,6 @@ onUnmounted(() => {
 const handleNewOrder = (event) => {
   fetchOrderList()
 }
-
-const handleSizeChange = (val) => {
-  pageSize.value = val
-  currentPage.value = 1
-  fetchOrderList()
-}
-
-const handleCurrentChange = (val) => {
-  currentPage.value = val
-  fetchOrderList()
-}
-
-const handleRefresh = () => {
-  fetchOrderList()
-}
 </script>
 
 <style scoped>
@@ -291,34 +235,11 @@ const handleRefresh = () => {
   flex-direction: column;
 }
 
-.table-container {
+.order-table-wrapper {
   flex: 1;
-  overflow: hidden;
-}
-
-.order-table {
-  height: 100%;
-}
-
-.order-table :deep(.el-table) {
+  border-radius: 0;
+  box-shadow: none;
   border: none;
-}
-
-.order-table :deep(.el-table__border) {
-  display: none;
-}
-
-.order-table :deep(.el-table th.el-table__cell) {
-  background: rgba(0, 0, 0, 0.02);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.order-table :deep(.el-table td.el-table__cell) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.order-table :deep(.el-table tr:hover > td) {
-  background: rgba(0, 0, 0, 0.02) !important;
 }
 
 .order-info {
@@ -423,113 +344,5 @@ const handleRefresh = () => {
 
 .op-btn.delete:hover {
   background: rgba(239, 68, 68, 0.1);
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: flex-end;
-  padding: 16px 20px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(0, 0, 0, 0.01);
-}
-
-.order-dialog :deep(.el-dialog) {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-}
-
-.order-dialog :deep(.el-dialog__header) {
-  padding: 0;
-  margin: 0;
-}
-
-.order-dialog :deep(.el-dialog__body) {
-  padding: 0;
-}
-
-.order-dialog :deep(.el-dialog__footer) {
-  padding: 0;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.dialog-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin: 0;
-}
-
-.close-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #86868b;
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1d1d1f;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(0, 0, 0, 0.01);
-}
-
-.btn-cancel {
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
-  border-radius: 10px;
-  color: #1d1d1f;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.btn-confirm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border: none;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.btn-confirm:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  transform: translateY(-1px);
 }
 </style>

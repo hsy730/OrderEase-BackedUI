@@ -469,21 +469,21 @@ onMounted(() => {
 }
 
 .status-accepted {
-  background: rgba(0, 122, 255, 0.12);
-  color: #007aff;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--color-primary);
 }
 
 .status-accepted .status-dot {
-  background: #007aff;
+  background: var(--color-primary);
 }
 
 .status-rejected {
-  background: rgba(255, 59, 48, 0.12);
-  color: #ff3b30;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--color-danger);
 }
 
 .status-rejected .status-dot {
-  background: #ff3b30;
+  background: var(--color-danger);
 }
 
 .status-shipped {
@@ -719,7 +719,7 @@ onMounted(() => {
 }
 
 .option-price {
-  color: #ff3b30;
+  color: var(--color-danger);
   font-weight: 500;
 }
 
@@ -808,7 +808,7 @@ onMounted(() => {
 .total-value {
   font-size: 22px;
   font-weight: 700;
-  color: #1d1d1f;
+  color: var(--color-danger);
   letter-spacing: -0.5px;
 }
 

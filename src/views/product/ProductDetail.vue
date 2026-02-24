@@ -420,7 +420,7 @@ onMounted(() => {
 }
 
 .required-mark {
-  color: #f56c6c;
+  color: var(--color-danger);
   margin-left: 4px;
 }
 
@@ -447,7 +447,7 @@ onMounted(() => {
 }
 
 .price-adjustment {
-  color: #f56c6c;
+  color: var(--color-danger);
   margin-left: 4px;
   font-size: 12px;
 }

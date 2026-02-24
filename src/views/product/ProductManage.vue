@@ -98,7 +98,7 @@
                       下架
                     </el-dropdown-item>
                     <el-dropdown-item @click="handleManageTags(row)">管理标签</el-dropdown-item>
-                    <el-dropdown-item @click="handleDelete(row)" style="color: #f56c6c;">删除</el-dropdown-item>
+                    <el-dropdown-item @click="handleDelete(row)" style="color: var(--color-danger);">删除</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -440,12 +440,12 @@ onMounted(() => {
 
 .price {
   font-size: 14px;
-  font-weight: 500;
-  color: #f56c6c;
+  font-weight: 600;
+  color: var(--color-danger);
 }
 
 .low-stock {
-  color: #f56c6c;
+  color: var(--color-danger);
   font-weight: 500;
 }
 

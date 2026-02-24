@@ -668,8 +668,8 @@ const rules = {
   height: 28px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -678,7 +678,7 @@ const rules = {
 }
 
 .remove-btn:hover {
-  background: rgba(255, 59, 48, 0.2);
+  background: rgba(239, 68, 68, 0.2);
 }
 
 .item-content {
@@ -710,7 +710,7 @@ const rules = {
   flex-wrap: wrap;
   gap: 16px;
   padding: 10px 14px;
-  background: rgba(0, 122, 255, 0.04);
+  background: rgba(59, 130, 246, 0.04);
   border-radius: 8px;
   margin-bottom: 12px;
 }
@@ -724,7 +724,7 @@ const rules = {
 .item-subtotal {
   font-size: 13px;
   font-weight: 600;
-  color: #007aff;
+  color: var(--color-danger);
 }
 
 /* 商品选项样式 */
@@ -764,13 +764,13 @@ const rules = {
 }
 
 .required-tag {
-  color: #ff3b30;
-  background: rgba(255, 59, 48, 0.1);
+  color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .multiple-tag {
-  color: #007aff;
-  background: rgba(0, 122, 255, 0.1);
+  color: var(--color-primary);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .options-container {
@@ -801,7 +801,7 @@ const rules = {
 
 :deep(.option-checkbox.is-checked),
 :deep(.option-radio.is-checked) {
-  background: rgba(0, 122, 255, 0.1);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .option-name {
@@ -811,7 +811,7 @@ const rules = {
 
 .option-price {
   font-size: 12px;
-  color: #ff3b30;
+  color: var(--color-danger);
   font-weight: 500;
   margin-left: 4px;
 }
@@ -824,10 +824,10 @@ const rules = {
   gap: 8px;
   width: 100%;
   padding: 14px;
-  background: rgba(0, 122, 255, 0.06);
-  border: 2px dashed rgba(0, 122, 255, 0.2);
+  background: rgba(59, 130, 246, 0.06);
+  border: 2px dashed rgba(59, 130, 246, 0.2);
   border-radius: 12px;
-  color: #007aff;
+  color: var(--color-primary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -835,8 +835,8 @@ const rules = {
 }
 
 .add-item-btn:hover {
-  background: rgba(0, 122, 255, 0.1);
-  border-color: rgba(0, 122, 255, 0.4);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.4);
 }
 
 /* 汇总区域 */
@@ -863,7 +863,7 @@ const rules = {
 .total-amount {
   font-size: 24px;
   font-weight: 700;
-  color: #007aff;
+  color: var(--color-danger);
   letter-spacing: -0.5px;
 }
 

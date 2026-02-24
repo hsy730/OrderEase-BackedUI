@@ -578,11 +578,11 @@ defineExpose({
 }
 
 .status-type-primary {
-  border-left-color: #409eff;
+  border-left-color: var(--color-primary);
 }
 
 .status-type-danger {
-  border-left-color: #f56c6c;
+  border-left-color: var(--color-danger);
 }
 
 .status-type-info {

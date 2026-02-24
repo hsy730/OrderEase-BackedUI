@@ -10,6 +10,15 @@
   --color-primary-dark: #2563eb;
   --color-primary-darker: #1d4ed8;
 
+  /* Element Plus 主题变量覆盖 */
+  --el-color-primary: #3b82f6;
+  --el-color-primary-light-3: #60a5fa;
+  --el-color-primary-light-5: #93c5fd;
+  --el-color-primary-light-7: #bfdbfe;
+  --el-color-primary-light-8: #dbeafe;
+  --el-color-primary-light-9: #eff6ff;
+  --el-color-primary-dark-2: #2563eb;
+
   /* 辅助色 - 温暖的橙色系（外卖特色） */
   --color-secondary: #f97316;
   --color-secondary-light: #fb923c;

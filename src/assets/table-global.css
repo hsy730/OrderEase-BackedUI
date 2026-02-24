@@ -31,7 +31,7 @@
 }
 
 .el-button--primary.is-link {
-  color: #409eff;
+  color: var(--color-primary);
 }
 
 .el-button--danger.is-link {

@@ -371,7 +371,7 @@ defineExpose({
 }
 
 .settings-error {
-  color: #f56c6c;
+  color: var(--color-danger);
   font-size: 12px;
   margin-top: 5px;
 }

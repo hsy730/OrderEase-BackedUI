@@ -428,7 +428,7 @@ onMounted(() => {
 
 .invalid {
   background: #fef0f0;
-  color: #f56c6c;
+  color: var(--color-danger);
 }
 
 .shop-image {

@@ -300,7 +300,7 @@ onMounted(() => {
   }
 
   .el-pagination.is-background .el-pager li:not(.disabled).active {
-    background-color: #409eff;
+    background-color: var(--color-primary);
     color: #fff;
   }
 

@@ -35,86 +35,55 @@
         </div>
       </div>
 
-      <div class="table-card">
-        <el-table
-          v-loading="loading"
-          :data="shopList"
-          class="shop-table"
-        >
-          <el-table-column label="店铺名称" min-width="180">
-            <template #default="{ row }">
-              <div class="shop-info">
-                <span class="shop-name">{{ row.name }}</span>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="到期时间" min-width="200">
-            <template #default="{ row }">
-              <span class="time-text">{{ formatTime(row.valid_until) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right">
-            <template #default="{ row }">
-              <div class="operation-buttons">
-                <button class="op-btn view" @click="handleView(row)">查看</button>
-                <button class="op-btn edit" @click="handleEdit(row)">编辑</button>
-                <button class="op-btn delete" @click="handleDelete(row)">删除</button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+      <!-- 使用 DataTable 组件 -->
+      <DataTable
+        :data="shopList"
+        :loading="loading"
+        :total="total"
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :show-header="false"
+        :show-operation="true"
+        operation-width="200"
+        @size-change="fetchData"
+        @current-change="fetchData"
+      >
+        <el-table-column label="店铺名称" min-width="180">
+          <template #default="{ row }">
+            <div class="shop-info">
+              <span class="shop-name">{{ row.name }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="到期时间" min-width="200">
+          <template #default="{ row }">
+            <span class="time-text">{{ formatTime(row.valid_until) }}</span>
+          </template>
+        </el-table-column>
 
-        <div class="pagination-wrapper">
-          <el-pagination
-            v-model:current-page="currentPage"
-            v-model:page-size="pageSize"
-            :total="total"
-            :page-sizes="[10, 20, 50, 100]"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
-      </div>
+        <template #operation="{ row }">
+          <div class="operation-buttons">
+            <button class="op-btn view" @click="handleView(row)">查看</button>
+            <button class="op-btn edit" @click="handleEdit(row)">编辑</button>
+            <button class="op-btn delete" @click="handleDelete(row)">删除</button>
+          </div>
+        </template>
+      </DataTable>
 
-      <el-dialog
+      <!-- 使用 AppDialog 组件 -->
+      <AppDialog
         v-model="dialogVisible"
         :title="dialogTitle"
         width="720px"
-        :close-on-click-modal="false"
-        class="apple-dialog shop-dialog"
-        destroy-on-close
-        :show-close="false"
+        :confirm-loading="submitting"
+        @confirm="handleSubmit"
       >
-        <template #header>
-          <div class="dialog-header">
-            <h3 class="dialog-title">{{ dialogTitle }}</h3>
-            <button class="close-btn" @click="dialogVisible = false">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </template>
-
         <shop-form
           ref="shopFormRef"
           :shop-id="currentShopId"
         />
-
-        <template #footer>
-          <div class="dialog-footer">
-            <button class="btn-cancel" @click="dialogVisible = false">取消</button>
-            <button class="btn-confirm" @click="handleSubmit">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>确定</span>
-            </button>
-          </div>
-        </template>
-      </el-dialog>
+      </AppDialog>
     </div>
   </div>
 </template>
@@ -122,18 +91,19 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRouter } from 'vue-router'
 import {
     getShopList,
-    deleteShop,
-    createShop,
-    updateShop,
-    getShopDetail
+    deleteShop
 } from '@/api/shop'
 import ShopForm from '@/components/shop/ShopForm.vue'
-import { useRouter } from 'vue-router'
+import DataTable from '@/components/common/DataTable.vue'
+import AppDialog from '@/components/common/AppDialog.vue'
+import { formatTime } from '@/utils/date'
 
 const router = useRouter()
 const loading = ref(false)
+const submitting = ref(false)
 const searchText = ref('')
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -141,18 +111,6 @@ const total = ref(0)
 const shopFormRef = ref(null)
 const shopList = ref([])
 let searchTimeout = null
-
-const formatTime = (time) => {
-  if (!time) return '暂无'
-  return new Date(time).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).replace(/\//g, '-')
-}
 
 const fetchData = async () => {
   try {
@@ -177,16 +135,6 @@ const handleSearchInput = () => {
     currentPage.value = 1
     fetchData()
   }, 500)
-}
-
-const handleSizeChange = (size) => {
-  pageSize.value = size
-  fetchData()
-}
-
-const handleCurrentChange = (page) => {
-  currentPage.value = page
-  fetchData()
 }
 
 const handleDelete = async (row) => {
@@ -221,26 +169,14 @@ const handleAdd = () => {
 }
 
 const handleEdit = async (row) => {
-  try {
-    loading.value = true
-    dialogTitle.value = '编辑店铺'
-    currentShopId.value = row.id
-    dialogVisible.value = true
-  } catch (error) {
-    ElMessage.error('获取店铺详情失败')
-    console.error('编辑店铺错误:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleDialogClose = () => {
-  if (shopFormRef.value) {
-  }
+  dialogTitle.value = '编辑店铺'
+  currentShopId.value = row.id
+  dialogVisible.value = true
 }
 
 const handleSubmit = async () => {
   try {
+    submitting.value = true
     await shopFormRef.value.submit()
     dialogVisible.value = false
     ElMessage.success(currentShopId.value ? '更新成功' : '添加成功')
@@ -248,6 +184,8 @@ const handleSubmit = async () => {
   } catch (error) {
     console.log('handleSubmit error', error)
     ElMessage.error(error.response?.data?.message || '操作失败')
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -368,39 +306,6 @@ const handleRefresh = () => {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
-.table-card {
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-}
-
-.shop-table {
-  width: 100%;
-}
-
-.shop-table :deep(.el-table) {
-  border: none;
-}
-
-.shop-table :deep(.el-table__border) {
-  display: none;
-}
-
-.shop-table :deep(.el-table th.el-table__cell) {
-  background: rgba(0, 0, 0, 0.02);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.shop-table :deep(.el-table td.el-table__cell) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.shop-table :deep(.el-table tr:hover > td) {
-  background: rgba(0, 0, 0, 0.02) !important;
-}
-
 .shop-info {
   display: flex;
   align-items: center;
@@ -458,113 +363,6 @@ const handleRefresh = () => {
 
 .op-btn.delete:hover {
   background: rgba(239, 68, 68, 0.1);
-}
-
-.pagination-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  padding: 16px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.shop-dialog :deep(.el-dialog) {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-}
-
-.shop-dialog :deep(.el-dialog__header) {
-  padding: 0;
-  margin: 0;
-}
-
-.shop-dialog :deep(.el-dialog__body) {
-  padding: 0;
-}
-
-.shop-dialog :deep(.el-dialog__footer) {
-  padding: 0;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.dialog-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin: 0;
-}
-
-.close-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #86868b;
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1d1d1f;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(0, 0, 0, 0.01);
-}
-
-.btn-cancel {
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
-  border-radius: 10px;
-  color: #1d1d1f;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.btn-confirm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border: none;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.btn-confirm:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  transform: translateY(-1px);
 }
 
 @media screen and (max-width: 768px) {

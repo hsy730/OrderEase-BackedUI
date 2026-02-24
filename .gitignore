@@ -33,6 +33,7 @@ coverage
 # 本地缓存
 .cache
 .temp
+tmp*cwd
 .eslintcache
 
 # Vite 生成的类型文件

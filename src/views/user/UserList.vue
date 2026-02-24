@@ -1,8 +1,11 @@
 <template>
   <div class="user-manage">
-    <div class="header">
-      <h2>用户管理</h2>
-      <div style="display: flex; align-items: center; gap: 10px;">
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">用户管理</h1>
+        <p class="page-description">管理和查看所有用户信息</p>
+      </div>
+      <div class="header-actions">
         <el-input
           v-model="searchText"
           placeholder="搜索用户名"
@@ -11,7 +14,7 @@
           style="width: 200px;"
         />
         <el-button type="primary" :icon="Plus" @click="showCreateDialog" v-if="isAdmin">新建</el-button>
-        <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
+        <el-button :icon="Refresh" @click="handleRefresh" title="刷新"></el-button>
       </div>
     </div>
 
@@ -27,14 +30,13 @@
       <el-table-column prop="address" label="地址" min-width="200"></el-table-column>
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="scope">
-          <el-button type="primary" link size="small" @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button type="danger" link size="small" @click="handleDelete(scope.row.id)">删除</el-button>
+          <el-button type="primary" link @click="handleEdit(scope.row)">编辑</el-button>
+          <el-button type="danger" link @click="handleDelete(scope.row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <!-- 添加分页器 -->
-    <div class="pagination-container">
+    <div class="pagination">
       <el-pagination
         v-model:current-page="page"
         v-model:page-size="pageSize"
@@ -46,7 +48,7 @@
       />
     </div>
 
-    <el-dialog v-model="dialogVisible" :title="dialogTitle">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" :close-on-click-modal="false">
       <el-form :model="form" :rules="rules" ref="formRef">
         <el-form-item label="用户名" prop="name" :rules="[{ required: true, message: '请输入用户名' }]">
           <el-input v-model="form.name" :disabled="!!form.id" />
@@ -276,25 +278,42 @@ onMounted(() => {
 
 <style scoped>
 .user-manage {
-  padding: 20px;
-  background: #fff;
-  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  height: 100%;
 }
 
-.header {
+.page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  align-items: flex-start;
 }
 
-.header h2 {
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.page-description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
   margin: 0;
-  font-size: 18px;
-  font-weight: 500;
 }
 
-.pagination-container {
+.header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.pagination {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
@@ -307,5 +326,32 @@ onMounted(() => {
   font-size: 13px;
   margin: 0;
   min-width: auto;
+}
+
+:deep(.el-button--primary.is-link) {
+  color: #409eff;
+}
+
+:deep(.el-button--danger.is-link) {
+  color: #f56c6c;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .el-input {
+    flex: 1;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
 }
 </style>

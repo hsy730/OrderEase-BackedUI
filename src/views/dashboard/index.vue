@@ -1,6 +1,12 @@
 <template>
   <div class="dashboard">
-    <!-- 统计卡片 -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">数据概览</h1>
+        <p class="page-description">查看系统运营数据统计</p>
+      </div>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-card stat-card-primary">
         <div class="stat-icon">
@@ -309,9 +315,32 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  height: 100%;
 }
 
-/* 统计卡片网格 */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.page-description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -794,6 +823,10 @@ onMounted(() => {
   }
 
   .stat-value {
+    font-size: 20px;
+  }
+
+  .page-title {
     font-size: 20px;
   }
 }

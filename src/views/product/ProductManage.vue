@@ -1,27 +1,29 @@
 <template>
   <div class="product-manage">
-    <div class="content-wrapper">
-      <div class="header">
-        <h2>商品管理</h2>
-        <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
-          <el-input
-            v-model="searchText"
-            placeholder="搜索商品名称"
-            clearable
-            @input="handleSearchInput"
-            style="width: 200px;"
-          />
-          <el-button type="primary" :icon="Plus" @click="handleAdd">新建</el-button>
-          <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
-        </div>
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">商品管理</h1>
+        <p class="page-description">管理和查看所有商品信息</p>
       </div>
+      <div class="header-actions">
+        <el-input
+          v-model="searchText"
+          placeholder="搜索商品名称"
+          clearable
+          @input="handleSearchInput"
+          style="width: 200px;"
+        />
+        <el-button type="primary" :icon="Plus" @click="handleAdd">新建</el-button>
+        <el-button :icon="Refresh" @click="handleRefresh" title="刷新"></el-button>
+      </div>
+    </div>
 
-      <el-table
-        v-loading="loading"
-        :data="productList"
-        border
-        style="width: 100%"
-      >
+    <el-table
+      v-loading="loading"
+      :data="productList"
+      border
+      style="width: 100%"
+    >
         <el-table-column label="商品信息" min-width="150">
           <template #default="{ row }">
             <div class="product-info">
@@ -116,7 +118,6 @@
           @current-change="handleCurrentChange"
         />
       </div>
-    </div>
 
     <el-dialog
       v-model="dialogVisible"
@@ -343,26 +344,39 @@ onMounted(() => {
 
 <style scoped>
 .product-manage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
   height: 100%;
 }
 
-.content-wrapper {
-  padding: 20px;
-  background: #fff;
-  border-radius: 4px;
-}
-
-.header {
+.page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  align-items: flex-start;
 }
 
-.header h2 {
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.page-description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
   margin: 0;
-  font-size: 18px;
-  color: #303133;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
 }
 
 .pagination {
@@ -442,44 +456,68 @@ onMounted(() => {
   padding-top: 16px;
 }
 
-/* 表格样式已移至全局样式文件 table-global.css */
+:deep(.el-table__column--fixed-right .el-table__cell .cell) {
+  padding-left: 0;
+  padding-right: 10px;
+}
 
-  /* 调整操作列单元格内边距 */
-  :deep(.el-table__column--fixed-right .el-table__cell .cell) {
-    padding-left: 0;
-    padding-right: 10px;
-  }
+:deep(.el-button--primary.is-link),
+:deep(.el-button--danger.is-link),
+:deep(.el-button--info.is-link),
+:deep(.el-button--warning.is-link) {
+  padding: 4px 8px;
+  height: auto;
+  font-size: 13px;
+  margin: 0;
+  min-width: auto;
+}
 
-  :deep(.el-button--primary.is-link),
-  :deep(.el-button--danger.is-link),
-  :deep(.el-button--info.is-link),
-  :deep(.el-button--warning.is-link) {
-    padding: 4px 8px;
-    height: auto;
-    font-size: 13px;
-    margin: 0;
-    min-width: auto;
-  }
+:deep(.el-button--primary.is-link) {
+  color: #409eff;
+}
 
-  :deep(.el-button--primary.is-link) {
-    color: #409eff;
-  }
+:deep(.el-button--danger.is-link) {
+  color: #f56c6c;
+}
 
-  :deep(.el-button--danger.is-link) {
-    color: #f56c6c;
-  }
+:deep(.el-button--info.is-link) {
+  color: #909399;
+}
 
-  .operation-buttons {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    white-space: nowrap;
-    gap: 4px;
-    width: 100%;
-  }
+:deep(.el-button--warning.is-link) {
+  color: #e6a23c;
+}
+
+.operation-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  gap: 4px;
+  width: 100%;
+}
 
 :deep(.el-divider--vertical) {
   height: 1em;
   margin: 0;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .el-input {
+    flex: 1;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
 }
 </style>

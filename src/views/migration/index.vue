@@ -1,8 +1,11 @@
 <template>
   <div class="migration-container">
-    <!-- <div class="header">
-      <h2>数据迁移</h2>
-    </div> -->
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">数据迁移</h1>
+        <p class="page-description">导出和导入系统数据</p>
+      </div>
+    </div>
 
     <el-card class="export-card">
       <template #header>
@@ -137,35 +140,54 @@ const handleUploadError = (error) => {
 
 <style scoped>
 .migration-container {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  height: 100%;
 }
 
-.header {
-  margin-bottom: 20px;
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.header h2 {
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.page-description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
   margin: 0;
-  font-size: 18px;
-  color: #303133;
 }
 
 .export-card,
 .import-card {
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .card-header {
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--color-text-primary);
 }
 
 .card-content {
-  padding: 20px 0;
+  padding: var(--spacing-md) 0;
 }
 
 .description {
-  margin-bottom: 15px;
-  color: #606266;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-secondary);
+  font-size: 14px;
 }
 
 .upload-demo {
@@ -173,18 +195,25 @@ const handleUploadError = (error) => {
 }
 
 .el-upload__tip {
-  margin-top: 8px;
-  color: #909399;
+  margin-top: var(--spacing-sm);
+  color: var(--color-text-tertiary);
+  font-size: 13px;
 }
 
 .file-list {
-  margin: 8px 0 0 20px;
+  margin: var(--spacing-sm) 0 0 var(--spacing-lg);
   padding: 0;
   font-size: 12px;
-  color: #909399;
+  color: var(--color-text-tertiary);
 }
 
 .file-list li {
   margin-bottom: 4px;
+}
+
+@media (max-width: 640px) {
+  .page-title {
+    font-size: 20px;
+  }
 }
 </style> 

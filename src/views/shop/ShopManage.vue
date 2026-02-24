@@ -1,49 +1,50 @@
 <template>
   <div class="shop-manage">
-    <div class="content-wrapper">
-      <div class="header">
-        <h2>店铺管理</h2>
-        <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
-          <el-input
-            v-model="searchText"
-            placeholder="搜索店铺名称"
-            clearable
-            @input="handleSearchInput"
-            style="width: 200px;"
-          />
-          <el-button type="primary" :icon="Plus" @click="handleAdd">新建</el-button>
-          <el-button @click="handleRefresh" :icon="Refresh" title="刷新" style="margin-left: 0px;"></el-button>
-        </div>
+    <div class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">店铺管理</h1>
+        <p class="page-description">管理和查看所有店铺信息</p>
       </div>
-
-      <el-table
-        v-loading="loading"
-        :data="shopList"
-        border
-        style="width: 100%"
-      >
-        <el-table-column prop="name" label="店铺名称" width="200" />
-        <el-table-column prop="valid_until" label="到期时间" min-width="250" />
-        <el-table-column label="操作" width="220" fixed="right" >
-          <template #default="{ row }">
-            <el-button type="info" link @click="handleView(row)">查看</el-button>
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
+      <div class="header-actions">
+        <el-input
+          v-model="searchText"
+          placeholder="搜索店铺名称"
+          clearable
+          @input="handleSearchInput"
+          style="width: 200px;"
         />
+        <el-button type="primary" :icon="Plus" @click="handleAdd">新建</el-button>
+        <el-button :icon="Refresh" @click="handleRefresh" title="刷新"></el-button>
       </div>
+    </div>
+
+    <el-table
+      v-loading="loading"
+      :data="shopList"
+      border
+      style="width: 100%"
+    >
+      <el-table-column prop="name" label="店铺名称" width="200" />
+      <el-table-column prop="valid_until" label="到期时间" min-width="250" />
+      <el-table-column label="操作" width="220" fixed="right" >
+        <template #default="{ row }">
+          <el-button type="info" link @click="handleView(row)">查看</el-button>
+          <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+          <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <div class="pagination">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <!-- 对话框 -->
@@ -213,30 +214,39 @@ const handleRefresh = () => {
 
 <style scoped>
 .shop-manage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
   height: 100%;
 }
 
-.content-wrapper {
-  background: #fff;
-  padding: 20px;
-  border-radius: 4px;
-}
-
-.header {
+.page-header {
   display: flex;
-  align-items: center;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.header h2 {
-  margin: 0;
-  font-size: 18px;
-  color: #303133;
-  margin-right: 20px;
-}
-
-.search-box {
+.header-content {
   flex: 1;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.page-description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
 }
 
 .pagination {
@@ -244,7 +254,47 @@ const handleRefresh = () => {
   display: flex;
   justify-content: flex-end;
 }
-/* 表格样式已移至全局样式文件 table-global.css */
+
+:deep(.el-button--primary.is-link),
+:deep(.el-button--danger.is-link),
+:deep(.el-button--info.is-link) {
+  padding: 4px 8px;
+  height: auto;
+  font-size: 13px;
+  margin: 0;
+  min-width: auto;
+}
+
+:deep(.el-button--primary.is-link) {
+  color: #409eff;
+}
+
+:deep(.el-button--danger.is-link) {
+  color: #f56c6c;
+}
+
+:deep(.el-button--info.is-link) {
+  color: #909399;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .el-input {
+    flex: 1;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+}
 </style>
 
 <style>

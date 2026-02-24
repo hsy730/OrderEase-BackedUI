@@ -14,7 +14,7 @@
           style="width: 200px;"
         />
         <el-button type="primary" :icon="Plus" @click="showCreateDialog" v-if="isAdmin">新建</el-button>
-        <el-button :icon="Refresh" @click="handleRefresh" title="刷新"></el-button>
+        <el-button :icon="Refresh" @click="handleRefresh" title="刷新" style="margin-left: 0;"></el-button>
       </div>
     </div>
 

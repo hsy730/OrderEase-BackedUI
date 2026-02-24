@@ -1,6 +1,7 @@
 <template>
   <div class="product-manage-page">
     <div class="page-container">
+      <!-- 页面头部 -->
       <div class="page-header">
         <div class="header-content">
           <h1 class="page-title">商品管理</h1>
@@ -12,12 +13,7 @@
               <circle cx="11" cy="11" r="8"/>
               <line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            <input 
-              v-model="searchText"
-              type="text"
-              placeholder="搜索商品名称..."
-              @input="handleSearchInput"
-            />
+            <input v-model="searchText" type="text" placeholder="搜索商品名称..." @input="handleSearchInput" />
           </div>
           <button class="action-btn" @click="handleRefresh" title="刷新">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -35,21 +31,14 @@
         </div>
       </div>
 
+      <!-- 商品表格 -->
       <div class="table-card">
-        <el-table
-          v-loading="loading"
-          :data="productList"
-          class="product-table"
-        >
+        <el-table v-loading="loading" :data="productList" class="product-table">
           <el-table-column label="商品信息" min-width="200">
             <template #default="{ row }">
               <div class="product-info">
                 <div class="product-image">
-                  <SmartImage
-                    v-if="row.image_url"
-                    :src="getImageUrl(row.image_url)"
-                    :alt="row.name"
-                  />
+                  <SmartImage v-if="row.image_url" :src="getImageUrl(row.image_url)" :alt="row.name" />
                   <div v-else class="image-placeholder">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -106,19 +95,13 @@
                   </button>
                   <template #dropdown>
                     <el-dropdown-menu>
-                      <el-dropdown-item
-                        v-if="row.status !== 'online'"
-                        @click="handleStatusChange(row, 'online')"
-                      >
+                      <el-dropdown-item v-if="row.status !== 'online'" @click="handleStatusChange(row, 'online')">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#34c759" stroke-width="2">
                           <polyline points="20 6 9 17 4 12"/>
                         </svg>
                         <span style="color: #34c759;">上架</span>
                       </el-dropdown-item>
-                      <el-dropdown-item
-                        v-if="row.status === 'online'"
-                        @click="handleStatusChange(row, 'offline')"
-                      >
+                      <el-dropdown-item v-if="row.status === 'online'" @click="handleStatusChange(row, 'offline')">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ff9500" stroke-width="2">
                           <circle cx="12" cy="12" r="10"/>
                           <line x1="15" y1="9" x2="9" y2="15"/>
@@ -148,6 +131,7 @@
           </el-table-column>
         </el-table>
 
+        <!-- 分页 -->
         <div class="pagination-wrapper">
           <el-pagination
             v-model:current-page="currentPage"
@@ -161,221 +145,60 @@
         </div>
       </div>
 
-      <el-dialog
+      <!-- 商品表单对话框 -->
+      <ProductDialog
         v-model="dialogVisible"
         :title="dialogTitle"
-        width="920px"
-        :close-on-click-modal="false"
-        class="apple-dialog product-dialog"
-        destroy-on-close
-        :show-close="false"
-      >
-        <template #header>
-          <div class="dialog-header">
-            <h3 class="dialog-title">{{ dialogTitle }}</h3>
-            <button class="close-btn" @click="dialogVisible = false">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </template>
+        :product-id="currentProductId"
+        @submit="handleSubmitSuccess"
+      />
 
-        <product-form
-          ref="productFormRef"
-          :product-id="currentProductId"
-          @submit="handleSubmitSuccess"
-        />
-
-        <template #footer>
-          <div class="dialog-footer">
-            <button class="btn-cancel" @click="dialogVisible = false">取消</button>
-            <button class="btn-confirm" @click="handleSubmit">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>确定</span>
-            </button>
-          </div>
-        </template>
-      </el-dialog>
-
-      <tag-manage-dialog ref="tagManageDialogRef" />
+      <!-- 标签管理对话框 -->
+      <TagManageDialog ref="tagManageDialogRef" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref } from 'vue'
 import SmartImage from '@/components/SmartImage.vue'
-import ProductForm from '@/components/product/ProductForm.vue'
 import TagManageDialog from '@/components/product/TagManageDialog.vue'
-import { getProductList, deleteProduct, updateProductStatus, getProductImageUrl } from '@/api/product'
+import ProductDialog from './ProductDialog.vue'
+import { useProductManage } from './composables/useProductManage'
 
-const router = useRouter()
-const loading = ref(false)
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
-const currentProductId = ref(null)
-const productList = ref([])
-const currentPage = ref(1)
-const pageSize = ref(10)
-const total = ref(0)
-const productFormRef = ref(null)
 const tagManageDialogRef = ref(null)
-const searchText = ref('')
-let searchTimeout = null
 
-const handleSearchInput = () => {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    currentPage.value = 1
-    fetchProductList()
-  }, 500)
-}
+const {
+  loading,
+  dialogVisible,
+  dialogTitle,
+  currentProductId,
+  productList,
+  currentPage,
+  pageSize,
+  total,
+  searchText,
+  handleSearchInput,
+  getImageUrl,
+  formatTime,
+  handleAdd,
+  handleEdit,
+  handleView,
+  handleDelete,
+  handleStatusChange,
+  handleSizeChange,
+  handleCurrentChange,
+  handleRefresh,
+  handleSubmitSuccess
+} = useProductManage()
 
-const fetchProductList = async () => {
-  loading.value = true
-  try {
-    const response = await getProductList({
-      page: currentPage.value,
-      pageSize: pageSize.value,
-      search: searchText.value
-    })
-    productList.value = response.data || []
-    total.value = response.total || 0
-    currentPage.value = response.page || 1
-    pageSize.value = response.pageSize || 10
-  } catch (error) {
-    console.error('获取商品列表失败:', error)
-    ElMessage.error('获取商品列表失败')
-    productList.value = []
-  } finally {
-    loading.value = false
-  }
-}
-
-const getImageUrl = (path) => {
-  return getProductImageUrl(path)
-}
-
-const formatTime = (time) => {
-  if (!time) return '暂无'
-  return new Date(time).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).replace(/\//g, '-')
-}
-
-const handleAdd = () => {
-  dialogTitle.value = '新增商品'
-  currentProductId.value = null
-  dialogVisible.value = true
-}
-
-const handleEdit = (row) => {
-  dialogTitle.value = '编辑商品'
-  currentProductId.value = row.id
-  dialogVisible.value = true
-}
-
-const handleView = (row) => {
-  router.push(`/product/${row.id}`)
-}
-
+// 管理标签
 const handleManageTags = (row) => {
   tagManageDialogRef.value?.open({
     productId: row.id,
     productName: row.name
   })
 }
-
-const handleDelete = async (row) => {
-  try {
-    await ElMessageBox.confirm('确认删除该商品？删除后不可恢复', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-
-    await deleteProduct(row.id)
-    ElMessage.success('删除成功')
-    fetchProductList()
-  } catch (error) {
-    if (error === 'cancel') return
-    console.error('删除商品失败:', error)
-    ElMessage.error(error.response?.data?.error || '删除失败')
-  }
-}
-
-const handleSubmit = async () => {
-  if (!productFormRef.value) return
-
-  try {
-    await productFormRef.value.submit()
-    dialogVisible.value = false
-    ElMessage.success(currentProductId.value ? '更新成功' : '添加成功')
-    fetchProductList()
-  } catch (error) {
-    console.error('保存失败:', error)
-    ElMessage.error(error.response?.data?.error || '保存失败')
-  }
-}
-
-const handleSubmitSuccess = () => {
-  dialogVisible.value = false
-}
-
-const handleStatusChange = async (row, newStatus) => {
-  const confirmMessage = newStatus === 'online'
-    ? '商品上架后，才能购买，确认上架？'
-    : '商品下架后，不能购买，确认下架？'
-
-  try {
-    await ElMessageBox.confirm(confirmMessage, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-
-    await updateProductStatus(row.id, newStatus)
-    row.status = newStatus
-    ElMessage.success(newStatus === 'online' ? '商品已上架' : '商品已下架')
-  } catch (error) {
-    if (error === 'cancel') return
-    console.error('状态更新失败:', error)
-    ElMessage.error('状态更新失败')
-    fetchProductList()
-  }
-}
-
-const handleSizeChange = (newSize) => {
-  pageSize.value = newSize
-  currentPage.value = 1
-  fetchProductList()
-}
-
-const handleCurrentChange = (newPage) => {
-  currentPage.value = newPage
-  fetchProductList()
-}
-
-const handleRefresh = () => {
-  loading.value = true
-  fetchProductList()
-  ElMessage.success('数据已刷新')
-}
-
-onMounted(() => {
-  fetchProductList()
-})
 </script>
 
 <style scoped>
@@ -492,18 +315,6 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.product-table {
-  width: 100%;
-}
-
-.product-table :deep(.el-table) {
-  border: none;
-}
-
-.product-table :deep(.el-table__border) {
-  display: none;
-}
-
 .product-table :deep(.el-table th.el-table__cell) {
   background: rgba(0, 0, 0, 0.02);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
@@ -511,10 +322,6 @@ onMounted(() => {
 
 .product-table :deep(.el-table td.el-table__cell) {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.product-table :deep(.el-table tr:hover > td) {
-  background: rgba(0, 0, 0, 0.02) !important;
 }
 
 .product-info {
@@ -666,106 +473,6 @@ onMounted(() => {
   justify-content: flex-end;
   padding: 16px 24px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.product-dialog :deep(.el-dialog) {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-}
-
-.product-dialog :deep(.el-dialog__header) {
-  padding: 0;
-  margin: 0;
-}
-
-.product-dialog :deep(.el-dialog__body) {
-  padding: 0;
-}
-
-.product-dialog :deep(.el-dialog__footer) {
-  padding: 0;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.dialog-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin: 0;
-}
-
-.close-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #86868b;
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1d1d1f;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(0, 0, 0, 0.01);
-}
-
-.btn-cancel {
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
-  border-radius: 10px;
-  color: #1d1d1f;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.btn-confirm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border: none;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.btn-confirm:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  transform: translateY(-1px);
 }
 
 :deep(.el-dropdown-menu__item) {

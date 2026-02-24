@@ -157,6 +157,7 @@
 </template>
 
 <script setup>
+import '@/assets/table-global.css'
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'

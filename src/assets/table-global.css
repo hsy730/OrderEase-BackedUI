@@ -18,3 +18,30 @@
   color: #606266;
   font-size: 13px;
 }
+
+.el-button--primary.is-link,
+.el-button--danger.is-link,
+.el-button--info.is-link,
+.el-button--warning.is-link {
+  padding: 4px 8px;
+  height: auto;
+  font-size: 13px;
+  margin: 0;
+  min-width: auto;
+}
+
+.el-button--primary.is-link {
+  color: #409eff;
+}
+
+.el-button--danger.is-link {
+  color: #f56c6c;
+}
+
+.el-button--info.is-link {
+  color: #909399;
+}
+
+.el-button--warning.is-link {
+  color: #e6a23c;
+}

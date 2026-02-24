@@ -255,28 +255,6 @@ const handleRefresh = () => {
   justify-content: flex-end;
 }
 
-:deep(.el-button--primary.is-link),
-:deep(.el-button--danger.is-link),
-:deep(.el-button--info.is-link) {
-  padding: 4px 8px;
-  height: auto;
-  font-size: 13px;
-  margin: 0;
-  min-width: auto;
-}
-
-:deep(.el-button--primary.is-link) {
-  color: #409eff;
-}
-
-:deep(.el-button--danger.is-link) {
-  color: #f56c6c;
-}
-
-:deep(.el-button--info.is-link) {
-  color: #909399;
-}
-
 @media (max-width: 640px) {
   .page-header {
     flex-direction: column;

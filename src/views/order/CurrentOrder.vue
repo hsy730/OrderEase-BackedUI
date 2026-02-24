@@ -37,28 +37,20 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="180" fixed="right" align="center">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <div class="table-actions">
-              <el-button type="primary" link :icon="View" @click="handleView(row)">
-                查看
-              </el-button>
-              <el-button type="warning" link :icon="Edit" @click="handleEdit(row)">
-                编辑
-              </el-button>
-              <el-popconfirm
-                title="确认删除该订单？"
-                confirm-button-text="确定"
-                cancel-button-text="取消"
-                @confirm="handleDelete(row)"
-              >
-                <template #reference>
-                  <el-button type="danger" link :icon="Delete">
-                    删除
-                  </el-button>
-                </template>
-              </el-popconfirm>
-            </div>
+            <el-button type="info" link @click="handleView(row)">查看</el-button>
+            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-popconfirm
+              title="确认删除该订单？"
+              confirm-button-text="确定"
+              cancel-button-text="取消"
+              @confirm="handleDelete(row)"
+            >
+              <template #reference>
+                <el-button type="danger" link>删除</el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
@@ -104,7 +96,6 @@ import '@/assets/table-global.css'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { View, Edit, Delete } from '@element-plus/icons-vue'
 import { getOrderList, deleteOrder, getOrderStatusFlow, getOrderDetail } from '@/api/order'
 import { getCurrentShopId } from '@/api/shop'
 import { getStatusText as getStatusTextUtil, getStatusType as getStatusTypeUtil } from '@/utils/orderStatus'
@@ -312,13 +303,6 @@ const handleRefresh = () => {
   font-size: 16px;
   font-weight: 600;
   color: var(--color-danger);
-}
-
-.table-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
 
 .pagination-container {

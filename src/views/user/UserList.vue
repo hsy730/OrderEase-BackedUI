@@ -41,11 +41,13 @@
           :data="userList"
           class="user-table"
         >
-          <el-table-column prop="name" label="用户名" min-width="120">
+          <el-table-column prop="name" label="用户名" min-width="180">
             <template #default="{ row }">
               <div class="user-info">
                 <div class="user-avatar">{{ row.name?.charAt(0)?.toUpperCase() || 'U' }}</div>
-                <span class="user-name">{{ row.name }}</span>
+                <el-tooltip :content="row.name" placement="top" :disabled="!isNameOverflow(row.name)">
+                  <span class="user-name">{{ row.name }}</span>
+                </el-tooltip>
               </div>
             </template>
           </el-table-column>
@@ -167,6 +169,11 @@ const formatRole = (row) => {
     'system': '公共用户'
   }
   return roleMap[row.role] || row.role;
+}
+
+const isNameOverflow = (name) => {
+  if (!name) return false
+  return name.length > 15
 }
 
 const userList = ref([])
@@ -494,6 +501,11 @@ onMounted(() => {
 .user-name {
   font-weight: 500;
   color: #1d1d1f;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
 }
 
 .role-badge {

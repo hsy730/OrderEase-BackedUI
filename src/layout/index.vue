@@ -24,57 +24,57 @@
           class="sidebar-menu"
         >
           <el-menu-item index="/dashboard">
+            <el-icon><DataBoard /></el-icon>
             <template #title>
-              <el-icon><DataBoard /></el-icon>
               <span>数据概览</span>
             </template>
           </el-menu-item>
 
           <el-menu-item index="/shop" v-if="isAdmin">
+            <el-icon><Shop /></el-icon>
             <template #title>
-              <el-icon><Shop /></el-icon>
               <span>店铺管理</span>
             </template>
           </el-menu-item>
 
           <el-menu-item :index="'/shop/' + currentShop.id" v-if="!isAdmin && currentShop.id">
+            <el-icon><Shop /></el-icon>
             <template #title>
-              <el-icon><Shop /></el-icon>
               <span>我的店铺</span>
             </template>
           </el-menu-item>
 
           <el-menu-item index="/order">
+            <el-icon><Document /></el-icon>
             <template #title>
-              <el-icon><Document /></el-icon>
               <span>订单管理</span>
             </template>
           </el-menu-item>
 
           <el-menu-item index="/product">
+            <el-icon><Goods /></el-icon>
             <template #title>
-              <el-icon><Goods /></el-icon>
               <span>商品管理</span>
             </template>
           </el-menu-item>
 
           <el-menu-item index="/tag">
+            <el-icon><Collection /></el-icon>
             <template #title>
-              <el-icon><Collection /></el-icon>
               <span>标签管理</span>
             </template>
           </el-menu-item>
 
           <el-menu-item index="/user" v-if="isAdmin">
+            <el-icon><User /></el-icon>
             <template #title>
-              <el-icon><User /></el-icon>
               <span>用户管理</span>
             </template>
           </el-menu-item>
 
           <el-menu-item index="/migration" v-if="isAdmin">
+            <el-icon><Upload /></el-icon>
             <template #title>
-              <el-icon><Upload /></el-icon>
               <span>数据迁移</span>
             </template>
           </el-menu-item>

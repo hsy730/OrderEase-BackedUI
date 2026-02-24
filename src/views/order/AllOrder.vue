@@ -1,63 +1,70 @@
 <template>
   <div class="all-order">
-    <!-- 搜索筛选区 -->
     <div class="search-section" v-if="showSearch">
       <div class="search-form">
-        <el-form :model="searchParams" inline>
-          <el-form-item label="用户">
-            <UserSelect
-              v-model="searchParams.user_id"
-              placeholder="请选择用户"
-              style="width: 160px;"
+        <div class="form-item">
+          <label>用户</label>
+          <UserSelect
+            v-model="searchParams.user_id"
+            placeholder="请选择用户"
+            style="width: 160px;"
+          />
+        </div>
+        <div class="form-item">
+          <label>订单状态</label>
+          <el-select
+            v-model="searchParams.status"
+            placeholder="请选择订单状态"
+            clearable
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            style="width: 160px;"
+            :loading="loadingStatusFlow"
+          >
+            <el-option
+              v-for="status in orderStatusFlow"
+              :key="status.value"
+              :label="status.label"
+              :value="status.value"
             />
-          </el-form-item>
-          <el-form-item label="订单状态">
-            <el-select
-              v-model="searchParams.status"
-              placeholder="请选择订单状态"
-              clearable
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              style="width: 160px;"
-              :loading="loadingStatusFlow"
-            >
-              <el-option
-                v-for="status in orderStatusFlow"
-                :key="status.value"
-                :label="status.label"
-                :value="status.value"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="创建时间">
-            <el-date-picker
-              v-model="searchParams.create_time_range"
-              type="datetimerange"
-              range-separator="至"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              style="width: 280px;"
-              format="YYYY-MM-DD HH:mm:ss"
-              shortcuts-remove-other-values
-              unlink-panels
-              :shortcuts="dateShortcuts"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" :icon="Search" @click="handleSearch">
-              查询
-            </el-button>
-            <el-button :icon="RefreshRight" @click="handleReset">
-              重置
-            </el-button>
-          </el-form-item>
-        </el-form>
+          </el-select>
+        </div>
+        <div class="form-item">
+          <label>创建时间</label>
+          <el-date-picker
+            v-model="searchParams.create_time_range"
+            type="datetimerange"
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 280px;"
+            format="YYYY-MM-DD HH:mm:ss"
+            shortcuts-remove-other-values
+            unlink-panels
+            :shortcuts="dateShortcuts"
+          />
+        </div>
+        <div class="form-actions">
+          <button class="search-btn" @click="handleSearch">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <span>查询</span>
+          </button>
+          <button class="reset-btn" @click="handleReset">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+            </svg>
+            <span>重置</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 订单列表 -->
     <div class="table-container">
       <el-table
         v-loading="loading"
@@ -82,9 +89,9 @@
 
         <el-table-column label="订单状态" width="140" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)" size="small" effect="plain">
+            <span class="status-badge" :class="getStatusClass(row.status)">
               {{ getStatusText(row.status) }}
-            </el-tag>
+            </span>
           </template>
         </el-table-column>
 
@@ -96,15 +103,16 @@
 
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button type="info" link @click="handleView(row)">查看</el-button>
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+            <div class="operation-buttons">
+              <button class="op-btn view" @click="handleView(row)">查看</button>
+              <button class="op-btn edit" @click="handleEdit(row)">编辑</button>
+              <button class="op-btn delete" @click="handleDelete(row)">删除</button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
     </div>
 
-    <!-- 分页 -->
     <div class="pagination-container">
       <el-pagination
         v-model:current-page="currentPage"
@@ -117,23 +125,43 @@
       />
     </div>
 
-    <!-- 新增/编辑订单对话框 -->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="800px"
+      width="860px"
       :close-on-click-modal="false"
+      class="apple-dialog order-dialog"
+      destroy-on-close
+      :show-close="false"
     >
+      <template #header>
+        <div class="dialog-header">
+          <h3 class="dialog-title">{{ dialogTitle }}</h3>
+          <button class="close-btn" @click="dialogVisible = false">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </template>
+
       <order-form
         ref="orderFormRef"
         :form-data="formData"
         @submit="handleSubmit"
       />
+
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
+        <div class="dialog-footer">
+          <button class="btn-cancel" @click="dialogVisible = false">取消</button>
+          <button class="btn-confirm" @click="submitForm">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>确定</span>
+          </button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -144,7 +172,6 @@ import '@/assets/table-global.css'
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, RefreshRight } from '@element-plus/icons-vue'
 import { getOrderList, deleteOrder, advanceSearchOrderList, getOrderStatusFlow, getOrderDetail } from '@/api/order'
 import { getCurrentShopId } from '@/api/shop'
 import { getStatusText as getStatusTextUtil, getStatusType as getStatusTypeUtil } from '@/utils/orderStatus'
@@ -169,12 +196,10 @@ const searchParams = reactive({
   create_time_range: []
 })
 
-// 店铺信息和订单状态流转配置
 const shopInfo = ref({})
 const orderStatusFlow = ref([])
 const loadingStatusFlow = ref(false)
 
-// 日期快捷选项
 const dateShortcuts = [
   {
     text: '最近一周',
@@ -205,17 +230,19 @@ const dateShortcuts = [
   }
 ]
 
-// 获取订单状态对应的文本
 const getStatusText = (status) => {
   return getStatusTextUtil(status, shopInfo.value)
 }
 
-// 获取订单状态对应的类型
 const getStatusType = (status) => {
   return getStatusTypeUtil(status, shopInfo.value)
 }
 
-// 获取店铺订单状态流转配置
+const getStatusClass = (status) => {
+  const type = getStatusType(status)
+  return `status-${type}`
+}
+
 const fetchOrderStatusFlow = async () => {
   try {
     loadingStatusFlow.value = true
@@ -232,11 +259,9 @@ const fetchOrderStatusFlow = async () => {
   }
 }
 
-// 获取订单列表
 const fetchOrderList = async () => {
   loading.value = true
   try {
-    // 处理时间范围参数
     let startTime = null
     let endTime = null
     if (searchParams.create_time_range && searchParams.create_time_range.length === 2) {
@@ -285,10 +310,8 @@ const fetchOrderList = async () => {
   }
 }
 
-// 编辑订单 - 需要获取完整的订单详情（包含商品完整信息）
 const handleEdit = async (row) => {
   try {
-    // 获取完整的订单详情，包含商品的 option_categories 等完整信息
     const fullOrderData = await getOrderDetail(row.id)
     dialogTitle.value = '编辑订单'
     formData.value = fullOrderData
@@ -299,12 +322,10 @@ const handleEdit = async (row) => {
   }
 }
 
-// 查看订单详情
 const handleView = (row) => {
   router.push(`/order/${row.id}`)
 }
 
-// 删除订单
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm('确认删除该订单？删除后不可恢复', '提示', {
@@ -323,7 +344,6 @@ const handleDelete = async (row) => {
   }
 }
 
-// 提交表单
 const submitForm = async () => {
   try {
     loading.value = true
@@ -335,13 +355,11 @@ const submitForm = async () => {
   }
 }
 
-// 表单提交成功
 const handleSubmit = () => {
   dialogVisible.value = false
   fetchOrderList()
 }
 
-// 格式化时间
 const formatTime = (time) => {
   if (!time) return '暂无'
   return new Date(time).toLocaleString('zh-CN', {
@@ -355,13 +373,11 @@ const formatTime = (time) => {
   })
 }
 
-// 查询按钮点击事件
 const handleSearch = () => {
   currentPage.value = 1
   fetchOrderList()
 }
 
-// 重置按钮点击事件
 const handleReset = () => {
   searchParams.user_id = null
   searchParams.status = []
@@ -370,14 +386,12 @@ const handleReset = () => {
   fetchOrderList()
 }
 
-// 处理每页大小变化
 const handleSizeChange = (val) => {
   pageSize.value = val
   currentPage.value = 1
   fetchOrderList()
 }
 
-// 处理当前页变化
 const handleCurrentChange = (val) => {
   currentPage.value = val
   fetchOrderList()
@@ -390,7 +404,6 @@ const handleRefresh = () => {
 onMounted(async () => {
   await fetchOrderStatusFlow()
   fetchOrderList()
-
   window.addEventListener('new-order-received', handleNewOrder)
 })
 
@@ -410,36 +423,107 @@ const handleNewOrder = (event) => {
   flex-direction: column;
 }
 
-/* 搜索区域 */
 .search-section {
-  background: white;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  border-bottom: 1px solid var(--color-border-light);
+  background: rgba(0, 0, 0, 0.01);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .search-form {
-  padding: var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 20px;
 }
 
-:deep(.el-form--inline .el-form-item) {
-  margin-right: var(--spacing-md);
-  margin-bottom: 0;
+.form-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-:deep(.el-form-item__label) {
+.form-item label {
+  font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: #1d1d1f;
+  white-space: nowrap;
 }
 
-/* 表格容器 */
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.search-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 36px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  border-radius: 8px;
+  color: #1d1d1f;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
 .table-container {
   flex: 1;
   overflow: hidden;
-  background: white;
+  background: #ffffff;
 }
 
 .order-table {
   height: 100%;
+}
+
+.order-table :deep(.el-table) {
+  border: none;
+}
+
+.order-table :deep(.el-table__border) {
+  display: none;
+}
+
+.order-table :deep(.el-table th.el-table__cell) {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.order-table :deep(.el-table td.el-table__cell) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.order-table :deep(.el-table tr:hover > td) {
+  background: rgba(0, 0, 0, 0.02) !important;
 }
 
 .order-info {
@@ -451,13 +535,13 @@ const handleNewOrder = (event) => {
 .order-id {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #1d1d1f;
   font-family: 'Monaco', 'Consolas', monospace;
 }
 
 .order-time {
   font-size: 12px;
-  color: var(--color-text-tertiary);
+  color: #86868b;
 }
 
 .order-amount {
@@ -466,66 +550,207 @@ const handleNewOrder = (event) => {
   color: var(--color-danger);
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: flex-end;
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-top: 1px solid var(--color-border-light);
-  background: white;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.status-primary {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.status-badge.status-success {
+  background: rgba(52, 199, 89, 0.1);
+  color: #34c759;
+}
+
+.status-badge.status-warning {
+  background: rgba(255, 149, 0, 0.1);
+  color: #ff9500;
+}
+
+.status-badge.status-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.status-badge.status-info {
+  background: rgba(0, 0, 0, 0.06);
+  color: #86868b;
 }
 
 .text-secondary {
-  color: var(--color-text-secondary);
+  color: #6e6e73;
   font-size: 13px;
+}
+
+.operation-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-btn {
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.op-btn.view {
+  color: #86868b;
+}
+
+.op-btn.view:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1d1d1f;
+}
+
+.op-btn.edit {
+  color: #3b82f6;
+}
+
+.op-btn.edit:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.op-btn.delete {
+  color: #ef4444;
+}
+
+.op-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.order-dialog :deep(.el-dialog) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.order-dialog :deep(.el-dialog__header) {
+  padding: 0;
+  margin: 0;
+}
+
+.order-dialog :deep(.el-dialog__body) {
+  padding: 0;
+}
+
+.order-dialog :deep(.el-dialog__footer) {
+  padding: 0;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dialog-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #86868b;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #1d1d1f;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.01);
 }
 
-/* 表格样式统一 */
-:deep(.el-table) {
+.btn-cancel {
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.04);
   border: none;
+  border-radius: 10px;
+  color: #1d1d1f;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-:deep(.el-table__border) {
-  display: none;
+.btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.08);
 }
 
-:deep(.el-table th.el-table__cell) {
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
+.btn-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
-:deep(.el-table td.el-table__cell) {
-  border-bottom: 1px solid var(--color-border-light);
+.btn-confirm:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
 }
 
-:deep(.el-table tr:hover > td) {
-  background: var(--color-bg-secondary) !important;
-}
-
-:deep(.el-table__empty-block) {
-  min-height: 200px;
-}
-
-/* 响应式 */
 @media (max-width: 768px) {
-  .search-form :deep(.el-form) {
-    flex-wrap: wrap;
+  .search-form {
+    flex-direction: column;
+    align-items: stretch;
   }
-
-  .search-form :deep(.el-form-item) {
+  
+  .form-item {
     width: 100%;
-    margin-right: 0;
-    margin-bottom: var(--spacing-sm);
   }
-
-  .search-form :deep(.el-form-item__content) {
-    width: calc(100% - 80px);
+  
+  .form-actions {
+    margin-left: 0;
+    justify-content: flex-end;
   }
 }
 </style>

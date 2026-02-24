@@ -1,71 +1,109 @@
 <template>
-  <div class="order-manage">
-    <div class="page-header">
-      <div class="header-content">
-        <h1 class="page-title">订单管理</h1>
-        <p class="page-description">管理和查看所有订单信息</p>
-      </div>
-      <div class="header-actions">
-        <el-button type="primary" :icon="Plus" @click="handleCreate">
-          新建
-        </el-button>
-        <el-button :icon="Refresh" @click="handleRefresh" style="margin-left: 0px;"/>
-      </div>
-    </div>
-
-    <div class="page-content">
-      <!-- 状态标签页 -->
-      <el-tabs v-model="activeTab" class="order-tabs">
-        <el-tab-pane name="current">
-          <template #label>
-            <span class="tab-label">
-              <el-icon><Clock /></el-icon>
-              当前订单
-              <el-badge v-if="currentOrderCount > 0" :value="currentOrderCount" class="tab-badge" />
-            </span>
-          </template>
-          <CurrentOrder ref="currentOrderRef" />
-        </el-tab-pane>
-        <el-tab-pane name="all">
-          <template #label>
-            <span class="tab-label">
-              <el-icon><List /></el-icon>
-              全部订单
-            </span>
-          </template>
-          <AllOrder ref="allOrderRef" />
-        </el-tab-pane>
-      </el-tabs>
-    </div>
-
-    <!-- 新增/编辑订单对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="860px"
-      :close-on-click-modal="false"
-      class="apple-dialog"
-      destroy-on-close
-    >
-      <order-form
-        ref="orderFormRef"
-        :form-data="formData"
-        @submit="handleSubmit"
-      />
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogVisible = false" class="btn-cancel">取消</el-button>
-          <el-button type="primary" @click="submitForm" class="btn-confirm">确定</el-button>
+  <div class="order-manage-page">
+    <div class="page-container">
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">订单管理</h1>
+          <p class="page-description">管理和查看所有订单信息</p>
         </div>
-      </template>
-    </el-dialog>
+        <div class="header-actions">
+          <button class="action-btn" @click="handleRefresh" title="刷新">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+          <button class="action-btn primary" @click="handleCreate">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>新建订单</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="tabs-card">
+        <div class="tabs-header">
+          <button 
+            :class="['tab-item', { active: activeTab === 'current' }]"
+            @click="activeTab = 'current'"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>当前订单</span>
+            <span v-if="currentOrderCount > 0" class="tab-badge">{{ currentOrderCount }}</span>
+          </button>
+          <button 
+            :class="['tab-item', { active: activeTab === 'all' }]"
+            @click="activeTab = 'all'"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"/>
+              <line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            <span>全部订单</span>
+          </button>
+        </div>
+        
+        <div class="tabs-content">
+          <CurrentOrder v-show="activeTab === 'current'" ref="currentOrderRef" />
+          <AllOrder v-show="activeTab === 'all'" ref="allOrderRef" />
+        </div>
+      </div>
+
+      <el-dialog
+        v-model="dialogVisible"
+        :title="dialogTitle"
+        width="860px"
+        :close-on-click-modal="false"
+        class="apple-dialog order-dialog"
+        destroy-on-close
+        :show-close="false"
+      >
+        <template #header>
+          <div class="dialog-header">
+            <h3 class="dialog-title">{{ dialogTitle }}</h3>
+            <button class="close-btn" @click="dialogVisible = false">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </template>
+
+        <order-form
+          ref="orderFormRef"
+          :form-data="formData"
+          @submit="handleSubmit"
+        />
+
+        <template #footer>
+          <div class="dialog-footer">
+            <button class="btn-cancel" @click="dialogVisible = false">取消</button>
+            <button class="btn-confirm" @click="submitForm">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>确定</span>
+            </button>
+          </div>
+        </template>
+      </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Refresh, Clock, List } from '@element-plus/icons-vue'
 import CurrentOrder from './CurrentOrder.vue'
 import AllOrder from './AllOrder.vue'
 import OrderForm from '@/components/order/OrderForm.vue'
@@ -75,20 +113,17 @@ const currentOrderRef = ref(null)
 const allOrderRef = ref(null)
 const currentOrderCount = ref(0)
 
-// 新增/编辑订单对话框相关
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formData = ref({})
 const orderFormRef = ref(null)
 
-// 新建订单
 const handleCreate = () => {
   dialogTitle.value = '新增订单'
   formData.value = {}
   dialogVisible.value = true
 }
 
-// 提交表单
 const submitForm = async () => {
   try {
     await orderFormRef.value.submit()
@@ -97,14 +132,12 @@ const submitForm = async () => {
   }
 }
 
-// 表单提交成功
 const handleSubmit = () => {
   dialogVisible.value = false
   handleRefresh()
   ElMessage.success('操作成功')
 }
 
-// 刷新列表
 const handleRefresh = () => {
   if (activeTab.value === 'current') {
     currentOrderRef.value?.handleRefresh()
@@ -116,159 +149,266 @@ const handleRefresh = () => {
 </script>
 
 <style scoped>
-.order-manage {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-  height: 100%;
+.order-manage-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f5f5f7 0%, #ffffff 100%);
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-}
-
-.header-content {
-  flex: 1;
+  margin-bottom: 24px;
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-text-primary);
+  font-size: 28px;
+  font-weight: 600;
+  color: #1d1d1f;
   margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
 }
 
 .page-description {
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: #86868b;
   margin: 0;
 }
 
 .header-actions {
   display: flex;
-  gap: var(--spacing-sm);
+  align-items: center;
+  gap: 12px;
 }
 
-.page-content {
-  flex: 1;
-  background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.order-tabs {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-
-:deep(.el-tabs__header) {
-  margin: 0;
-  padding: 0 var(--spacing-lg);
-  border-bottom: 1px solid var(--color-border-light);
-  flex-shrink: 0;
-  order: -1;
-}
-
-:deep(.el-tabs__nav-wrap) {
-  padding: var(--spacing-sm) 0;
-}
-
-:deep(.el-tabs__item) {
-  height: 44px;
-  line-height: 44px;
-  padding: 0 var(--spacing-lg);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.tab-label {
+.action-btn {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 0 16px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  border-radius: 10px;
+  color: #1d1d1f;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.tab-label .el-icon {
-  font-size: 16px;
+.action-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.tabs-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.tabs-header {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.01);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: #86868b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1d1d1f;
+}
+
+.tab-item.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.tab-item.active svg {
+  color: #ffffff;
 }
 
 .tab-badge {
-  margin-left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-:deep(.el-tabs__content) {
-  flex: 1;
+.tab-item:not(.active) .tab-badge {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.tabs-content {
+  min-height: 400px;
+}
+
+.order-dialog :deep(.el-dialog) {
+  border-radius: 16px;
   overflow: hidden;
-  padding: 0;
-  min-height: 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
-:deep(.el-tab-pane) {
-  height: 100%;
+.order-dialog :deep(.el-dialog__header) {
+  padding: 0;
+  margin: 0;
+}
+
+.order-dialog :deep(.el-dialog__body) {
+  padding: 0;
+}
+
+.order-dialog :deep(.el-dialog__footer) {
+  padding: 0;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dialog-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #86868b;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #1d1d1f;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.01);
 }
 
-.dialog-footer .btn-cancel {
+.btn-cancel {
+  padding: 10px 20px;
   background: rgba(0, 0, 0, 0.04);
   border: none;
-  color: #1d1d1f;
   border-radius: 10px;
-  height: 40px;
-  min-width: 80px;
+  color: #1d1d1f;
+  font-size: 14px;
   font-weight: 500;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.dialog-footer .btn-cancel:hover {
+.btn-cancel:hover {
   background: rgba(0, 0, 0, 0.08);
 }
 
-.dialog-footer .btn-confirm {
+.btn-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: none;
   border-radius: 10px;
-  height: 40px;
-  min-width: 80px;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
-.dialog-footer .btn-confirm:hover {
+.btn-confirm:hover {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
   transform: translateY(-1px);
 }
 
-/* 响应式 */
-@media (max-width: 640px) {
+@media screen and (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+  
   .page-header {
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 16px;
   }
-
+  
   .header-actions {
     width: 100%;
   }
-
-  .header-actions .el-button {
-    flex: 1;
+  
+  .tabs-header {
+    padding: 12px 16px;
+    overflow-x: auto;
   }
-
-  .page-title {
-    font-size: 20px;
+  
+  .tab-item {
+    padding: 8px 14px;
+    font-size: 13px;
+    white-space: nowrap;
   }
 }
 </style>

@@ -1,114 +1,166 @@
 <template>
-  <div class="user-manage">
-    <div class="page-header">
-      <div class="header-content">
-        <h1 class="page-title">用户管理</h1>
-        <p class="page-description">管理和查看所有用户信息</p>
+  <div class="user-list-page">
+    <div class="page-container">
+      <div class="page-header">
+        <div class="header-content">
+          <h1 class="page-title">用户管理</h1>
+          <p class="page-description">管理和查看所有用户信息</p>
+        </div>
+        <div class="header-actions">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input 
+              v-model="searchText"
+              type="text"
+              placeholder="搜索用户名..."
+              @input="handleSearchInput"
+            />
+          </div>
+          <button class="action-btn" @click="handleRefresh" title="刷新">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+          <button class="action-btn primary" @click="showCreateDialog" v-if="isAdmin">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>新建用户</span>
+          </button>
+        </div>
       </div>
-      <div class="header-actions">
-        <el-input
-          v-model="searchText"
-          placeholder="搜索用户名"
-          clearable
-          @input="handleSearchInput"
-          style="width: 200px;"
-        />
-        <el-button type="primary" :icon="Plus" @click="showCreateDialog" v-if="isAdmin">新建</el-button>
-        <el-button :icon="Refresh" @click="handleRefresh" title="刷新" style="margin-left: 0;"></el-button>
-      </div>
-    </div>
 
-    <el-table
-      v-loading="loading"
-      :data="userList"
-      border
-      style="width: 100%"
-    >
-      <el-table-column prop="name" label="用户名" min-width="120"></el-table-column>
-      <el-table-column prop="role" label="角色" min-width="100" :formatter="formatRole"></el-table-column>
-      <el-table-column prop="phone" label="电话" min-width="120"></el-table-column>
-      <el-table-column prop="address" label="地址" min-width="200"></el-table-column>
-      <el-table-column label="操作" width="180" fixed="right">
-        <template #default="scope">
-          <el-button type="primary" link @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button type="danger" link @click="handleDelete(scope.row.id)">删除</el-button>
+      <div class="table-card">
+        <el-table
+          v-loading="loading"
+          :data="userList"
+          class="user-table"
+        >
+          <el-table-column prop="name" label="用户名" min-width="120">
+            <template #default="{ row }">
+              <div class="user-info">
+                <div class="user-avatar">{{ row.name?.charAt(0)?.toUpperCase() || 'U' }}</div>
+                <span class="user-name">{{ row.name }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="role" label="角色" min-width="100">
+            <template #default="{ row }">
+              <span class="role-badge" :class="row.role">{{ formatRole(row) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="phone" label="电话" min-width="120">
+            <template #default="{ row }">
+              <span class="phone-text">{{ row.phone || '-' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="address" label="地址" min-width="200">
+            <template #default="{ row }">
+              <span class="address-text">{{ row.address || '-' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="140" fixed="right">
+            <template #default="{ row }">
+              <div class="operation-buttons">
+                <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+                <el-button type="danger" link @click="handleDelete(row.id)">删除</el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-wrapper">
+          <el-pagination
+            v-model:current-page="page"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 50, 100]"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+      </div>
+
+      <el-dialog 
+        v-model="dialogVisible" 
+        :title="dialogTitle" 
+        width="520px" 
+        :close-on-click-modal="false"
+        class="apple-dialog user-dialog"
+        destroy-on-close
+        :show-close="false"
+      >
+        <template #header>
+          <div class="dialog-header">
+            <h3 class="dialog-title">{{ dialogTitle }}</h3>
+            <button class="close-btn" @click="dialogVisible = false">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
         </template>
-      </el-table-column>
-    </el-table>
 
-    <div class="pagination">
-      <el-pagination
-        v-model:current-page="page"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
-
-    <el-dialog 
-      v-model="dialogVisible" 
-      :title="dialogTitle" 
-      width="520px" 
-      :close-on-click-modal="false"
-      class="apple-dialog"
-      destroy-on-close
-    >
-      <el-form :model="form" :rules="rules" ref="formRef" label-position="top" class="apple-form">
-        <el-form-item label="用户名" prop="name" :rules="[{ required: true, message: '请输入用户名' }]">
-          <el-input v-model="form.name" :disabled="!!form.id" placeholder="请输入用户名" />
-        </el-form-item>
-        <el-form-item v-if="!form.id" label="密码" prop="password" required :rules="[{ required: true, message: '请输入密码' }]">
-          <el-input v-model="form.password" type="password" show-password @input="formRef?.validateField('password')" placeholder="请输入密码" />
-        </el-form-item>
-        <el-form-item v-else label="密码" prop="password">
-          <el-input v-model="form.password" type="password" show-password @input="formRef?.validateField('password')" placeholder="不填写则保持原密码不变" />
-        </el-form-item>
-        <el-row :gutter="16">
-          <el-col :span="12">
+        <el-form :model="form" :rules="rules" ref="formRef" label-position="top" class="apple-form">
+          <el-form-item label="用户名" prop="name" :rules="[{ required: true, message: '请输入用户名' }]">
+            <el-input v-model="form.name" :disabled="!!form.id" placeholder="请输入用户名" />
+          </el-form-item>
+          <el-form-item v-if="!form.id" label="密码" prop="password" required :rules="[{ required: true, message: '请输入密码' }]">
+            <el-input v-model="form.password" type="password" show-password @input="formRef?.validateField('password')" placeholder="请输入密码" />
+          </el-form-item>
+          <el-form-item v-else label="密码" prop="password">
+            <el-input v-model="form.password" type="password" show-password @input="formRef?.validateField('password')" placeholder="不填写则保持原密码不变" />
+          </el-form-item>
+          <div class="form-row">
             <el-form-item label="电话" prop="phone" :rules="[{ validator: validatePhone, trigger: 'blur' }]">
               <el-input v-model="form.phone" placeholder="请输入电话号码" />
             </el-form-item>
-          </el-col>
-          <el-col :span="12">
             <el-form-item label="类型" prop="type">
               <el-select v-model="form.type" placeholder="请选择类型">
                 <el-option label="邮寄" value="delivery" />
                 <el-option label="自提" value="pickup" />
               </el-select>
             </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="地址" prop="address">
-          <el-input v-model="form.address" placeholder="请输入地址" />
-        </el-form-item>
-        <el-form-item label="角色" prop="role">
-          <el-select v-model="form.role" placeholder="请选择角色">
-            <el-option label="公共用户" value="public_user" />
-            <el-option label="普通用户" value="private_user" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogVisible = false" class="btn-cancel">取消</el-button>
-          <el-button type="primary" @click="submitForm" class="btn-confirm">确认</el-button>
-        </div>
-      </template>
-    </el-dialog>
+          </div>
+          <el-form-item label="地址" prop="address">
+            <el-input v-model="form.address" placeholder="请输入地址" />
+          </el-form-item>
+          <el-form-item label="角色" prop="role">
+            <el-select v-model="form.role" placeholder="请选择角色">
+              <el-option label="公共用户" value="public_user" />
+              <el-option label="普通用户" value="private_user" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+
+        <template #footer>
+          <div class="dialog-footer">
+            <button class="btn-cancel" @click="dialogVisible = false">取消</button>
+            <button class="btn-confirm" @click="submitForm">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>确认</span>
+            </button>
+          </div>
+        </template>
+      </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import '@/assets/table-global.css'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Refresh } from '@element-plus/icons-vue'
 import { getUserList, createUser, deleteUser, updateUser } from '@/api/user'
 
-// 角色格式化函数
 const formatRole = (row) => {
   const roleMap = {
     'user': '普通用户',
@@ -126,7 +178,6 @@ const submitting = ref(false)
 const formRef = ref(null)
 const isAdmin = JSON.parse(localStorage.getItem('admin') || '{}').role === 'admin'
 
-// 分页相关
 const page = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
@@ -143,7 +194,7 @@ const form = ref({
   address: '',
   type: 'delivery'
 })
-// 处理搜索输入
+
 const handleSearchInput = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -152,7 +203,6 @@ const handleSearchInput = () => {
   }, 500)
 }
 
-// 获取用户列表
 const loadUsers = async () => {
   loading.value = true
   try {
@@ -171,14 +221,12 @@ const loadUsers = async () => {
   }
 }
 
-// 处理每页数量变化
 const handleSizeChange = (val) => {
   pageSize.value = val
   page.value = 1
   loadUsers()
 }
 
-// 处理页码变化
 const handleCurrentChange = (val) => {
   page.value = val
   loadUsers()
@@ -200,7 +248,6 @@ const showCreateDialog = () => {
   dialogVisible.value = true
 }
 
-// 编辑用户
 const handleEdit = (row) => {
   dialogType.value = 'edit'
   dialogTitle.value = '编辑用户'
@@ -217,13 +264,10 @@ const handleEdit = (row) => {
   dialogVisible.value = true
 }
 
-// 提交表单
-// 验证电话格式
 const validatePhone = (rule, value, callback) => {
   if (!value) {
     return callback();
   }
-  // 匹配中国大陆手机号和固定电话的正则表达式
   const phoneRegex = /^1[3-9]\d{9}$|^0\d{2,3}-?\d{7,8}$/;
   if (phoneRegex.test(value)) {
     callback();
@@ -243,12 +287,10 @@ const submitForm = async () => {
       })
       ElMessage.success('创建成功')
     } else {
-      // 对于编辑，只提交非空密码
       const data = { ...form.value }
       if (!data.password) {
         delete data.password
       }
-      console.log('更新用户数据:', data)
       await updateUser(data)
       ElMessage.success('更新成功')
     }
@@ -262,7 +304,6 @@ const submitForm = async () => {
   }
 }
 
-// 删除用户
 const handleDelete = async (id) => {
   try {
     await ElMessageBox.confirm('确认删除该用户？删除后不可恢复', '提示', {
@@ -281,7 +322,6 @@ const handleDelete = async (id) => {
   }
 }
 
-// 刷新数据
 const handleRefresh = () => {
   loading.value = true
   loadUsers()
@@ -294,53 +334,266 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.user-manage {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-  height: 100%;
+.user-list-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f5f5f7 0%, #ffffff 100%);
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-}
-
-.header-content {
-  flex: 1;
+  margin-bottom: 24px;
 }
 
 .page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-text-primary);
+  font-size: 28px;
+  font-weight: 600;
+  color: #1d1d1f;
   margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
 }
 
 .page-description {
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: #86868b;
   margin: 0;
 }
 
 .header-actions {
   display: flex;
-  gap: var(--spacing-sm);
   align-items: center;
+  gap: 12px;
 }
 
-.pagination {
-  margin-top: 20px;
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 40px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  min-width: 220px;
+}
+
+.search-box:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-box svg {
+  color: #86868b;
+  flex-shrink: 0;
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #1d1d1f;
+  outline: none;
+}
+
+.search-box input::placeholder {
+  color: #86868b;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  border-radius: 10px;
+  color: #1d1d1f;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.table-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.user-table {
+  width: 100%;
+}
+
+.user-table :deep(.el-table) {
+  border: none;
+}
+
+.user-table :deep(.el-table__border) {
+  display: none;
+}
+
+.user-table :deep(.el-table th.el-table__cell) {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.user-table :deep(.el-table td.el-table__cell) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.user-table :deep(.el-table tr:hover > td) {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #1d1d1f;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.role-badge.user,
+.role-badge.private_user {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.role-badge.system,
+.role-badge.public_user {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.phone-text,
+.address-text {
+  font-size: 14px;
+  color: #6e6e73;
+}
+
+.operation-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-wrapper {
   display: flex;
   justify-content: flex-end;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.user-dialog :deep(.el-dialog) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.user-dialog :deep(.el-dialog__header) {
+  padding: 0;
+  margin: 0;
+}
+
+.user-dialog :deep(.el-dialog__body) {
+  padding: 0 24px 24px;
+}
+
+.user-dialog :deep(.el-dialog__footer) {
+  padding: 0;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+.dialog-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #86868b;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #1d1d1f;
 }
 
 .apple-form :deep(.el-form-item__label) {
   font-size: 14px;
   font-weight: 500;
   color: #1d1d1f;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
 }
 
 .apple-form :deep(.el-form-item) {
@@ -350,83 +603,105 @@ onMounted(() => {
 .apple-form :deep(.el-input__wrapper),
 .apple-form :deep(.el-select .el-input__wrapper) {
   border-radius: 10px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
 .apple-form :deep(.el-input__wrapper:hover),
 .apple-form :deep(.el-select .el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .apple-form :deep(.el-input__wrapper.is-focus),
 .apple-form :deep(.el-select .el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .apple-form :deep(.el-input__inner) {
-  height: 36px;
-  line-height: 36px;
+  height: 40px;
 }
 
 .apple-form :deep(.el-input__inner::placeholder) {
   color: #86868b;
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.01);
 }
 
-.dialog-footer .btn-cancel {
+.btn-cancel {
+  padding: 10px 20px;
   background: rgba(0, 0, 0, 0.04);
   border: none;
-  color: #1d1d1f;
   border-radius: 10px;
-  height: 40px;
-  min-width: 80px;
+  color: #1d1d1f;
+  font-size: 14px;
   font-weight: 500;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.dialog-footer .btn-cancel:hover {
+.btn-cancel:hover {
   background: rgba(0, 0, 0, 0.08);
 }
 
-.dialog-footer .btn-confirm {
+.btn-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: none;
   border-radius: 10px;
-  height: 40px;
-  min-width: 80px;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
-.dialog-footer .btn-confirm:hover {
+.btn-confirm:hover {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
   transform: translateY(-1px);
 }
 
-@media (max-width: 640px) {
+@media screen and (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+  
   .page-header {
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 16px;
   }
-
+  
   .header-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
-
-  .header-actions .el-input {
+  
+  .search-box {
     flex: 1;
+    min-width: 160px;
   }
-
-  .page-title {
-    font-size: 20px;
+  
+  .form-row {
+    grid-template-columns: 1fr;
   }
 }
 </style>

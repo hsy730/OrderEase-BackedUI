@@ -544,27 +544,46 @@ defineExpose({
 
 <style scoped>
 .order-status-flow {
-  padding: 16px 0;
+  padding: 20px 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'PingFang SC', 'Helvetica Neue', sans-serif;
 }
 
 .status-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .status-simple-card {
-  padding: 10px 16px;
-  border-radius: 8px;
-  border-left: 3px solid #d9d9d9;
-  background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  padding: 14px 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-simple-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--indicator-color, #d9d9d9) 0%, var(--indicator-color-light, #e5e5e5) 100%);
+  border-radius: 4px 0 0 4px;
 }
 
 .status-simple-card:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
 .status-simple-content {
@@ -577,40 +596,64 @@ defineExpose({
 .status-simple-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .status-card {
   margin-bottom: 0;
-  border-left: 3px solid #d9d9d9;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--indicator-color, #d9d9d9) 0%, var(--indicator-color-light, #e5e5e5) 100%);
+  border-radius: 4px 0 0 4px;
 }
 
 .status-card:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
 .status-type-warning {
-  border-left-color: #f59e0b;
+  --indicator-color: #f59e0b;
+  --indicator-color-light: #fbbf24;
 }
 
 .status-type-primary {
-  border-left-color: var(--color-primary);
+  --indicator-color: var(--color-primary);
+  --indicator-color-light: #60a5fa;
 }
 
 .status-type-danger {
-  border-left-color: var(--color-danger);
+  --indicator-color: var(--color-danger);
+  --indicator-color-light: #f87171;
 }
 
 .status-type-info {
-  border-left-color: #6b7280;
+  --indicator-color: #6b7280;
+  --indicator-color-light: #9ca3af;
 }
 
 .status-type-success {
-  border-left-color: #10b981;
+  --indicator-color: #10b981;
+  --indicator-color-light: #34d399;
 }
 
 .status-header {
@@ -624,18 +667,19 @@ defineExpose({
 .status-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .status-value {
   font-size: 12px;
-  color: #6b7280;
+  color: #86868b;
   font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .status-tip {
   font-size: 12px;
-  color: #6b7280;
+  color: #86868b;
 }
 
 .status-actions {
@@ -644,56 +688,59 @@ defineExpose({
 }
 
 .actions-section {
-  margin-top: 0;
+  margin-top: 4px;
 }
 
 .actions-header {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .action-list {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .action-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 10px;
-  background-color: #f9fafb;
-  border-radius: 6px;
-  flex: 0 0 calc(50% - 4px);
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #f5f5f7 0%, #fafafa 100%);
+  border-radius: 10px;
+  flex: 0 0 calc(50% - 5px);
   box-sizing: border-box;
-  border: 1px solid #f3f4f6;
-  transition: all 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .action-item:hover {
-  background-color: #f3f4f6;
-  border-color: #e5e7eb;
+  background: linear-gradient(135deg, #ebebed 0%, #f5f5f7 100%);
+  border-color: rgba(0, 0, 0, 0.08);
+  transform: scale(1.01);
 }
 
 .action-content {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
 }
 
 .action-name {
   font-weight: 500;
-  color: #374151;
+  color: #1d1d1f;
+  letter-spacing: -0.01em;
 }
 
 .action-arrow {
-  color: #9ca3af;
-  font-size: 11px;
+  color: #86868b;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .action-actions {
@@ -702,32 +749,38 @@ defineExpose({
 }
 
 .final-status-tip {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .empty-actions {
-  padding: 6px 0;
+  padding: 16px 0;
   text-align: center;
-  color: #9ca3af;
+  color: #86868b;
   width: 100%;
+  background: linear-gradient(135deg, #f5f5f7 0%, #fafafa 100%);
+  border-radius: 10px;
 }
 
 .empty-text {
-  font-size: 12px;
-  color: #9ca3af;
+  font-size: 13px;
+  color: #86868b;
+  letter-spacing: 0.01em;
 }
 
 .add-status-section {
   display: flex;
   justify-content: flex-start;
-  margin-top: 16px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 :deep(.el-button.is-link) {
   font-size: 13px;
   font-weight: 500;
-  padding: 4px 8px;
+  padding: 6px 12px;
   height: auto;
+  letter-spacing: -0.01em;
 }
 
 :deep(.el-button--primary.is-link) {
@@ -747,36 +800,69 @@ defineExpose({
 }
 
 :deep(.el-button--small) {
-  padding: 6px 14px;
+  padding: 8px 16px;
   font-size: 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+  letter-spacing: -0.01em;
 }
 
 :deep(.el-card__header) {
   padding: 0;
   border-bottom: none;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 :deep(.el-alert) {
   margin: 0;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
 }
 
 :deep(.el-tag) {
   margin: 0;
-  border-radius: 4px;
+  border-radius: 6px;
   font-weight: 500;
   font-size: 12px;
-  height: 22px;
-  padding: 0 6px;
+  height: 24px;
+  padding: 0 10px;
+  letter-spacing: -0.01em;
+  border: none;
+}
+
+:deep(.el-tag--warning) {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.1) 100%);
+  color: #b45309;
+}
+
+:deep(.el-tag--primary) {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.1) 100%);
+  color: #1d4ed8;
+}
+
+:deep(.el-tag--danger) {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(248, 113, 113, 0.1) 100%);
+  color: #b91c1c;
+}
+
+:deep(.el-tag--info) {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.15) 0%, rgba(156, 163, 175, 0.1) 100%);
+  color: #374151;
+}
+
+:deep(.el-tag--success) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.1) 100%);
+  color: #047857;
 }
 
 :deep(.el-card__body) {
-  padding: 12px 16px;
+  padding: 16px 20px;
+}
+
+:deep(.el-card__body),
+:deep(.el-card__header) {
+  padding-left: 24px;
 }
 
 .dialog-footer {
@@ -786,68 +872,84 @@ defineExpose({
 }
 
 .dialog-footer .btn-cancel {
-  background: rgba(0, 0, 0, 0.04);
+  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
   border: none;
   color: #1d1d1f;
-  border-radius: 10px;
-  height: 40px;
-  min-width: 80px;
+  border-radius: 12px;
+  height: 44px;
+  min-width: 88px;
   font-weight: 500;
-  transition: all 0.2s ease;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .dialog-footer .btn-cancel:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #e8e8ed 0%, #d2d2d7 100%);
 }
 
 .dialog-footer .btn-confirm {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: none;
-  border-radius: 10px;
-  height: 40px;
-  min-width: 80px;
+  border-radius: 12px;
+  height: 44px;
+  min-width: 88px;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-  transition: all 0.2s ease;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  box-shadow: 
+    0 2px 8px rgba(59, 130, 246, 0.25),
+    0 4px 16px rgba(59, 130, 246, 0.15);
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .dialog-footer .btn-confirm:hover {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  box-shadow: 
+    0 4px 12px rgba(59, 130, 246, 0.3),
+    0 8px 24px rgba(59, 130, 246, 0.2);
   transform: translateY(-1px);
 }
 
 .apple-form :deep(.el-form-item__label) {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #1d1d1f;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
+  letter-spacing: -0.01em;
 }
 
 .apple-form :deep(.el-form-item) {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .apple-form :deep(.el-input__wrapper),
 .apple-form :deep(.el-select .el-input__wrapper) {
-  border-radius: 10px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  box-shadow: none;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fafafa;
+  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .apple-form :deep(.el-input__wrapper:hover),
 .apple-form :deep(.el-select .el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.15);
+  background: #ffffff;
 }
 
 .apple-form :deep(.el-input__wrapper.is-focus),
 .apple-form :deep(.el-select .el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+  border-color: var(--color-primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 .apple-form :deep(.el-input__inner) {
-  height: 36px;
-  line-height: 36px;
+  height: 40px;
+  line-height: 40px;
+  font-size: 14px;
+  letter-spacing: -0.01em;
 }
 
 .apple-form :deep(.el-input__inner::placeholder) {
@@ -859,7 +961,7 @@ defineExpose({
 }
 
 .apple-form :deep(.el-input-number .el-input__wrapper) {
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .apple-form :deep(.el-select) {
@@ -868,5 +970,16 @@ defineExpose({
 
 .apple-form :deep(.el-switch) {
   --el-switch-on-color: var(--color-primary);
+}
+
+.apple-form :deep(.el-switch__core) {
+  border-radius: 20px;
+  height: 26px;
+  min-width: 46px;
+}
+
+.apple-form :deep(.el-switch__action) {
+  width: 22px;
+  height: 22px;
 }
 </style>

@@ -1,6 +1,5 @@
 <template>
   <div class="current-order">
-    <!-- 订单列表 -->
     <div class="table-container">
       <el-table
         v-loading="loading"
@@ -25,9 +24,9 @@
 
         <el-table-column label="订单状态" width="140" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)" size="small" effect="plain">
+            <span class="status-badge" :class="getStatusClass(row.status)">
               {{ getStatusText(row.status) }}
-            </el-tag>
+            </span>
           </template>
         </el-table-column>
 
@@ -39,15 +38,16 @@
 
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button type="info" link @click="handleView(row)">查看</el-button>
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+            <div class="operation-buttons">
+              <button class="op-btn view" @click="handleView(row)">查看</button>
+              <button class="op-btn edit" @click="handleEdit(row)">编辑</button>
+              <button class="op-btn delete" @click="handleDelete(row)">删除</button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
     </div>
 
-    <!-- 分页 -->
     <div class="pagination-container">
       <el-pagination
         v-model:current-page="currentPage"
@@ -60,30 +60,49 @@
       />
     </div>
 
-    <!-- 新增/编辑订单对话框 -->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
-      width="800px"
+      width="860px"
       :close-on-click-modal="false"
+      class="apple-dialog order-dialog"
+      destroy-on-close
+      :show-close="false"
     >
+      <template #header>
+        <div class="dialog-header">
+          <h3 class="dialog-title">{{ dialogTitle }}</h3>
+          <button class="close-btn" @click="dialogVisible = false">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </template>
+
       <order-form
         ref="orderFormRef"
         :form-data="formData"
         @submit="handleSubmit"
       />
+
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
+        <div class="dialog-footer">
+          <button class="btn-cancel" @click="dialogVisible = false">取消</button>
+          <button class="btn-confirm" @click="submitForm">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>确定</span>
+          </button>
+        </div>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import '@/assets/table-global.css'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -112,6 +131,11 @@ const getStatusText = (status) => {
 
 const getStatusType = (status) => {
   return getStatusTypeUtil(status, shopInfo.value)
+}
+
+const getStatusClass = (status) => {
+  const type = getStatusType(status)
+  return `status-${type}`
 }
 
 const fetchOrderStatusFlow = async () => {
@@ -169,7 +193,6 @@ const fetchOrderList = async () => {
 
 const handleEdit = async (row) => {
   try {
-    // 获取完整的订单详情，包含商品的 option_categories 等完整信息
     const fullOrderData = await getOrderDetail(row.id)
     dialogTitle.value = '编辑订单'
     formData.value = fullOrderData
@@ -234,7 +257,6 @@ const formatTime = (time) => {
 onMounted(async () => {
   await fetchOrderStatusFlow()
   fetchOrderList()
-
   window.addEventListener('new-order-received', handleNewOrder)
 })
 
@@ -278,6 +300,27 @@ const handleRefresh = () => {
   height: 100%;
 }
 
+.order-table :deep(.el-table) {
+  border: none;
+}
+
+.order-table :deep(.el-table__border) {
+  display: none;
+}
+
+.order-table :deep(.el-table th.el-table__cell) {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.order-table :deep(.el-table td.el-table__cell) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.order-table :deep(.el-table tr:hover > td) {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
 .order-info {
   display: flex;
   flex-direction: column;
@@ -287,13 +330,13 @@ const handleRefresh = () => {
 .order-id {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #1d1d1f;
   font-family: 'Monaco', 'Consolas', monospace;
 }
 
 .order-time {
   font-size: 12px;
-  color: var(--color-text-tertiary);
+  color: #86868b;
 }
 
 .order-amount {
@@ -302,47 +345,191 @@ const handleRefresh = () => {
   color: var(--color-danger);
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: flex-end;
-  padding: var(--spacing-md);
-  border-top: 1px solid var(--color-border-light);
-  background: var(--color-bg-primary);
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.status-primary {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.status-badge.status-success {
+  background: rgba(52, 199, 89, 0.1);
+  color: #34c759;
+}
+
+.status-badge.status-warning {
+  background: rgba(255, 149, 0, 0.1);
+  color: #ff9500;
+}
+
+.status-badge.status-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.status-badge.status-info {
+  background: rgba(0, 0, 0, 0.06);
+  color: #86868b;
 }
 
 .text-secondary {
-  color: var(--color-text-secondary);
+  color: #6e6e73;
   font-size: 13px;
+}
+
+.operation-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-btn {
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.op-btn.view {
+  color: #86868b;
+}
+
+.op-btn.view:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1d1d1f;
+}
+
+.op-btn.edit {
+  color: #3b82f6;
+}
+
+.op-btn.edit:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.op-btn.delete {
+  color: #ef4444;
+}
+
+.op-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.order-dialog :deep(.el-dialog) {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.order-dialog :deep(.el-dialog__header) {
+  padding: 0;
+  margin: 0;
+}
+
+.order-dialog :deep(.el-dialog__body) {
+  padding: 0;
+}
+
+.order-dialog :deep(.el-dialog__footer) {
+  padding: 0;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dialog-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #86868b;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #1d1d1f;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.01);
 }
 
-:deep(.el-table) {
+.btn-cancel {
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.04);
   border: none;
+  border-radius: 10px;
+  color: #1d1d1f;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-:deep(.el-table__border) {
-  display: none;
+.btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.08);
 }
 
-:deep(.el-table th.el-table__cell) {
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
+.btn-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
-:deep(.el-table td.el-table__cell) {
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-:deep(.el-table tr:hover > td) {
-  background: var(--color-bg-secondary) !important;
-}
-
-:deep(.el-table__empty-block) {
-  min-height: 200px;
+.btn-confirm:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
 }
 </style>

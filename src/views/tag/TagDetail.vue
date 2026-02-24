@@ -1,79 +1,154 @@
 <template>
-  <div class="tag-detail-container">
-    <div class="tag-detail">
-      <div class="header">
-        <h2>标签详情</h2>
-        <el-button @click="$router.back()">返回</el-button>
-      </div>
-
-      <div class="content" v-loading="loading">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="标签ID">{{ tag.id }}</el-descriptions-item>
-          <el-descriptions-item label="标签名称">{{ tag.name }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ formatTime(tag.created_at) }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ formatTime(tag.updated_at) }}</el-descriptions-item>
-          <el-descriptions-item label="描述" :span="2">{{ tag.description || '暂无描述' }}</el-descriptions-item>
-        </el-descriptions>
-
-        <div class="product-list">
-          <div class="list-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h3>已绑定商品</h3>
-            <div class="action-buttons">
-              <el-button
-                type="primary"
-                @click="bindDialogVisible = true"
-              >
-                绑定
-              </el-button>
-              <el-button
-                type=""
-                :disabled="selectedProducts.length === 0"
-                @click="handleBatchUnbind"
-              >
-                解绑
-              </el-button>
-            </div>
+  <div class="tag-detail-page">
+    <div class="page-container">
+      <div class="page-header">
+        <div class="header-content">
+          <button class="back-btn" @click="$router.back()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>返回</span>
+          </button>
+          <div class="header-info">
+            <h1 class="page-title">标签详情</h1>
+            <p class="tag-name-sub">{{ tag.name }}</p>
           </div>
-          <el-table
-            ref="productTable"
-            :key="tableKey"
-            :data="products"
-            border
-            style="width: 100%"
-            @selection-change="handleSelectionChange"
-          >
-            <el-table-column type="selection" width="35" />
-            <el-table-column prop="name" label="商品名称" />
-            <el-table-column prop="price" label="价格" width="120">
-              <template #default="{ row }">
-                ¥{{ row.price.toFixed(2) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="120">
-              <template #default="{ row }">
-                <el-button type="primary" link @click="viewProduct(row)">查看</el-button>
-                <el-button type="danger" link @click="handleUnbind(row)">解绑</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <el-pagination
-            v-model:current-page="pagination.page"
-            v-model:page-size="pagination.pageSize"
-            :page-sizes="[10, 20, 50, 100]"
-            :total="pagination.total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @current-change="fetchTagDetail"
-            @size-change="fetchTagDetail"
-          />
+        </div>
+        <div class="header-actions">
+          <button class="action-btn" @click="bindDialogVisible = true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span>绑定商品</span>
+          </button>
+          <button class="action-btn danger" :disabled="selectedProducts.length === 0" @click="handleBatchUnbind">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            </svg>
+            <span>批量解绑</span>
+          </button>
         </div>
       </div>
 
-      <BindProductDialog
-        v-model:modelValue="bindDialogVisible"
-        :tag-id="tag.id"
-        @bind="handleBind"
-      />
+      <div class="detail-content" v-loading="loading">
+        <div class="main-content">
+          <section class="info-card tag-info-section">
+            <div class="section-header">
+              <h2 class="section-title">基本信息</h2>
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">标签ID</span>
+                <span class="info-value">{{ tag.id }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">标签名称</span>
+                <span class="info-value">{{ tag.name }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">创建时间</span>
+                <span class="info-value">{{ formatTime(tag.created_at) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">更新时间</span>
+                <span class="info-value">{{ formatTime(tag.updated_at) }}</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="info-card description-section" v-if="tag.description">
+            <div class="section-header">
+              <h2 class="section-title">标签描述</h2>
+            </div>
+            <div class="description-content">
+              <p>{{ tag.description }}</p>
+            </div>
+          </section>
+
+          <section class="info-card products-section">
+            <div class="section-header">
+              <h2 class="section-title">已绑定商品</h2>
+              <span class="item-count">{{ products.length }} 件商品</span>
+            </div>
+            <div class="products-table-wrapper">
+              <el-table
+                ref="productTable"
+                :key="tableKey"
+                :data="products"
+                class="products-table"
+                @selection-change="handleSelectionChange"
+              >
+                <el-table-column type="selection" width="40" />
+                <el-table-column label="商品信息" min-width="200">
+                  <template #default="{ row }">
+                    <div class="product-info">
+                      <div class="product-name">{{ row.name }}</div>
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column label="价格" width="120" align="right">
+                  <template #default="{ row }">
+                    <span class="price">¥{{ row.price?.toFixed(2) || '0.00' }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="库存" width="100" align="center">
+                  <template #default="{ row }">
+                    <span :class="{ 'low-stock': row.stock < 10 }">{{ row.stock }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="140" fixed="right">
+                  <template #default="{ row }">
+                    <div class="operation-buttons">
+                      <el-button type="primary" link @click="viewProduct(row)">查看</el-button>
+                      <el-button type="danger" link @click="handleUnbind(row)">解绑</el-button>
+                    </div>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+            <div class="pagination-wrapper">
+              <el-pagination
+                v-model:current-page="pagination.page"
+                v-model:page-size="pagination.pageSize"
+                :page-sizes="[10, 20, 50, 100]"
+                :total="pagination.total"
+                layout="total, sizes, prev, pager, next, jumper"
+                @current-change="fetchTagDetail"
+                @size-change="fetchTagDetail"
+              />
+            </div>
+          </section>
+        </div>
+
+        <aside class="sidebar">
+          <div class="info-card summary-card">
+            <h2 class="section-title">标签摘要</h2>
+            <div class="summary-list">
+              <div class="summary-item">
+                <span class="summary-label">绑定商品</span>
+                <span class="summary-value">{{ pagination.total }} 件</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">创建时间</span>
+                <span class="summary-value">{{ formatTime(tag.created_at) }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">更新时间</span>
+                <span class="summary-value">{{ formatTime(tag.updated_at) }}</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
+
+    <BindProductDialog
+      v-model:modelValue="bindDialogVisible"
+      :tag-id="tag.id"
+      @bind="handleBind"
+    />
   </div>
 </template>
 
@@ -95,12 +170,10 @@ const selectedProducts = ref([])
 const productTable = ref(null)
 const searchText = ref('')
 
-// 处理表格选择变化
 const handleSelectionChange = (selection) => {
   selectedProducts.value = selection
 }
 
-// 批量解绑商品
 const handleBatchUnbind = async () => {
   try {
     await ElMessageBox.confirm(
@@ -116,12 +189,11 @@ const handleBatchUnbind = async () => {
     loading.value = true
     const productIds = selectedProducts.value.map(p => p.id)
     await unbindProductTag(route.params.id, productIds)
-    ElMessage.success('批量解绑成功，正在刷新商品列表...')
-    await fetchTagDetail() // 刷新数据
-    tableKey.value++ // 强制刷新表格
-    selectedProducts.value = [] // 清空选择
-    productTable.value.clearSelection() // 清除表格选择状态
-    ElMessage.success('商品列表已更新')
+    ElMessage.success('批量解绑成功')
+    await fetchTagDetail()
+    tableKey.value++
+    selectedProducts.value = []
+    productTable.value?.clearSelection()
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error('批量解绑失败')
@@ -132,15 +204,13 @@ const handleBatchUnbind = async () => {
   }
 }
 
-// 绑定商品
 const handleBind = async (productIds) => {
   try {
     loading.value = true
     await bindProductTag(tag.value.id, productIds)
-    ElMessage.success('绑定成功，正在刷新商品列表...')
-    await fetchTagDetail() // 刷新数据
-    tableKey.value++ // 强制刷新表格
-    ElMessage.success('商品列表已更新')
+    ElMessage.success('绑定成功')
+    await fetchTagDetail()
+    tableKey.value++
   } catch (error) {
     ElMessage.error('绑定失败')
     console.error('绑定失败:', error)
@@ -149,7 +219,6 @@ const handleBind = async (productIds) => {
   }
 }
 
-// 获取标签详情
 const pagination = ref({
   page: 1,
   pageSize: 10,
@@ -191,7 +260,6 @@ const fetchTagDetail = async () => {
   }
 }
 
-// 查看商品详情
 const viewProduct = (product) => {
   router.push({
     name: 'ProductDetail',
@@ -199,7 +267,6 @@ const viewProduct = (product) => {
   })
 }
 
-// 解绑商品标签
 const handleUnbind = async (product) => {
   try {
     await ElMessageBox.confirm(
@@ -214,11 +281,9 @@ const handleUnbind = async (product) => {
     
     loading.value = true
     await unbindProductTag(route.params.id, [product.id])
-    ElMessage.success('解绑成功，正在刷新商品列表...')
-    loading.value = true
-    await fetchTagDetail() // 刷新数据
-    tableKey.value++ // 强制刷新表格
-    ElMessage.success('商品列表已更新')
+    ElMessage.success('解绑成功')
+    await fetchTagDetail()
+    tableKey.value++
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error('解绑失败')
@@ -229,7 +294,6 @@ const handleUnbind = async (product) => {
   }
 }
 
-// 格式化时间
 const formatTime = (time) => {
   if (!time) return '暂无'
   return new Date(time).toLocaleString('zh-CN', {
@@ -248,82 +312,312 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.tag-detail-container {
-  height: 100%;
+.tag-detail-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f5f5f7 0%, #ffffff 100%);
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  border-radius: 10px;
+  color: #1d1d1f;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.header-info {
+  padding-top: 4px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.tag-name-sub {
+  font-size: 14px;
+  color: #86868b;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  border-radius: 10px;
+  color: #1d1d1f;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.action-btn.danger {
+  color: var(--color-danger);
+}
+
+.action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.detail-content {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+}
+
+.item-count {
+  font-size: 14px;
+  color: #86868b;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-label {
+  font-size: 13px;
+  color: #86868b;
+}
+
+.info-value {
+  font-size: 15px;
+  color: #1d1d1f;
+  font-weight: 500;
+}
+
+.description-content {
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+}
+
+.description-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #1d1d1f;
+  line-height: 1.6;
+}
+
+.products-table-wrapper {
+  margin: 0 -24px;
+  padding: 0 24px;
+}
+
+.products-table {
+  width: 100%;
+}
+
+.products-table :deep(.el-table) {
+  border: none;
+}
+
+.products-table :deep(.el-table__border) {
+  display: none;
+}
+
+.products-table :deep(.el-table th.el-table__cell) {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.products-table :deep(.el-table td.el-table__cell) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.products-table :deep(.el-table tr:hover > td) {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.product-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: #1d1d1f;
+}
+
+.price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+.low-stock {
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+.operation-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.summary-card .section-title {
+  margin-bottom: 20px;
+}
+
+.summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 14px;
+  color: #86868b;
+}
+
+.summary-value {
+  font-size: 14px;
+  color: #1d1d1f;
+  font-weight: 500;
+}
+
+@media screen and (max-width: 1024px) {
+  .detail-content {
+    grid-template-columns: 1fr;
+  }
   
-  .tag-detail {
-    padding: 20px;
+  .sidebar {
+    order: -1;
   }
+}
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+@media screen and (max-width: 768px) {
+  .page-container {
+    padding: 16px;
   }
-
-  .header h2 {
-    margin: 0;
-    font-size: 18px;
+  
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
   }
-
-  .product-list {
-    margin-top: 20px;
+  
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
   }
-
-  .product-list h3 {
-    margin: 20px 0 10px;
-    font-size: 16px;
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 10px;
-  }
-
-  .el-pagination {
-    margin-top: 10px;
-    padding: 0;
-    display: flex;
-    justify-content: flex-end;
-    background: transparent;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .el-pagination.is-background .btn-next,
-  .el-pagination.is-background .btn-prev,
-  .el-pagination.is-background .el-pager li {
-    background-color: transparent;
-    border: none;
-    border-radius: 0;
-  }
-
-  .el-pagination.is-background .el-pager li:not(.disabled).active {
-    background-color: var(--color-primary);
-    color: #fff;
-  }
-
-  .operation-buttons {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-    gap: 4px;
-  }
-
-  :deep(.el-button--primary.is-link),
-  :deep(.el-button--danger.is-link) {
-    padding: 4px 8px;
-    height: auto;
-    font-size: 13px;
-    margin: 0;
-    min-width: auto;
-  }
-
-  :deep(.el-divider--vertical) {
-    height: 1em;
-    margin: 0;
+  
+  .info-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

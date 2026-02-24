@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, onMounted, watch, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOrderList, deleteOrder, advanceSearchOrderList, getOrderStatusFlow, getOrderDetail } from '@/api/order'
@@ -149,8 +149,10 @@ import OrderForm from '@/components/order/OrderForm.vue'
 import UserSelect from '@/components/UserSelect.vue'
 import DataTable from '@/components/common/DataTable.vue'
 import AppDialog from '@/components/common/AppDialog.vue'
+import { useNotificationStore } from '@/stores'
 
 const router = useRouter()
+const notificationStore = useNotificationStore()
 const loading = ref(false)
 const submitting = ref(false)
 const orderList = ref([])
@@ -319,18 +321,17 @@ const handleReset = () => {
   fetchOrderList()
 }
 
-const handleNewOrder = (event) => {
-  fetchOrderList()
-}
-
 onMounted(async () => {
   await fetchOrderStatusFlow()
   fetchOrderList()
-  window.addEventListener('new-order-received', handleNewOrder)
 })
 
-onUnmounted(() => {
-  window.removeEventListener('new-order-received', handleNewOrder)
+// 监听 Pinia Store 中的新订单通知
+watch(() => notificationStore.newOrder, (order) => {
+  if (order) {
+    fetchOrderList()
+    notificationStore.closeNotification()
+  }
 })
 </script>
 

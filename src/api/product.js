@@ -1,14 +1,10 @@
 import request from '@/utils/request'
-import { isAdminRole } from '@/utils/auth';
 import { getCurrentShopId} from '@/api/shop';
-import { API_BASE_URL, API_PREFIX } from '@/config'
-
-
 
 // 获取商品列表
 export function getProductList(params) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/list`,
+        url: '/product/list',
         method: 'get',
         params
     })
@@ -17,7 +13,7 @@ export function getProductList(params) {
 // 获取商品详情
 export function getProductDetail(id) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/detail`,
+        url: '/product/detail',
         method: 'get',
         params: { id }
     })
@@ -26,7 +22,7 @@ export function getProductDetail(id) {
 // 创建商品
 export function createProduct(data) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/create`,
+        url: '/product/create',
         method: 'post',
         data
     })
@@ -35,7 +31,7 @@ export function createProduct(data) {
 // 更新商品
 export function updateProduct(id, data) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/update`,
+        url: '/product/update',
         method: 'put',
         params: { id },
         data
@@ -45,7 +41,7 @@ export function updateProduct(id, data) {
 // 删除商品
 export function deleteProduct(id) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/delete`,
+        url: '/product/delete',
         method: 'delete',
         params: { id, shop_id: getCurrentShopId()}
     })
@@ -56,7 +52,7 @@ export function uploadProductImage(id, file) {
     const formData = new FormData()
     formData.append('image', file)
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/upload-image`,
+        url: '/product/upload-image',
         method: 'post',
         params: { id },
         data: formData,
@@ -75,13 +71,13 @@ export const getProductImageUrl = (path) => {
   // 如果path以/开头，去掉开头的/
   const cleanPath = path.startsWith('/') ? path.slice(1) : path
   
-  return `/${isAdminRole() ? 'admin' : 'shopOwner'}/product/image?path=${cleanPath}` // 返回相对路径
+  return `/product/image?path=${cleanPath}` // 返回相对路径，前缀由拦截器自动添加
 }
 
 // 更新商品状态
 export const updateProductStatus = (id, status) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/product/toggle-status`,
+    url: '/product/toggle-status',
     method: 'put',
     data: { id, status }
   })

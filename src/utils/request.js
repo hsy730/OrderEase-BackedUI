@@ -46,6 +46,7 @@ async function handleRefreshToken(storedRefreshToken, adminInfo) {
 // 导入所需工具函数
 import { isAdminRole } from '@/utils/auth'
 import { getCurrentShopId } from '@/api/shop'
+import { useUserStore } from '@/stores'
 
 // 请求拦截器
 request.interceptors.request.use(
@@ -108,6 +109,10 @@ request.interceptors.request.use(
     // 设置token
     config.headers.Authorization = `Bearer ${token}`
     
+    // 自动处理角色相关的 URL 前缀
+    const userStore = useUserStore()
+    addRolePrefixToUrl(config, userStore)
+    
     // 添加shop_id到请求中
     addShopIdToRequest(config)
     
@@ -117,6 +122,22 @@ request.interceptors.request.use(
     return Promise.reject(error)
   }
 )
+
+/**
+ * 根据用户角色自动添加 URL 前缀
+ * @param {Object} config - axios 请求配置
+ * @param {Object} userStore - Pinia user store
+ */
+function addRolePrefixToUrl(config, userStore) {
+  // 如果 URL 已经以 /admin 或 /shopOwner 开头，则跳过
+  if (config.url.startsWith('/admin') || config.url.startsWith('/shopOwner')) {
+    return
+  }
+  
+  // 根据角色添加前缀
+  const prefix = userStore.isAdmin ? '/admin' : '/shopOwner'
+  config.url = prefix + config.url
+}
 
 // 添加shop_id到请求的函数
 function addShopIdToRequest(config) {

@@ -97,7 +97,9 @@ export function getProductStatusOptions() {
 export const USER_ROLE = {
   ADMIN: { value: 'admin', label: '管理员' },
   USER: { value: 'user', label: '普通用户' },
-  SYSTEM: { value: 'system', label: '公共用户' }
+  SYSTEM: { value: 'system', label: '公共用户' },
+  PUBLIC_USER: { value: 'public_user', label: '公共用户' },
+  PRIVATE_USER: { value: 'private_user', label: '普通用户' }
 }
 
 /**

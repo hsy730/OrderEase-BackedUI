@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import { isAdminRole } from '@/utils/auth';
 
 // 管理员登录
 export const login = (data) => {
@@ -13,7 +12,7 @@ export const login = (data) => {
 // 退出登录
 export const logout = () => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/logout`,
+    url: '/logout',
     method: 'post'
   })
 }
@@ -21,7 +20,7 @@ export const logout = () => {
 // 修改密码
 export const changePassword = (data) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/change-password`,
+    url: '/change-password',
     method: 'post',
     data
   })
@@ -30,7 +29,7 @@ export const changePassword = (data) => {
 // 刷新Token
 export const refreshToken = (refreshToken) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/refresh-token`,
+    url: '/refresh-token',
     method: 'post',
     data: {
       refreshToken

@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import { isAdminRole } from '@/utils/auth'
 
 /**
  * 获取数据看板统计数据
@@ -9,9 +8,8 @@ import { isAdminRole } from '@/utils/auth'
  * @returns {Promise} 返回统计数据
  */
 export function getDashboardStats(params = {}) {
-  const role = isAdminRole() ? 'admin' : 'shopOwner'
   return request({
-    url: `/${role}/dashboard/stats`,
+    url: '/dashboard/stats',
     method: 'get',
     params
   })

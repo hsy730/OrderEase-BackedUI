@@ -1,11 +1,10 @@
 import request from '@/utils/request'
-import { isAdminRole } from '@/utils/auth';
 import { getCurrentShopId} from '@/api/shop';
 
 // 获取订单列表
 export function getOrderList(params) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/list`,
+        url: '/order/list',
         method: 'get',
         params
     })
@@ -13,7 +12,7 @@ export function getOrderList(params) {
 
 export function advanceSearchOrderList(data) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/advance-search`,
+        url: '/order/advance-search',
         method: 'post',
         data
     })
@@ -22,7 +21,7 @@ export function advanceSearchOrderList(data) {
 // 获取订单详情 
 export function getOrderDetail(id) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/detail`,
+        url: '/order/detail',
         method: 'get',
         params: { id }
     })
@@ -31,7 +30,7 @@ export function getOrderDetail(id) {
 // 创建订单
 export function createOrder(data) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/create`,
+        url: '/order/create',
         method: 'post',
         data
     })
@@ -40,7 +39,7 @@ export function createOrder(data) {
 // 更新订单
 export function updateOrder(id, data) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/update`,
+        url: '/order/update',
         method: 'put',
         params: { id },
         data
@@ -50,7 +49,7 @@ export function updateOrder(id, data) {
 // 删除订单
 export function deleteOrder(id) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/delete`,
+        url: '/order/delete',
         method: 'delete',
         params: { id }
     })
@@ -59,7 +58,7 @@ export function deleteOrder(id) {
 // 翻转订单状态
 export const toggleOrderStatus = (id, shop_id, next_status) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/toggle-status`,
+    url: '/order/toggle-status',
     method: 'put',
     data: { id, shop_id, next_status }
   })
@@ -68,7 +67,7 @@ export const toggleOrderStatus = (id, shop_id, next_status) => {
 // 获取订单状态流转配置
 export const getOrderStatusFlow = (shopId) => {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/order/status-flow`,
+    url: '/order/status-flow',
     method: 'get',
     params: { shop_id: shopId }
   })

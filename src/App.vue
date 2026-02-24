@@ -28,19 +28,28 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { EventSourcePolyfill } from 'event-source-polyfill'
 import { getCurrentShopId } from '@/api/shop'
 import { getToken, isAdminRole } from '@/utils/auth'
 import { ShoppingCart } from '@element-plus/icons-vue'
+import { useNotificationStore } from '@/stores'
 
 const router = useRouter()
+const notificationStore = useNotificationStore()
 const eventSource = ref(null)
 const showNotification = ref(false)
 const newOrder = ref({})
 const notificationType = ref('info')
 const notificationTimer = ref(null)
+
+// 监听 Pinia Store 中的新订单通知
+watch(() => notificationStore.newOrder, (order) => {
+  if (order) {
+    showNewOrderNotification(order)
+  }
+})
 
 // SSE 连接函数
 const connectSSE = () => {
@@ -62,7 +71,9 @@ const connectSSE = () => {
     return
   }
 
-  const sseUrl = `http://localhost:8080/api/order-ease/v1${isAdminRole() ? '/admin' : '/shopOwner'}/order/sse?shop_id=${shopId}`
+  // URL 前缀由 request.js 拦截器自动处理，SSE 需要手动处理
+  const rolePrefix = localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')).role === 'admin' ? '/admin' : '/shopOwner' : '/shopOwner'
+  const sseUrl = `http://localhost:8080/api/order-ease/v1${rolePrefix}/order/sse?shop_id=${shopId}`
 
   eventSource.value = new EventSourcePolyfill(sseUrl, {
     headers: {
@@ -74,11 +85,13 @@ const connectSSE = () => {
   eventSource.value.addEventListener('new_order', (event) => {
     try {
       const order = JSON.parse(event.data)
-      showNewOrderNotification(order)
-
-      // 如果当前在订单管理页面，则刷新订单列表
+      
+      // 如果当前在订单管理页面，通过 Pinia Store 通知
       if (router.currentRoute.value.path === '/order') {
-        window.dispatchEvent(new CustomEvent('new-order-received', { detail: order }))
+        notificationStore.notifyNewOrder(order)
+      } else {
+        // 否则显示通知弹窗
+        showNewOrderNotification(order)
       }
     } catch (error) {
       console.error('解析订单数据错误:', error)

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/stores'
 
 const routes = [
     {
@@ -11,7 +12,7 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: () => import('@/views/login/index.vue'),
-        meta: { title: '登录' }
+        meta: { title: '登录', public: true }
     },
     {
         path: '/',
@@ -26,7 +27,7 @@ const routes = [
             },
             {
                 path: 'user',
-                name: 'User',
+                name: 'UserList',
                 component: () => import('@/views/user/UserList.vue'),
                 meta: { title: '用户管理' }
             },
@@ -100,25 +101,25 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-    const adminInfo = localStorage.getItem('admin')
+    const userStore = useUserStore()
     
-    console.log('Current route:', to.path)
-    console.log('Admin info:', adminInfo)
-
-    if (to.path === '/login') {
-        if (adminInfo) {
-            const user = JSON.parse(adminInfo)
-            const defaultPath = user.role === 'admin' ? '/shop' : '/order'
+    // 公开页面直接放行
+    if (to.meta?.public) {
+        if (userStore.isLoggedIn) {
+            // 已登录用户访问登录页，重定向到首页
+            const defaultPath = userStore.isAdmin ? '/shop' : '/order'
             next(defaultPath)
         } else {
             next()
         }
+        return
+    }
+    
+    // 需要登录的页面
+    if (userStore.isLoggedIn) {
+        next()
     } else {
-        if (adminInfo) {
-            next()
-        } else {
-            next('/login')
-        }
+        next('/login')
     }
 })
 

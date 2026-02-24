@@ -1,6 +1,4 @@
 import request from '@/utils/request'
-import { isAdminRole } from '@/utils/auth';
-import { API_BASE_URL, API_PREFIX } from '@/config'
 
 export function getCurrentShopId() {
     return localStorage.getItem('currentShopId') || '';
@@ -9,7 +7,7 @@ export function getCurrentShopId() {
 // 获取店铺列表
 export function getShopList(params) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/list`,
+        url: '/shop/list',
         method: 'get',
         params: {
             page: params.page,
@@ -21,7 +19,7 @@ export function getShopList(params) {
 
 export function createShop(shopData) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/create`,
+        url: '/shop/create',
         method: 'post',
         data: shopData,
     })
@@ -30,7 +28,7 @@ export function createShop(shopData) {
 // 确保整个文件只声明一次 deleteShop
 export function updateShop(shopData) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/update`,
+        url: '/shop/update',
         method: 'put',
         data: shopData,
     })
@@ -38,7 +36,7 @@ export function updateShop(shopData) {
 
 export function deleteShop(shopId) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/delete`,
+        url: '/shop/delete',
         method: 'delete',
         params: {
             shop_id: shopId,
@@ -49,7 +47,7 @@ export function deleteShop(shopId) {
 // 修改获取店铺详情接口
 export function getShopDetail(shopId) {
   return request({
-    url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/detail`,
+    url: '/shop/detail',
     method: 'get',
     params: {
       shop_id: shopId
@@ -61,7 +59,7 @@ export function uploadShopImage(id, file) {
     const formData = new FormData()
     formData.append('image', file)
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/upload-image`,
+        url: '/shop/upload-image',
         method: 'post',
         params: { id },
         data: formData,
@@ -72,13 +70,13 @@ export function uploadShopImage(id, file) {
 }
 
 export function getShopImageUrl(path) {
-    return `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/image?path=${path}` // 返回相对路径
+    return `/shop/image?path=${path}` // 返回相对路径，前缀由拦截器自动添加
 }
 
 // 获取店铺临时令牌
 export function getShopTempToken(shopId) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/temp-token`,
+        url: '/shop/temp-token',
         method: 'get',
         params: {
             shop_id: shopId
@@ -89,7 +87,7 @@ export function getShopTempToken(shopId) {
 // 更新订单状态流转
 export function updateOrderStatusFlow(data) {
     return request({
-        url: `${isAdminRole() ? '/admin' : '/shopOwner'}/shop/update-order-status-flow`,
+        url: '/shop/update-order-status-flow',
         method: 'put',
         data: data,
     })

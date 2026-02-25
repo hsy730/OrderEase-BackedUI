@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import {
@@ -156,6 +156,13 @@ const handleDelete = async (row) => {
 
 onMounted(() => {
   fetchData()
+})
+
+onUnmounted(() => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+    searchTimeout = null
+  }
 })
 
 const dialogVisible = ref(false)

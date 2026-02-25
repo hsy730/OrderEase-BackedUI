@@ -20,6 +20,7 @@
       :height="height"
       :max-height="maxHeight"
       :row-key="rowKey"
+      :virtualized="virtualized"
       v-bind="defaultSort ? { 'default-sort': defaultSort } : {}"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
@@ -139,6 +140,10 @@ const props = defineProps({
   rowKey: {
     type: [String, Function],
     default: 'id'
+  },
+  virtualized: {
+    type: Boolean,
+    default: true
   },
   defaultSort: {
     type: Object,

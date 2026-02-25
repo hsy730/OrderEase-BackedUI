@@ -15,6 +15,46 @@ const request = axios.create({
 let isRefreshing = false
 let requests = []
 
+// 请求取消控制器映射
+const abortControllers = new Map()
+
+/**
+ * 创建带取消功能的请求配置
+ * @param {string} key - 请求唯一标识
+ * @returns {AbortController} 控制器实例
+ */
+export function createAbortController(key) {
+  // 如果已存在同key的控制器，先取消
+  if (abortControllers.has(key)) {
+    abortControllers.get(key).abort('Request cancelled by new request')
+  }
+
+  const controller = new AbortController()
+  abortControllers.set(key, controller)
+  return controller
+}
+
+/**
+ * 取消指定key的请求
+ * @param {string} key - 请求唯一标识
+ */
+export function abortRequest(key) {
+  if (abortControllers.has(key)) {
+    abortControllers.get(key).abort('Request cancelled')
+    abortControllers.delete(key)
+  }
+}
+
+/**
+ * 清理所有请求
+ */
+export function abortAllRequests() {
+  abortControllers.forEach((controller, key) => {
+    controller.abort('All requests cancelled')
+  })
+  abortControllers.clear()
+}
+
 function handleLogout() {
   const userStore = useUserStore()
   userStore.clearUserInfo()
@@ -175,6 +215,11 @@ request.interceptors.response.use(
     return response.data
   },
   async error => {
+    // 清理对应的 AbortController
+    if (error.config && error.config.abortKey) {
+      abortControllers.delete(error.config.abortKey)
+    }
+
     if (error.response) {
       switch (error.response.status) {
         case 401:

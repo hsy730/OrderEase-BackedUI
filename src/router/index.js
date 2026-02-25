@@ -23,7 +23,7 @@ const routes = [
                 path: 'user',
                 name: 'UserList',
                 component: () => import('@/views/user/UserList.vue'),
-                meta: { title: '用户管理' }
+                meta: { title: '用户管理', requiresAdmin: true }
             },
             {
                 path: 'order',
@@ -47,7 +47,7 @@ const routes = [
                 path: 'shop',
                 name: 'Shop',
                 component: () => import('@/views/shop/ShopManage.vue'),
-                meta: { title: '店铺管理' }
+                meta: { title: '店铺管理', requiresAdmin: true }
             },
             {
                 path: 'product/:id',
@@ -59,7 +59,7 @@ const routes = [
                 path: 'shop/:id',
                 name: 'ShopDetail',
                 component: () => import('@/views/shop/ShopDetail.vue'),
-                meta: { title: '店铺详情' }
+                meta: { title: '店铺详情', requiresAdmin: true }
             },
             {
                 path: 'tag',
@@ -77,7 +77,7 @@ const routes = [
                 path: 'migration',
                 name: 'Migration',
                 component: () => import('@/views/migration/index.vue'),
-                meta: { title: '数据迁移' }
+                meta: { title: '数据迁移', requiresAdmin: true }
             }
         ]
     },
@@ -96,7 +96,7 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
     const userStore = useUserStore()
-    
+
     // 公开页面直接放行
     if (to.meta?.public) {
         if (userStore.isLoggedIn) {
@@ -108,10 +108,15 @@ router.beforeEach((to, from, next) => {
         }
         return
     }
-    
+
     // 需要登录的页面
     if (userStore.isLoggedIn) {
-        next()
+        // 检查是否需要管理员权限
+        if (to.meta?.requiresAdmin && !userStore.isAdmin) {
+            next('/order')
+        } else {
+            next()
+        }
     } else {
         next('/login')
     }

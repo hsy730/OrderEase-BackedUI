@@ -43,11 +43,10 @@ const newOrder = ref({})
 const notificationType = ref('info')
 const notificationTimer = ref(null)
 let reconnectTimer = null
-let unwatchNotification = null
 let routeUnwatch = null
 
 // 监听 Pinia Store 中的新订单通知
-unwatchNotification = watch(() => notificationStore.newOrder, (order) => {
+const unwatchNotification = watch(() => notificationStore.newOrder, (order) => {
   if (order) {
     showNewOrderNotification(order)
   }
@@ -74,7 +73,7 @@ const connectSSE = () => {
   }
 
   // URL 前缀由 request.js 拦截器自动处理，SSE 需要手动处理
-  const sseUrl = `http://localhost:8080/api/order-ease/v1${getRolePrefix()}/order/sse?shop_id=${shopId}`
+  const sseUrl = `${import.meta.env.VITE_API_BASE_URL}/api/order-ease/v1${getRolePrefix()}/order/sse?shop_id=${shopId}`
 
   eventSource.value = new EventSourcePolyfill(sseUrl, {
     headers: {

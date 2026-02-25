@@ -128,7 +128,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserList, createUser, deleteUser, updateUser } from '@/api/user'
 import { getUserRoleLabel } from '@/utils/status'
@@ -295,6 +295,13 @@ const handleRefresh = () => {
 
 onMounted(() => {
   loadUsers()
+})
+
+onUnmounted(() => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+    searchTimeout = null
+  }
 })
 </script>
 

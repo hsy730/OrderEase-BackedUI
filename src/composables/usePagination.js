@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 
 /**
  * 分页组合式函数
@@ -173,6 +173,16 @@ export function usePaginationWithSearch(options = {}) {
     pagination.resetPagination()
   }
 
+  /**
+   * 清理定时器
+   */
+  const cleanup = () => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout)
+      searchTimeout = null
+    }
+  }
+
   // 搜索参数（用于传递给API）
   const searchParams = computed(() => ({
     keyword: searchKeyword.value,
@@ -192,6 +202,7 @@ export function usePaginationWithSearch(options = {}) {
     handleSearchInput,
     searchImmediately,
     clearSearch,
-    resetAll
+    resetAll,
+    cleanup
   }
 }

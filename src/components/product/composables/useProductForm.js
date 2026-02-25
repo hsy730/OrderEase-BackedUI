@@ -1,4 +1,4 @@
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createProduct, updateProduct, uploadProductImage, getProductDetail } from '@/api/product'
 import Sortable from 'sortablejs'
@@ -271,6 +271,14 @@ export function useProductForm(props, emit) {
     if (props.productId) {
       fetchProductDetail()
     }
+  })
+
+  // 清理 Sortable 实例
+  onUnmounted(() => {
+    Object.values(sortableInstances.value).forEach(instance => {
+      instance.destroy()
+    })
+    sortableInstances.value = {}
   })
 
   return {

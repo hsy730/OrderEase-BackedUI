@@ -25,5 +25,20 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src')
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'element-plus': ['element-plus'],
+          'axios': ['axios'],
+          'vue': ['vue', 'vue-router', 'pinia']
+        }
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['element-plus']
   }
 })

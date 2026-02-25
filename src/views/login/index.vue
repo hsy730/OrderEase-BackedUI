@@ -131,8 +131,10 @@ import { ElMessage } from 'element-plus'
 import { User, Lock, Picture, ShoppingCart, DataAnalysis, TrendCharts, InfoFilled, Refresh } from '@element-plus/icons-vue'
 import { login } from '@/api/auth'
 import { saveAdminInfo } from '@/utils/auth'
+import { useUserStore } from '@/stores'
 
 const router = useRouter()
+const userStore = useUserStore()
 const loading = ref(false)
 const loginFormRef = ref(null)
 
@@ -251,6 +253,7 @@ const handleLogin = async () => {
       role: response.role
     }
     saveAdminInfo(adminInfo)
+    userStore.setUserInfo(adminInfo)
 
     ElMessage.success({
       message: response.message || '登录成功',

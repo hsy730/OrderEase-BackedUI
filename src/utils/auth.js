@@ -91,7 +91,6 @@ export function setCurrentShopId(shopId) {
  */
 export function clearAuthInfo() {
     localStorage.removeItem('admin');
-    localStorage.removeItem('token');
     localStorage.removeItem('currentShopId');
 }
 

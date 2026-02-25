@@ -6,7 +6,7 @@ const STORAGE_KEY = 'admin'
 export const useUserStore = defineStore('user', () => {
   // State
   const userInfo = ref(null)
-  const token = ref(localStorage.getItem('token') || '')
+  const token = ref('')
 
   // Getters
   const isLoggedIn = computed(() => !!userInfo.value)
@@ -22,6 +22,7 @@ export const useUserStore = defineStore('user', () => {
     if (stored) {
       try {
         userInfo.value = JSON.parse(stored)
+        token.value = userInfo.value?.token || ''
       } catch (e) {
         console.error('Failed to parse user info:', e)
         userInfo.value = null
@@ -31,6 +32,7 @@ export const useUserStore = defineStore('user', () => {
 
   function setUserInfo(info) {
     userInfo.value = info
+    token.value = info?.token || ''
     if (info) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(info))
     } else {
@@ -40,18 +42,16 @@ export const useUserStore = defineStore('user', () => {
 
   function setToken(newToken) {
     token.value = newToken
-    if (newToken) {
-      localStorage.setItem('token', newToken)
-    } else {
-      localStorage.removeItem('token')
-    }
+    // 从 userInfo 中读取完整的 admin 信息
+    let adminInfo = userInfo.value || {}
+    adminInfo.token = newToken
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(adminInfo))
   }
 
   function clearUserInfo() {
     userInfo.value = null
     token.value = ''
     localStorage.removeItem(STORAGE_KEY)
-    localStorage.removeItem('token')
     localStorage.removeItem('currentShopId')
   }
 

@@ -16,9 +16,9 @@ let isRefreshing = false
 let requests = []
 
 function handleLogout() {
-  clearAuthInfo()
   const userStore = useUserStore()
   userStore.clearUserInfo()
+  clearAuthInfo()
   ElMessage.error('登录已过期，请重新登录')
   router.push('/login')
 }
@@ -36,6 +36,9 @@ async function handleRefreshToken(storedRefreshToken, adminInfo) {
     adminData.token = newToken
     adminData.refreshToken = newRefreshToken
     saveAdminInfo(adminData)
+
+    const userStore = useUserStore()
+    userStore.updateUserInfo({ token: newToken, refreshToken: newRefreshToken })
 
     return newToken
   } catch (error) {

@@ -20,7 +20,7 @@
       :height="height"
       :max-height="maxHeight"
       :row-key="rowKey"
-      :default-sort="defaultSort"
+      v-bind="defaultSort ? { 'default-sort': defaultSort } : {}"
       @selection-change="handleSelectionChange"
       @sort-change="handleSortChange"
       @row-click="handleRowClick"
@@ -142,7 +142,7 @@ const props = defineProps({
   },
   defaultSort: {
     type: Object,
-    default: undefined
+    default: null
   },
   emptyText: {
     type: String,

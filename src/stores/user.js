@@ -42,10 +42,14 @@ export const useUserStore = defineStore('user', () => {
 
   function setToken(newToken) {
     token.value = newToken
-    // 从 userInfo 中读取完整的 admin 信息
-    let adminInfo = userInfo.value || {}
-    adminInfo.token = newToken
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(adminInfo))
+    if (userInfo.value) {
+      userInfo.value = { ...userInfo.value, token: newToken }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(userInfo.value))
+      } catch (error) {
+        console.error('Failed to save user info:', error)
+      }
+    }
   }
 
   function clearUserInfo() {

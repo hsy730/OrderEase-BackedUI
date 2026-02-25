@@ -144,23 +144,22 @@ function addShopIdToRequest(config) {
   if (shopId) {
     // 检查是否为FormData类型（通常用于文件上传）
     const isFormData = config.data instanceof FormData
-    
+
     if (isFormData) {
       // FormData类型（文件上传）：将shop_id添加到query参数中
-      config.params = { ...config.params, shop_id: shopId }
+      config.params = { ...(config.params || {}), shop_id: shopId }
     } else {
       // 检查是否有body数据
       const hasBodyData = config.data && config.data !== ''
-      
+
       if (hasBodyData) {
         // 有body数据且非FormData：将shop_id添加到body中
         if (config.data.shop_id == null) {
           config.data = { ...config.data, shop_id: shopId }
         }
-      } 
-      // 无body数据：将shop_id添加到query参数中
-      if (config.params && config.params.shop_id == null) {
-          config.params = { ...config.params, shop_id: shopId }
+      } else {
+        // 无body数据时，确保params存在
+        config.params = { ...(config.params || {}), shop_id: shopId }
       }
     }
   }

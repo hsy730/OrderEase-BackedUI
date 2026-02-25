@@ -71,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOrderList, deleteOrder, getOrderStatusFlow, getOrderDetail } from '@/api/order'
@@ -215,16 +215,22 @@ const handleSubmit = () => {
   fetchOrderList()
 }
 
+// 监听 Pinia Store 中的新订单通知
+const unwatchNewOrder = watch(() => notificationStore.newOrder, (order) => {
+  if (order) {
+    fetchOrderList()
+    notificationStore.closeNotification()
+  }
+})
+
 onMounted(async () => {
   await fetchOrderStatusFlow()
   fetchOrderList()
 })
 
-// 监听 Pinia Store 中的新订单通知
-watch(() => notificationStore.newOrder, (order) => {
-  if (order) {
-    fetchOrderList()
-    notificationStore.closeNotification()
+onUnmounted(() => {
+  if (unwatchNewOrder) {
+    unwatchNewOrder()
   }
 })
 </script>
@@ -287,7 +293,7 @@ watch(() => notificationStore.newOrder, (order) => {
 
 .status-badge.status-warning {
   background: rgba(255, 149, 0, 0.1);
-  color: #ff9500;
+  color: #ffff50;
 }
 
 .status-badge.status-danger {

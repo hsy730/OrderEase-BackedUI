@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, reactive } from 'vue'
+import { ref, onMounted, watch, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOrderList, deleteOrder, advanceSearchOrderList, getOrderStatusFlow, getOrderDetail } from '@/api/order'
@@ -198,6 +198,7 @@ const fetchOrderStatusFlow = async () => {
     const data = await getOrderStatusFlow(shopId)
     if (data && data.order_status_flow) {
       shopInfo.value = data
+
       orderStatusFlow.value = data.order_status_flow?.statuses || []
     }
   } catch (error) {
@@ -321,16 +322,22 @@ const handleReset = () => {
   fetchOrderList()
 }
 
+// 监听 Pinia Store 中的新订单通知
+const unwatchNewOrder = watch(() => notificationStore.newOrder, (order) => {
+  if (order) {
+    fetchOrderList()
+    notificationStore.closeNotification()
+  }
+})
+
 onMounted(async () => {
   await fetchOrderStatusFlow()
   fetchOrderList()
 })
 
-// 监听 Pinia Store 中的新订单通知
-watch(() => notificationStore.newOrder, (order) => {
-  if (order) {
-    fetchOrderList()
-    notificationStore.closeNotification()
+onUnmounted(() => {
+  if (unwatchNewOrder) {
+    unwatchNewOrder()
   }
 })
 </script>
@@ -509,7 +516,7 @@ watch(() => notificationStore.newOrder, (order) => {
   color: #1d1d1f;
 }
 
-.op-btn.edit {
+.op-btn.edit.edit {
   color: #3b82f6;
 }
 

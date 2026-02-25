@@ -42,9 +42,12 @@ const showNotification = ref(false)
 const newOrder = ref({})
 const notificationType = ref('info')
 const notificationTimer = ref(null)
+let reconnectTimer = null
+let unwatchNotification = null
+let routeUnwatch = null
 
 // 监听 Pinia Store 中的新订单通知
-watch(() => notificationStore.newOrder, (order) => {
+unwatchNotification = watch(() => notificationStore.newOrder, (order) => {
   if (order) {
     showNewOrderNotification(order)
   }
@@ -102,7 +105,10 @@ const connectSSE = () => {
 
   eventSource.value.onerror = () => {
     if (eventSource.value && eventSource.value.readyState === EventSourcePolyfill.CLOSED) {
-      setTimeout(() => {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer)
+      }
+      reconnectTimer = setTimeout(() => {
         console.log('尝试重新连接...')
         connectSSE()
       }, 5000)
@@ -157,15 +163,25 @@ const handleRouteChange = () => {
 
 onMounted(() => {
   connectSSE()
-  router.afterEach(handleRouteChange)
+  routeUnwatch = router.afterEach(handleRouteChange)
 })
 
 onUnmounted(() => {
   if (eventSource.value) {
     eventSource.value.close()
+    eventSource.value = null
   }
   if (notificationTimer.value) {
     clearTimeout(notificationTimer.value)
+  }
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+  }
+  if (unwatchNotification) {
+    unwatchNotification()
+  }
+  if (routeUnwatch) {
+    routeUnwatch()
   }
 })
 </script>

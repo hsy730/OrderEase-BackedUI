@@ -1,7 +1,9 @@
 import request from '@/utils/request'
+import { getCurrentShopId as getCurrentShopIdFromAuth } from '@/utils/auth'
 
+// 从 auth.js 导入，保持向后兼容
 export function getCurrentShopId() {
-    return localStorage.getItem('currentShopId') || '';
+    return getCurrentShopIdFromAuth();
 }
 
 // 获取店铺列表

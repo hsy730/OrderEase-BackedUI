@@ -130,6 +130,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, Picture, ShoppingCart, DataAnalysis, TrendCharts, InfoFilled, Refresh } from '@element-plus/icons-vue'
 import { login } from '@/api/auth'
+import { saveAdminInfo } from '@/utils/auth'
 
 const router = useRouter()
 const loading = ref(false)
@@ -249,7 +250,7 @@ const handleLogin = async () => {
       token: response.token,
       role: response.role
     }
-    localStorage.setItem('admin', JSON.stringify(adminInfo))
+    saveAdminInfo(adminInfo)
 
     ElMessage.success({
       message: response.message || '登录成功',

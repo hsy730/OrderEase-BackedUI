@@ -2,6 +2,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getProductList, deleteProduct, updateProductStatus, getProductImageUrl } from '@/api/product'
+import { formatTime } from '@/utils/date'
 
 export function useProductManage() {
   const router = useRouter()
@@ -51,19 +52,6 @@ export function useProductManage() {
   // 获取图片URL
   const getImageUrl = (path) => {
     return getProductImageUrl(path)
-  }
-
-  // 格式化时间
-  const formatTime = (time) => {
-    if (!time) return '暂无'
-    return new Date(time).toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }).replace(/\//g, '-')
   }
 
   // 新增商品

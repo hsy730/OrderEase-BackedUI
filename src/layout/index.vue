@@ -45,7 +45,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { logout } from '@/api/auth'
-import { getShopList, getCurrentShopId, getShopDetail } from '@/api/shop'
+import { getShopList, getShopDetail } from '@/api/shop'
+import { getCurrentShopId, setCurrentShopId, clearAuthInfo, isAdminRole, getAdminInfo } from '@/utils/auth'
 import { debounce } from 'lodash-es'
 import Sidebar from './components/Sidebar.vue'
 import Navbar from './components/Navbar.vue'
@@ -56,8 +57,8 @@ const router = useRouter()
 
 // 状态
 const isCollapse = ref(false)
-const isAdmin = ref(JSON.parse(localStorage.getItem('admin') || '{}').role === 'admin')
-const userInfo = ref(JSON.parse(localStorage.getItem('admin') || '{}'))
+const isAdmin = ref(isAdminRole())
+const userInfo = ref(getAdminInfo())
 const shopList = ref([])
 const shopId = ref(null)
 const searchLoading = ref(false)
@@ -92,10 +93,10 @@ const handleShopSearch = debounce(async (query) => {
 // 店铺切换
 const handleShopChange = async (shopId) => {
   let refresh = false
-  if (localStorage.getItem('currentShopId')) {
+  if (getCurrentShopId()) {
     refresh = true
   }
-  localStorage.setItem('currentShopId', shopId)
+  setCurrentShopId(shopId)
   ElMessage.success('店铺切换成功')
   if (refresh) {
     router.go(0)
@@ -117,7 +118,7 @@ const handleLogout = async () => {
     })
 
     await logout()
-    localStorage.removeItem('admin')
+    clearAuthInfo()
     router.push('/login')
     ElMessage.success('退出成功')
   } catch (error) {
@@ -128,7 +129,7 @@ const handleLogout = async () => {
 
 // 密码修改成功
 const handlePasswordChanged = () => {
-  localStorage.removeItem('admin')
+  clearAuthInfo()
   router.push('/login')
 }
 
@@ -143,7 +144,7 @@ onMounted(async () => {
         shopId.value = curShopId
       } else {
         shopId.value = data[0]?.id || null
-        localStorage.setItem('currentShopId', shopId.value)
+        setCurrentShopId(shopId.value)
       }
     } catch (error) {
       console.error('获取店铺列表失败:', error)

@@ -266,6 +266,7 @@ import { CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getDefaultOrderStatusFlow } from '@/utils/orderStatus'
 import { isAdminRole } from '@/utils/auth'
+import { formatTime } from '@/utils/date'
 
 const route = useRoute()
 const loading = ref(false)
@@ -324,17 +325,7 @@ const handleImageError = () => {
   console.error('店铺图片加载失败')
 }
 
-const formatTime = (time) => {
-  if (!time) return '暂无'
-  return new Date(time).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  })
-}
+
 
 const isValid = computed(() => {
   if (!shopInfo.value.valid_until) return false

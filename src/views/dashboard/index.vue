@@ -172,7 +172,7 @@
             <div class="order-item" v-for="order in recentOrders" :key="order.id">
               <div class="order-info">
                 <div class="order-id">#{{ order.id.slice(-6) }}</div>
-                <div class="order-time">{{ formatTime(order.created_at) }}</div>
+                <div class="order-time">{{ formatRelativeTime(order.created_at) }}</div>
               </div>
               <div class="order-amount">¥{{ order.total_price?.toFixed(2) || '0.00' }}</div>
               <el-tag :type="getStatusType(order.status)" size="small">
@@ -192,6 +192,7 @@ import { useRouter } from 'vue-router'
 import { ShoppingCart, Money, Goods, User, TrendCharts, Refresh, Picture, Timer, Odometer, CircleCheck } from '@element-plus/icons-vue'
 import { getDashboardStats } from '@/api/dashboard'
 import { getStatusText as getStatusTextUtil, getStatusType as getStatusTypeUtil } from '@/utils/orderStatus'
+import { formatRelativeTime } from '@/utils/date'
 import SmartImage from '@/components/SmartImage.vue'
 
 const router = useRouter()
@@ -229,17 +230,7 @@ const periodText = computed(() => {
 })
 
 // 格式化时间
-const formatTime = (time) => {
-  if (!time) return ''
-  const date = new Date(time)
-  const now = new Date()
-  const diff = now - date
 
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
-  return date.toLocaleDateString()
-}
 
 // 获取订单状态文本
 const shopInfo = ref({})

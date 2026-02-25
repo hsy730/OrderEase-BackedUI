@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 import { API_PREFIX } from '@/config'
-import { needRefreshToken } from '@/utils/auth'
+import { needRefreshToken, getAdminInfo, saveAdminInfo, clearAuthInfo } from '@/utils/auth'
 import { refreshToken } from '@/api/auth'
 
 const request = axios.create({
@@ -29,12 +29,12 @@ async function handleRefreshToken(storedRefreshToken, adminInfo) {
     const adminData = JSON.parse(adminInfo)
     adminData.token = newToken
     adminData.refreshToken = newRefreshToken
-    localStorage.setItem('admin', JSON.stringify(adminData))
+    saveAdminInfo(adminData)
 
     return newToken
   } catch (error) {
     // 刷新失败，清除本地存储并跳转登录
-    localStorage.removeItem('admin')
+    clearAuthInfo()
     ElMessage.error('登录已过期，请重新登录')
     router.push('/login')
     throw error
@@ -56,10 +56,10 @@ request.interceptors.request.use(
       return config
     }
 
-    const adminInfo = localStorage.getItem('admin')
-    if (!adminInfo) return config
+    const adminInfo = getAdminInfo()
+    if (!adminInfo || Object.keys(adminInfo).length === 0) return config
 
-    const { token, refreshToken: storedRefreshToken } = JSON.parse(adminInfo)
+    const { token, refreshToken: storedRefreshToken } = adminInfo
     
     // 如果不是刷新token的请求，且正在刷新token，则将请求加入队列
     if (!config.url.includes('/refresh-token') && isRefreshing) {
@@ -86,7 +86,7 @@ request.interceptors.request.use(
           requests = []
         } catch (error) {
           // 刷新失败，清除本地存储并跳转登录
-          localStorage.removeItem('admin')
+          clearAuthInfo()
           ElMessage.error('刷新token失败，请重新登录')
           router.push('/login')
           requests = []
@@ -182,13 +182,13 @@ request.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           // 尝试刷新token
-          const adminInfo = localStorage.getItem('admin')
-          if (adminInfo) {
-            const { refreshToken: storedRefreshToken } = JSON.parse(adminInfo)
+          const adminInfo = getAdminInfo()
+          if (adminInfo && Object.keys(adminInfo).length > 0) {
+            const { refreshToken: storedRefreshToken } = adminInfo
             if (storedRefreshToken && !isRefreshing) {
               isRefreshing = true
               try {
-                const newToken = await handleRefreshToken(storedRefreshToken, adminInfo)
+                const newToken = await handleRefreshToken(storedRefreshToken, JSON.stringify(adminInfo))
 
                 // 重试当前请求
                 const originalRequest = error.config
@@ -196,7 +196,7 @@ request.interceptors.response.use(
                 return request(originalRequest)
               } catch (refreshError) {
                   // 刷新失败，清除本地存储并跳转登录
-                  localStorage.removeItem('admin')
+                  clearAuthInfo()
                   ElMessage.error('登录已过期，请重新登录')
                   router.push('/login')
                 } finally {
@@ -204,7 +204,7 @@ request.interceptors.response.use(
               }
             } else {
               // 没有刷新token或正在刷新，清除本地存储并跳转登录
-              localStorage.removeItem('admin')
+              clearAuthInfo()
               ElMessage.error('登录已过期，请重新登录')
               router.push('/login')
             }

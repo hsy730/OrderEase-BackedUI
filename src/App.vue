@@ -31,8 +31,7 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { EventSourcePolyfill } from 'event-source-polyfill'
-import { getCurrentShopId } from '@/api/shop'
-import { getToken, isAdminRole } from '@/utils/auth'
+import { getCurrentShopId, getToken, getRolePrefix } from '@/utils/auth'
 import { ShoppingCart } from '@element-plus/icons-vue'
 import { useNotificationStore } from '@/stores'
 
@@ -72,8 +71,7 @@ const connectSSE = () => {
   }
 
   // URL 前缀由 request.js 拦截器自动处理，SSE 需要手动处理
-  const rolePrefix = localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')).role === 'admin' ? '/admin' : '/shopOwner' : '/shopOwner'
-  const sseUrl = `http://localhost:8080/api/order-ease/v1${rolePrefix}/order/sse?shop_id=${shopId}`
+  const sseUrl = `http://localhost:8080/api/order-ease/v1${getRolePrefix()}/order/sse?shop_id=${shopId}`
 
   eventSource.value = new EventSourcePolyfill(sseUrl, {
     headers: {

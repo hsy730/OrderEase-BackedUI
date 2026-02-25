@@ -241,6 +241,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getProductDetail, deleteProduct, getProductImageUrl, updateProduct } from '@/api/product'
 import { getProductTags } from '@/api/tag'
+import { formatTime } from '@/utils/date'
 import SmartImage from '@/components/SmartImage.vue'
 import ProductForm from '@/components/product/ProductForm.vue'
 import TagManageDialog from '@/components/product/TagManageDialog.vue'
@@ -298,17 +299,7 @@ const handlePreview = () => {
   }
 }
 
-const formatTime = (time) => {
-  if (!time) return '暂无'
-  return new Date(time).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  })
-}
+
 
 const handleImageError = () => {
   ElMessage.error('图片加载失败')

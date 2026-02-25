@@ -157,6 +157,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getTagDetail, getTagBoundProducts, unbindProductTag, bindProductTag } from '@/api/tag'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { formatTime } from '@/utils/date'
 import BindProductDialog from '@/components/product/BindProductDialog.vue'
 
 const route = useRoute()
@@ -294,17 +295,7 @@ const handleUnbind = async (product) => {
   }
 }
 
-const formatTime = (time) => {
-  if (!time) return '暂无'
-  return new Date(time).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  })
-}
+
 
 onMounted(() => {
   fetchTagDetail()

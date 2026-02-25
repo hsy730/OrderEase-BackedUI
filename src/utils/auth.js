@@ -65,3 +65,48 @@ export function saveAdminInfo(adminInfo) {
 export function isAdminRole() {
   return getAdminInfo().role === 'admin'
 }
+
+/**
+ * 获取当前店铺ID
+ * @returns {string} 店铺ID
+ */
+export function getCurrentShopId() {
+    return localStorage.getItem('currentShopId') || '';
+}
+
+/**
+ * 设置当前店铺ID
+ * @param {string} shopId - 店铺ID
+ */
+export function setCurrentShopId(shopId) {
+    if (shopId) {
+        localStorage.setItem('currentShopId', shopId);
+    } else {
+        localStorage.removeItem('currentShopId');
+    }
+}
+
+/**
+ * 清除所有登录相关信息
+ */
+export function clearAuthInfo() {
+    localStorage.removeItem('admin');
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentShopId');
+}
+
+/**
+ * 获取用户角色
+ * @returns {string} 用户角色
+ */
+export function getUserRole() {
+    return getAdminInfo().role || '';
+}
+
+/**
+ * 获取角色前缀（用于URL）
+ * @returns {string} '/admin' 或 '/shopOwner'
+ */
+export function getRolePrefix() {
+    return isAdminRole() ? '/admin' : '/shopOwner';
+}

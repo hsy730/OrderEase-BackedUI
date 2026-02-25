@@ -132,6 +132,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserList, createUser, deleteUser, updateUser } from '@/api/user'
 import { getUserRoleLabel } from '@/utils/status'
+import { isAdminRole } from '@/utils/auth'
 import DataTable from '@/components/common/DataTable.vue'
 import AppDialog from '@/components/common/AppDialog.vue'
 
@@ -147,7 +148,7 @@ const dialogType = ref('add')
 const loading = ref(false)
 const submitting = ref(false)
 const formRef = ref(null)
-const isAdmin = JSON.parse(localStorage.getItem('admin') || '{}').role === 'admin'
+const isAdmin = isAdminRole()
 
 const currentPage = ref(1)
 const pageSize = ref(10)

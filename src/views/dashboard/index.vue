@@ -69,9 +69,9 @@
           <h3>销售趋势</h3>
           <div class="chart-actions">
             <el-radio-group v-model="salesPeriod" size="small">
-              <el-radio-button label="week">本周</el-radio-button>
-              <el-radio-button label="month">本月</el-radio-button>
-              <el-radio-button label="year">全年</el-radio-button>
+              <el-radio-button value="week">本周</el-radio-button>
+              <el-radio-button value="month">本月</el-radio-button>
+              <el-radio-button value="year">全年</el-radio-button>
             </el-radio-group>
           </div>
         </div>
@@ -255,34 +255,33 @@ const getProductImageUrl = (imageUrl) => {
 const fetchStats = async () => {
   loading.value = true
   try {
-    // 传递period参数获取对应周期的销售趋势
     const response = await getDashboardStats({ period: salesPeriod.value })
     const data = response.data
 
-    // 更新统计数据
+    if (!data) {
+      console.error('获取统计数据失败: 返回数据为空')
+      return
+    }
+
     stats.value = {
-      todayOrders: data.orderStats.todayOrders,
-      yesterdayOrders: data.orderStats.yesterdayOrders,
-      todayRevenue: data.orderStats.todayRevenue,
-      yesterdayRevenue: data.orderStats.yesterdayRevenue,
-      activeProducts: data.productStats.activeProducts,
-      totalProducts: data.productStats.totalProducts,
-      todayUsers: data.userStats.todayUsers,
-      totalUsers: data.userStats.totalUsers
+      todayOrders: data.orderStats?.todayOrders || 0,
+      yesterdayOrders: data.orderStats?.yesterdayOrders || 0,
+      todayRevenue: data.orderStats?.todayRevenue || 0,
+      yesterdayRevenue: data.orderStats?.yesterdayRevenue || 0,
+      activeProducts: data.productStats?.activeProducts || 0,
+      totalProducts: data.productStats?.totalProducts || 0,
+      todayUsers: data.userStats?.todayUsers || 0,
+      totalUsers: data.userStats?.totalUsers || 0
     }
 
-    // 更新订单效率
     orderEfficiency.value = {
-      avgAcceptTime: data.orderEfficiency.avgAcceptTime.toFixed(1),
-      avgCompleteTime: data.orderEfficiency.avgCompleteTime.toFixed(1),
-      todayCompletionRate: data.orderEfficiency.todayCompletionRate.toFixed(1)
+      avgAcceptTime: (data.orderEfficiency?.avgAcceptTime || 0).toFixed(1),
+      avgCompleteTime: (data.orderEfficiency?.avgCompleteTime || 0).toFixed(1),
+      todayCompletionRate: (data.orderEfficiency?.todayCompletionRate || 0).toFixed(1)
     }
 
-    // 更新热销商品
-    hotProducts.value = data.hotProducts
-
-    // 更新最新订单
-    recentOrders.value = data.recentOrders
+    hotProducts.value = data.hotProducts || []
+    recentOrders.value = data.recentOrders || []
 
   } catch (error) {
     console.error('获取统计数据失败:', error)

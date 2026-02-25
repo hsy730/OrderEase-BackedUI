@@ -10,7 +10,7 @@
       :page-sizes="[10, 20, 50, 100]"
       :show-header="false"
       :show-operation="true"
-      operation-width="180"
+      operation-width="220"
       class="order-table-wrapper"
       @size-change="fetchOrderList"
       @current-change="fetchOrderList"
@@ -326,6 +326,7 @@ onUnmounted(() => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .op-btn.view {

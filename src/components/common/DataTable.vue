@@ -142,7 +142,7 @@ const props = defineProps({
   },
   defaultSort: {
     type: Object,
-    default: null
+    default: undefined
   },
   emptyText: {
     type: String,

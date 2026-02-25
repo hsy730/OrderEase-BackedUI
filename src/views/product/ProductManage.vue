@@ -440,6 +440,7 @@ const handleManageTags = (row) => {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .op-btn.view {

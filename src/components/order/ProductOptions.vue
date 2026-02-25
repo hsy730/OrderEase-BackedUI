@@ -43,7 +43,7 @@
           <el-radio
             v-for="option in category.options"
             :key="option.id"
-            :label="option.id"
+            :value="option.id"
             class="option-radio"
           >
             <span class="option-name">{{ option.name }}</span>

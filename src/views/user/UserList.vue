@@ -463,6 +463,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
 }
 
 .apple-form :deep(.el-form-item__label) {

@@ -539,6 +539,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
 }
 
 .pagination-wrapper {

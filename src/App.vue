@@ -80,18 +80,16 @@ const connectSSE = () => {
     headers: {
       'Authorization': `Bearer ${token}`
     },
-    heartbeatTimeout: 60000
+    heartbeatTimeout: 120000
   })
 
   eventSource.value.addEventListener('new_order', (event) => {
     try {
       const order = JSON.parse(event.data)
       
-      // 如果当前在订单管理页面，通过 Pinia Store 通知
       if (router.currentRoute.value.path === '/order') {
         notificationStore.notifyNewOrder(order)
       } else {
-        // 否则显示通知弹窗
         showNewOrderNotification(order)
       }
     } catch (error) {
@@ -103,16 +101,19 @@ const connectSSE = () => {
     console.log('SSE 连接已建立')
   }
 
-  eventSource.value.onerror = () => {
-    if (eventSource.value && eventSource.value.readyState === EventSourcePolyfill.CLOSED) {
-      if (reconnectTimer) {
-        clearTimeout(reconnectTimer)
-      }
-      reconnectTimer = setTimeout(() => {
-        console.log('尝试重新连接...')
-        connectSSE()
-      }, 5000)
+  eventSource.value.onerror = (error) => {
+    console.log('SSE 连接错误，准备重连...')
+    if (eventSource.value) {
+      eventSource.value.close()
+      eventSource.value = null
     }
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer)
+    }
+    reconnectTimer = setTimeout(() => {
+      console.log('尝试重新连接...')
+      connectSSE()
+    }, 5000)
   }
 
   eventSource.value.onclose = () => {

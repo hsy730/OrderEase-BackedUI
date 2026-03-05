@@ -50,6 +50,7 @@
 import { ref, reactive, computed } from 'vue'
 import { changePassword } from '@/api/auth'
 import { ElMessage } from 'element-plus'
+import { validatePassword } from '@/utils/passwordValidator'
 
 const props = defineProps({
   modelValue: Boolean
@@ -72,31 +73,7 @@ const form = reactive({
 })
 
 const validateNewPassword = (rule, value, callback) => {
-  const errors = []
-
-  if (!value) {
-    errors.push('请输入新密码')
-  }
-
-  if (value && value.length < 8) {
-    errors.push('密码长度至少8位')
-  }
-
-  if (value && !/(?=.*[0-9])/.test(value)) {
-    errors.push('密码必须包含数字')
-  }
-
-  if (value && !/(?=.*[A-Z])/.test(value)) {
-    errors.push('密码必须包含大写字母')
-  }
-
-  if (value && !/(?=.*[a-z])/.test(value)) {
-    errors.push('密码必须包含小写字母')
-  }
-
-  if (value && !/(?=.*[@#$%^&*])/.test(value)) {
-    errors.push('密码必须包含特殊字符（如：@#$%^&*等）')
-  }
+  const errors = validatePassword(value)
 
   if (errors.length > 0) {
     callback(new Error(errors.join('，')))

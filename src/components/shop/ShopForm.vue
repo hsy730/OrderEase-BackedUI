@@ -172,6 +172,7 @@ import { ElMessage } from 'element-plus'
 import { createShop, updateShop, getShopDetail, uploadShopImage, getShopImageUrl } from '@/api/shop'
 import SmartImage from '@/components/SmartImage.vue'
 import { isAdminRole } from '@/utils/auth'
+import { validatePassword } from '@/utils/passwordValidator'
 
 const props = defineProps({
   shopId: {
@@ -233,31 +234,20 @@ onMounted(() => {
 const emit = defineEmits(['submit'])
 const formRef = ref(null)
 
-const validatePassword = (rule, value, callback) => {
+const validateShopPassword = (rule, value, callback) => {
   const errors = []
   
   if (!props.shopId && !value) {
     errors.push('请输入密码')
   }
   
-  if (value && value.length < 8) {
-    errors.push('长度至少8位')
-  }
-  
-  if (value && !/(?=.*[0-9])/.test(value)) {
-    errors.push('必须包含数字')
-  }
-  
-  if (value && !/(?=.*[A-Z])/.test(value)) {
-    errors.push('必须包含大写字母')
-  }
-  
-  if (value && !/(?=.*[a-z])/.test(value)) {
-    errors.push('必须包含小写字母')
-  }
-  
-  if (value && !/(?=.*[@#$%^&*])/.test(value)) {
-    errors.push('必须包含特殊字符（如：@#$%^&*等）')
+  if (value) {
+    const passwordErrors = validatePassword(value)
+    // 移除第一个错误，因为我们已经处理了必填项
+    if (passwordErrors.length > 0 && passwordErrors[0] === '请输入密码') {
+      passwordErrors.shift()
+    }
+    errors.push(...passwordErrors)
   }
   
   if (errors.length > 0) {
@@ -275,7 +265,7 @@ const formRules = computed(() => ({
           callback();
           return;
         }
-        validatePassword(rule, value, callback);
+        validateShopPassword(rule, value, callback);
       }, 
       trigger: 'input' 
     }

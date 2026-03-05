@@ -235,20 +235,7 @@ const emit = defineEmits(['submit'])
 const formRef = ref(null)
 
 const validateShopPassword = (rule, value, callback) => {
-  const errors = []
-  
-  if (!props.shopId && !value) {
-    errors.push('请输入密码')
-  }
-  
-  if (value) {
-    const passwordErrors = validatePassword(value)
-    // 移除第一个错误，因为我们已经处理了必填项
-    if (passwordErrors.length > 0 && passwordErrors[0] === '请输入密码') {
-      passwordErrors.shift()
-    }
-    errors.push(...passwordErrors)
-  }
+  const errors = validatePassword(value)
   
   if (errors.length > 0) {
     callback(new Error('密码' + errors.join('，')))

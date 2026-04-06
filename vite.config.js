@@ -40,5 +40,17 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['element-plus']
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    poolOptions: {
+      threads: {
+        singleThread: true
+      }
+    },
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
   }
 })

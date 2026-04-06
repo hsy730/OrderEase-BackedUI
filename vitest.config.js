@@ -6,10 +6,7 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     pool: 'forks',
-    include: ['src/**/*.{test,spec}.{js,ts}'],
-    alias: {
-      '@': path.resolve(__dirname, 'src')
-    }
+    include: ['src/**/*.{test,spec}.{js,ts}']
   },
   resolve: {
     alias: {

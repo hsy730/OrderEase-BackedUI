@@ -133,6 +133,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserList, createUser, deleteUser, updateUser } from '@/api/user'
 import { getUserRoleLabel } from '@/utils/status'
 import { isAdminRole } from '@/utils/auth'
+import { validateWeakPassword } from '@/utils/passwordValidator'
 import DataTable from '@/components/common/DataTable.vue'
 import AppDialog from '@/components/common/AppDialog.vue'
 
@@ -167,8 +168,24 @@ const form = ref({
   type: 'delivery'
 })
 
+const validateUserPassword = (rule, value, callback) => {
+  // 编辑时密码为空表示不修改
+  if (dialogType.value === 'edit' && !value) {
+    callback()
+    return
+  }
+
+  const errors = validateWeakPassword(value)
+  if (errors.length > 0) {
+    callback(new Error(errors.join('，')))
+  } else {
+    callback()
+  }
+}
+
 const rules = {
-  name: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
+  name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ validator: validateUserPassword, trigger: 'blur' }]
 }
 
 const handleSearchInput = () => {

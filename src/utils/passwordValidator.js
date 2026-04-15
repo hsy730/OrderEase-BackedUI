@@ -87,3 +87,37 @@ export const getPasswordRegex = () => {
 export const getStrictPasswordRegex = () => {
   return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])[A-Za-z\d\W]{8,20}$/
 }
+
+/**
+ * 弱密码验证（普通用户创建）
+ * 与后端 NewWeakPassword 保持一致
+ * @param {string} password - 密码字符串
+ * @returns {string[]} - 错误信息数组，为空表示验证通过
+ */
+export const validateWeakPassword = (password) => {
+  const errors = []
+
+  if (!password) {
+    errors.push('请输入密码')
+    return errors
+  }
+
+  if (password.length < 6 || password.length > 20) {
+    errors.push('密码长度必须在6-20位')
+  }
+
+  // 必须包含字母或数字
+  if (!/(?=.*[a-zA-Z0-9])/.test(password)) {
+    errors.push('密码必须包含字母或数字')
+  }
+
+  return errors
+}
+
+/**
+ * 获取弱密码验证的正则表达式（普通用户）
+ * @returns {RegExp} - 密码验证的正则表达式
+ */
+export const getWeakPasswordRegex = () => {
+  return /^(?=.*[a-zA-Z0-9])[\s\S]{6,20}$/
+}

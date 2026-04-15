@@ -132,7 +132,7 @@ import { User, Lock, Picture, ShoppingCart, DataAnalysis, TrendCharts, InfoFille
 import { login } from '@/api/auth'
 import { saveAdminInfo } from '@/utils/auth'
 import { useUserStore } from '@/stores'
-import { getPasswordRegex } from '@/utils/passwordValidator'
+import { getStrictPasswordRegex } from '@/utils/passwordValidator'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -154,9 +154,9 @@ const loginRules = {
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 8, message: '密码长度至少8位', trigger: 'blur' },
+    { min: 8, max: 20, message: '密码长度必须在8-20位', trigger: 'blur' },
     {
-      pattern: getPasswordRegex(),
+      pattern: getStrictPasswordRegex(),
       message: '密码必须包含大小写字母、数字和特殊字符',
       trigger: 'blur'
     }

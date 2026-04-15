@@ -172,7 +172,7 @@ import { ElMessage } from 'element-plus'
 import { createShop, updateShop, getShopDetail, uploadShopImage, getShopImageUrl } from '@/api/shop'
 import SmartImage from '@/components/SmartImage.vue'
 import { isAdminRole } from '@/utils/auth'
-import { validatePassword } from '@/utils/passwordValidator'
+import { validateStrictPassword } from '@/utils/passwordValidator'
 
 const props = defineProps({
   shopId: {
@@ -235,10 +235,10 @@ const emit = defineEmits(['submit'])
 const formRef = ref(null)
 
 const validateShopPassword = (rule, value, callback) => {
-  const errors = validatePassword(value)
-  
+  const errors = validateStrictPassword(value)
+
   if (errors.length > 0) {
-    callback(new Error('密码' + errors.join('，')))
+    callback(new Error(errors.join('，')))
   } else {
     callback()
   }

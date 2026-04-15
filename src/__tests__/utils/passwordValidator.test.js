@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { validatePassword, getPasswordRegex } from '@/utils/passwordValidator'
+import { validatePassword, validateStrictPassword, getPasswordRegex, getStrictPasswordRegex } from '@/utils/passwordValidator'
 
 describe('passwordValidator.js - 密码验证工具函数', () => {
-  describe('validatePassword - 密码验证', () => {
+  describe('validatePassword - 普通用户密码验证', () => {
     it('空密码应该返回"请输入密码"', () => {
       const errors = validatePassword('')
       expect(errors).toContain('请输入密码')
@@ -59,6 +59,69 @@ describe('passwordValidator.js - 密码验证工具函数', () => {
     })
   })
 
+  describe('validateStrictPassword - 店主/管理员严格密码验证', () => {
+    it('空密码应该返回"请输入密码"', () => {
+      const errors = validateStrictPassword('')
+      expect(errors).toContain('请输入密码')
+    })
+
+    it('null/undefined 应该返回"请输入密码"', () => {
+      expect(validateStrictPassword(null)).toContain('请输入密码')
+      expect(validateStrictPassword(undefined)).toContain('请输入密码')
+    })
+
+    it('有效严格密码 - 8位', () => {
+      const errors = validateStrictPassword('Abc123!@')
+      expect(errors).toEqual([])
+    })
+
+    it('有效严格密码 - 较长', () => {
+      const errors = validateStrictPassword('MyStr0ng!Pass')
+      expect(errors).toEqual([])
+    })
+
+    it('有效严格密码 - 20位', () => {
+      const errors = validateStrictPassword('MyStr0ng!Pass12345!')
+      expect(errors).toEqual([])
+    })
+
+    it('密码长度不足8位应该报错', () => {
+      const errors = validateStrictPassword('Abc123!')
+      expect(errors).toContain('密码长度必须在8-20位')
+    })
+
+    it('密码长度超过20位应该报错', () => {
+      const errors = validateStrictPassword('MyStr0ng!Pass12345!TooLong')
+      expect(errors).toContain('密码长度必须在8-20位')
+    })
+
+    it('密码不包含数字应该报错', () => {
+      const errors = validateStrictPassword('Abcdefg!')
+      expect(errors).toContain('密码必须包含数字')
+    })
+
+    it('密码不包含小写字母应该报错', () => {
+      const errors = validateStrictPassword('ABC123!@')
+      expect(errors).toContain('密码必须包含小写字母')
+    })
+
+    it('密码不包含大写字母应该报错', () => {
+      const errors = validateStrictPassword('abc123!@')
+      expect(errors).toContain('密码必须包含大写字母')
+    })
+
+    it('密码不包含特殊字符应该报错', () => {
+      const errors = validateStrictPassword('Abc12345')
+      expect(errors).toContain('密码必须包含特殊字符')
+    })
+
+    it('只有数字和小写字母应该报错缺少大写字母', () => {
+      const errors = validateStrictPassword('abc12345')
+      expect(errors).toContain('密码必须包含大写字母')
+      expect(errors).toContain('密码必须包含特殊字符')
+    })
+  })
+
   describe('getPasswordRegex - 获取密码正则表达式', () => {
     it('应该返回一个 RegExp 对象', () => {
       const regex = getPasswordRegex()
@@ -79,6 +142,50 @@ describe('passwordValidator.js - 密码验证工具函数', () => {
       expect(regex.test('ABCDEFGH')).toBe(false)
       expect(regex.test('12345678')).toBe(false)
       expect(regex.test('Abcdefgh')).toBe(false)
+    })
+  })
+
+  describe('getStrictPasswordRegex - 获取严格密码正则表达式', () => {
+    it('应该返回一个 RegExp 对象', () => {
+      const regex = getStrictPasswordRegex()
+      expect(regex).toBeInstanceOf(RegExp)
+    })
+
+    it('正则表达式应该匹配有效严格密码', () => {
+      const regex = getStrictPasswordRegex()
+      expect(regex.test('Abc123!@')).toBe(true)
+      expect(regex.test('MyStr0ng!Pass')).toBe(true)
+      expect(regex.test('MyStr0ng!Pass12345!')).toBe(true)
+    })
+
+    it('正则表达式不应该匹配过短密码', () => {
+      const regex = getStrictPasswordRegex()
+      expect(regex.test('Abc123!')).toBe(false)
+    })
+
+    it('正则表达式不应该匹配过长密码', () => {
+      const regex = getStrictPasswordRegex()
+      expect(regex.test('MyStr0ng!Pass12345!TooLong')).toBe(false)
+    })
+
+    it('正则表达式不应该匹配缺少数字的密码', () => {
+      const regex = getStrictPasswordRegex()
+      expect(regex.test('Abcdefg!')).toBe(false)
+    })
+
+    it('正则表达式不应该匹配缺少小写字母的密码', () => {
+      const regex = getStrictPasswordRegex()
+      expect(regex.test('ABC123!@')).toBe(false)
+    })
+
+    it('正则表达式不应该匹配缺少大写字母的密码', () => {
+      const regex = getStrictPasswordRegex()
+      expect(regex.test('abc123!@')).toBe(false)
+    })
+
+    it('正则表达式不应该匹配缺少特殊字符的密码', () => {
+      const regex = getStrictPasswordRegex()
+      expect(regex.test('Abc12345')).toBe(false)
     })
   })
 })

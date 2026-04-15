@@ -50,7 +50,7 @@
 import { ref, reactive, computed } from 'vue'
 import { changePassword } from '@/api/auth'
 import { ElMessage } from 'element-plus'
-import { validatePassword } from '@/utils/passwordValidator'
+import { validateStrictPassword } from '@/utils/passwordValidator'
 
 const props = defineProps({
   modelValue: Boolean
@@ -73,7 +73,7 @@ const form = reactive({
 })
 
 const validateNewPassword = (rule, value, callback) => {
-  const errors = validatePassword(value)
+  const errors = validateStrictPassword(value)
 
   if (errors.length > 0) {
     callback(new Error(errors.join('，')))

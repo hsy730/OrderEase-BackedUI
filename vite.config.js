@@ -15,9 +15,9 @@ export default defineConfig({
     port: "3000",
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',  // 替换为实际的后端接口地址
+        target: 'https://www.xhsj.xyz',  // 后端接口地址
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        secure: false
       }
     }
   },
@@ -30,6 +30,30 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
+        // 为构建产物添加内容哈希，解决浏览器缓存问题
+        // 入口文件添加哈希
+        entryFileNames: 'js/[name]-[hash].js',
+        // 代码分割的 chunk 文件添加哈希
+        chunkFileNames: 'js/[name]-[hash].js',
+        // 资源文件（CSS、图片、字体等）添加哈希
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.')
+          const ext = info[info.length - 1]
+          // 图片文件
+          if (/\.(png|jpe?g|gif|svg|webp|ico)$/i.test(assetInfo.name)) {
+            return 'img/[name]-[hash][extname]'
+          }
+          // 字体文件
+          if (/\.(woff2?|eot|ttf|otf)$/i.test(assetInfo.name)) {
+            return 'fonts/[name]-[hash][extname]'
+          }
+          // CSS 文件
+          if (ext === 'css') {
+            return 'css/[name]-[hash][extname]'
+          }
+          // 其他资源文件
+          return '[ext]/[name]-[hash][extname]'
+        },
         manualChunks: {
           'element-plus': ['element-plus'],
           'axios': ['axios'],

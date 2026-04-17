@@ -55,9 +55,7 @@ export default defineConfig({
           return '[ext]/[name]-[hash][extname]'
         },
         manualChunks: {
-          'element-plus': ['element-plus'],
-          'axios': ['axios'],
-          'vue': ['vue', 'vue-router', 'pinia']
+          'vendor': ['vue', 'vue-router', 'pinia', 'element-plus', 'axios']
         }
       }
     }

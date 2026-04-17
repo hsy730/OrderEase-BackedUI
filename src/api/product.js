@@ -1,5 +1,4 @@
 import request from '@/utils/request'
-import { getCurrentShopId} from '@/api/shop';
 
 // 获取商品列表
 export function getProductList(params) {
@@ -43,7 +42,7 @@ export function deleteProduct(id) {
     return request({
         url: '/product/delete',
         method: 'delete',
-        params: { id, shop_id: getCurrentShopId()}
+        params: { id }
     })
 }
 

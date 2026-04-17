@@ -96,23 +96,11 @@
                 :key="index"
               >
                 <div class="product-image-wrapper">
-                  <el-image
+                  <SmartImage
                     v-if="item.product_image_url"
                     :src="getImageUrl(item.product_image_url)"
-                    class="product-image"
-                    :preview-src-list="[getImageUrl(item.product_image_url)]"
-                    fit="cover"
-                  >
-                    <template #error>
-                      <div class="image-placeholder">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
-                          <rect x="3" y="3" width="18" height="18" rx="2"/>
-                          <circle cx="8.5" cy="8.5" r="1.5"/>
-                          <path d="M21 15l-5-5L5 21"/>
-                        </svg>
-                      </div>
-                    </template>
-                  </el-image>
+                    className="product-image"
+                  />
                   <div class="image-placeholder" v-else>
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
                       <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -206,6 +194,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getOrderDetail, toggleOrderStatus, getOrderStatusFlow } from '@/api/order'
 import { formatTime } from '@/utils/date'
 import { getProductImageUrl } from '@/api/product'
+import SmartImage from '@/components/SmartImage.vue'
 
 const route = useRoute()
 const loading = ref(false)

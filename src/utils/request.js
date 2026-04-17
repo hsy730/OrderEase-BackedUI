@@ -193,7 +193,8 @@ function addShopIdToRequest(config) {
       const hasBodyData = config.data && config.data !== ''
 
       if (hasBodyData) {
-        // 有body数据且非FormData：将shop_id添加到body中
+        // 有body数据且非FormData：将shop_id同时添加到params和body中
+        config.params = { ...(config.params || {}), shop_id: shopId }
         if (config.data.shop_id == null) {
           config.data = { ...config.data, shop_id: shopId }
         }

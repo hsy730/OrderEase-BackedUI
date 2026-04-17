@@ -20,7 +20,7 @@ export function useOrderForm(props, emit) {
 
   // 初始化商品项
   const initOrderItem = () => ({
-    product_id: '',
+    product_id: null,
     quantity: 1,
     price: 0,
     selectedProduct: null,
@@ -84,6 +84,7 @@ export function useOrderForm(props, emit) {
     if (!product) return
 
     const item = form.value.items[index]
+    item.product_id = productId
     item.selectedProduct = product
     item.price = product.price
     item.selectedOptions = {}

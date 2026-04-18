@@ -450,6 +450,25 @@ body {
   border-color: var(--color-primary-darker);
 }
 
+/* 朴素按钮样式 - 排除在普通按钮样式之外 */
+.el-button--primary.is-plain {
+  background-color: transparent;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.el-button--primary.is-plain:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.el-button--primary.is-plain:focus {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
 /* 链接按钮样式优化 */
 .el-button.is-link {
   padding: 4px 8px;

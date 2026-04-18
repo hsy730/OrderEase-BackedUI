@@ -55,7 +55,7 @@
                 </svg>
               </div>
               <div class="customer-details">
-                <div class="customer-name">{{ order.user?.name || '未知顾客' }}</div>
+                <div class="customer-name">{{ order.user?.nickname || order.user?.name || '未知顾客' }}</div>
                 <div class="customer-contact">
                   <span class="contact-item" v-if="order.user?.phone">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -150,10 +150,6 @@
           <div class="info-card order-summary">
             <h2 class="section-title">订单摘要</h2>
             <div class="summary-list">
-              <div class="summary-item">
-                <span class="summary-label">订单金额</span>
-                <span class="summary-value">¥{{ Number(order.total_price || 0).toFixed(2) }}</span>
-              </div>
               <div class="summary-item">
                 <span class="summary-label">创建时间</span>
                 <span class="summary-value">{{ formatTime(order.created_at) }}</span>

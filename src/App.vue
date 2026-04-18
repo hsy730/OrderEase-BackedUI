@@ -34,6 +34,7 @@ import { EventSourcePolyfill } from 'event-source-polyfill'
 import { getCurrentShopId, getToken, getRolePrefix } from '@/utils/auth'
 import { ShoppingCart } from '@element-plus/icons-vue'
 import { useNotificationStore } from '@/stores'
+import { playNotificationSound } from '@/utils/sound'
 
 const router = useRouter()
 const notificationStore = useNotificationStore()
@@ -126,7 +127,8 @@ const showNewOrderNotification = (order) => {
   notificationType.value = 'success'
   showNotification.value = true
 
-  // 自动关闭通知（10秒后）
+  playNotificationSound('newOrder')
+
   if (notificationTimer.value) {
     clearTimeout(notificationTimer.value)
   }

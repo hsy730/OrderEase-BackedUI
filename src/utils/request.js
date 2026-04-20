@@ -186,21 +186,28 @@ function addShopIdToRequest(config) {
     const isFormData = config.data instanceof FormData
 
     if (isFormData) {
-      // FormData类型（文件上传）：将shop_id添加到query参数中
-      config.params = { ...(config.params || {}), shop_id: shopId }
+      // FormData类型（文件上传）：只有当params中没有shop_id时才添加
+      if (!config.params?.shop_id) {
+        config.params = { ...(config.params || {}), shop_id: shopId }
+      }
     } else {
       // 检查是否有body数据
       const hasBodyData = config.data && config.data !== ''
 
       if (hasBodyData) {
-        // 有body数据且非FormData：将shop_id同时添加到params和body中
-        config.params = { ...(config.params || {}), shop_id: shopId }
+        // 有body数据且非FormData：只有当body中没有shop_id时才添加
         if (config.data.shop_id == null) {
           config.data = { ...config.data, shop_id: shopId }
         }
+        // params中也只在没有shop_id时才添加
+        if (!config.params?.shop_id) {
+          config.params = { ...(config.params || {}), shop_id: shopId }
+        }
       } else {
-        // 无body数据时，确保params存在
-        config.params = { ...(config.params || {}), shop_id: shopId }
+        // 无body数据时，只有当params中没有shop_id时才添加
+        if (!config.params?.shop_id) {
+          config.params = { ...(config.params || {}), shop_id: shopId }
+        }
       }
     }
   }

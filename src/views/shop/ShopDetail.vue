@@ -226,6 +226,19 @@
           </div>
         </div>
         <div class="token-info-item">
+          <span class="token-label">登录链接</span>
+          <div class="token-with-copy">
+            <span class="token-text">{{ tokenLoginUrl }}</span>
+            <el-button
+              size="small"
+              :icon="CopyDocument"
+              @click="handleCopyToken(tokenLoginUrl)"
+              class="copy-button"
+              title="复制登录链接"
+            />
+          </div>
+        </div>
+        <div class="token-info-item">
           <span class="token-label">过期时间</span>
           <span class="token-value">{{ formatTime(tokenInfo.expires_at) }}</span>
         </div>
@@ -257,6 +270,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { API_BASE_URL } from '@/config'
 import { useRoute } from 'vue-router'
 import { getShopDetail, getShopImageUrl, getShopTempToken, updateShop, updateOrderStatusFlow } from '@/api/shop'
 import SmartImage from '@/components/SmartImage.vue'
@@ -331,6 +345,13 @@ const isValid = computed(() => {
   if (!shopInfo.value.valid_until) return false
   const validUntil = new Date(shopInfo.value.valid_until)
   return validUntil > new Date()
+})
+
+const tokenLoginUrl = computed(() => {
+  const baseUrl = API_BASE_URL || window.location.origin
+  const shopId = tokenInfo.value.shop_id || ''
+  const tempToken = tokenInfo.value.token || ''
+  return `${baseUrl}/order-ease-iui/pages/token-login/token-login?shop_id=${shopId}&temp_token=${tempToken}`
 })
 
 const handleGetTempToken = async () => {

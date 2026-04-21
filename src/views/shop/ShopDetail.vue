@@ -228,7 +228,9 @@
         <div class="token-info-item">
           <span class="token-label">登录链接</span>
           <div class="token-with-copy">
-            <span class="token-text">{{ tokenLoginUrl }}</span>
+            <el-tooltip :content="tokenLoginUrl" placement="top" :show-after="500">
+              <span class="token-text ellipsis">{{ tokenLoginUrl }}</span>
+            </el-tooltip>
             <el-button
               size="small"
               :icon="CopyDocument"
@@ -236,6 +238,19 @@
               class="copy-button"
               title="复制登录链接"
             />
+            <el-button
+              size="small"
+              @click="showQrcode = !showQrcode"
+              class="qrcode-toggle-button"
+              :title="showQrcode ? '隐藏二维码' : '显示二维码'"
+            >
+              <el-icon><View /></el-icon>
+            </el-button>
+          </div>
+        </div>
+        <div class="qrcode-container" v-if="showQrcode && tokenLoginUrl">
+          <div class="qrcode-wrapper">
+            <qrcode-vue :value="tokenLoginUrl" :size="200" level="H" />
           </div>
         </div>
         <div class="token-info-item">
@@ -244,6 +259,10 @@
         </div>
       </div>
       <template #footer>
+        <el-button type="primary" :loading="tokenLoading" @click="handleGetTempToken">
+          <el-icon><Refresh /></el-icon>
+          刷新令牌
+        </el-button>
         <el-button @click="tokenDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
@@ -276,7 +295,8 @@ import { getShopDetail, getShopImageUrl, getShopTempToken, updateShop, updateOrd
 import SmartImage from '@/components/SmartImage.vue'
 import ShopForm from '@/components/shop/ShopForm.vue'
 import OrderStatusFlow from '@/components/shop/OrderStatusFlow.vue'
-import { CopyDocument } from '@element-plus/icons-vue'
+import { CopyDocument, Refresh, View } from '@element-plus/icons-vue'
+import QrcodeVue from 'qrcode.vue'
 import { ElMessage } from 'element-plus'
 import { getDefaultOrderStatusFlow } from '@/utils/orderStatus'
 import { isAdminRole } from '@/utils/auth'
@@ -291,6 +311,7 @@ const dialogVisible = ref(false)
 const tokenDialogVisible = ref(false)
 const tokenInfo = ref({})
 const tokenLoading = ref(false)
+const showQrcode = ref(false)
 
 const editDialogVisible = ref(false)
 const dialogTitle = ref('')
@@ -811,6 +832,33 @@ onMounted(() => {
   font-size: 14px;
   word-break: break-all;
   color: #1d1d1f;
+}
+
+.token-text.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+  cursor: pointer;
+  color: var(--color-primary);
+}
+
+.qrcode-toggle-button {
+  padding: 4px 8px;
+  min-height: auto;
+}
+
+.qrcode-container {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.qrcode-wrapper {
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 @media screen and (max-width: 1024px) {
